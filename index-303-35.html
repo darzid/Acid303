@@ -112,8 +112,7 @@ body, html { width: 100%; height: 100%; }
 #led-display { width: stretch; margin-bottom: 0pt; }
 #start-audio-btn { font-size: smaller; padding: 2pt; }
 
-#preset-selector,
-#sequencer,
+#sequence-settings,
 #knobs-and-switches,
 #transport-bar,
 #hints 
@@ -170,49 +169,58 @@ body, html { width: 100%; height: 100%; }
   <!-- Main Synthesizer Box -->
   <main class="w-full max-w-6xl brushed-metal rounded-2xl p-4 sm:p-8 border-2 border-slate-400 text-slate-900 shadow-2xl relative my-auto">
     
-    <div id="preset-selector" class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-slate-500/40 pb-4 mb-6 gap-4">
-
-      <!-- Pattern Preset Selector & Utility Bar -->
-      <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-        <div class="flex flex-col">
-          <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
-          <select id="pattern-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
-            <option value="phuture">Phuture Acid (Classic)</option>
-            <option value="higher">Higher State Drive</option>
-            <option value="dafunk">Da Funk Bounce</option>
-            <option value="hypnotic">Hypnotic Squelch</option>
-            <option value="random">Generate Random Acid</option>
-            <option value="clear">Clear Pattern</option>
-          </select>
+    <div id="sequence-settings">
+      <div id="preset-selector" class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-slate-500/40 pb-4 mb-6 gap-4">
+  
+        <!-- Pattern Preset Selector & Utility Bar -->
+        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          <div class="flex flex-col">
+            <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
+            <select id="pattern-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
+              <option value="phuture">Phuture Acid (Classic)</option>
+              <option value="higher">Higher State Drive</option>
+              <option value="dafunk">Da Funk Bounce</option>
+              <option value="hypnotic">Hypnotic Squelch</option>
+              <option value="random">Generate Random Acid</option>
+              <option value="clear">Clear Pattern</option>
+            </select>
+          </div>
+  
+          <button id="randomize-btn" title="Randomize Sequence" class="self-end px-3 py-1.5 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+            <i data-lucide="shuffle" class="w-3.5 h-3.5"></i> Random
+          </button>
         </div>
-
-        <button id="randomize-btn" title="Randomize Sequence" class="self-end px-3 py-1.5 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
-          <i data-lucide="shuffle" class="w-3.5 h-3.5"></i> Random
-        </button>
-      </div>
-      
-    </div>
-
-    <div id="sequencer" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
-      <div class="min-w-[700px]">
         
-        <!-- Step Indicators (LEDs) -->
-        <div class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
-          <script>
-            for (let i = 0; i < 16; i++) {
-              document.write(`
-                <div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
-                  <span class="text-[9px] font-mono text-slate-500 mb-1">${i + 1}</span>
-                  <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>
-                  <div id="step-note-${i}"></div>
-                  <div id="step-oct-${i}"></div>
-                  <div id="step-gate-${i}" class="note-button"></div>
-                  <div id="step-accent-${i}" class="note-button"></div>
-                  <div id="step-slide-${i}" class="note-button"></div>
-                </div>
-              `);
-            }
-          </script>
+      </div>
+  
+      <!-- Swing / Shuffle -->
+      <div id="swing" class="flex items-center gap-2">
+        <label class="text-xs font-bold text-slate-800">SWING:</label>
+        <input type="range" id="swing-slider" min="0" max="50" value="0" class="w-16 accent-slate-800 cursor-pointer">
+        <span id="swing-val" class="font-mono text-xs font-bold text-slate-900">0%</span>
+      </div>
+        
+      <div id="sequencer-grid" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
+        <div class="min-w-[700px]">
+          
+          <!-- Step Indicators (LEDs) -->
+          <div class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
+            <script>
+              for (let i = 0; i < 16; i++) {
+                document.write(`
+                  <div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
+                    <span class="text-[9px] font-mono text-slate-500 mb-1">${i + 1}</span>
+                    <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>
+                    <div id="step-note-${i}"></div>
+                    <div id="step-oct-${i}"></div>
+                    <div id="step-gate-${i}" class="note-button"></div>
+                    <div id="step-accent-${i}" class="note-button"></div>
+                    <div id="step-slide-${i}" class="note-button"></div>
+                  </div>
+                `);
+              }
+            </script>
+          </div>
         </div>
       </div>
     </div>
@@ -332,12 +340,7 @@ body, html { width: 100%; height: 100%; }
           <input type="checkbox" id="delay-toggle" checked class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
         </div>
 
-        <!-- Swing / Shuffle -->
-        <div class="flex items-center gap-2">
-          <label class="text-xs font-bold text-slate-800">SWING:</label>
-          <input type="range" id="swing-slider" min="0" max="50" value="0" class="w-16 accent-slate-800 cursor-pointer">
-          <span id="swing-val" class="font-mono text-xs font-bold text-slate-900">0%</span>
-        </div>
+
 
       </div>
     </div>
