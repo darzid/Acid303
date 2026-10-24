@@ -40,13 +40,6 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-          
-      - name: Create tag & GitHub release
-        uses: softprops/action-gh-release@v3
-        with:
-          draft: false
-          generate_release_notes: true
-          prerelease: false
 
   deploy:
     needs: build
