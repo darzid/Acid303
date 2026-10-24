@@ -115,6 +115,11 @@ main { margin-top: 0pt; }
 #sequencer-tab { padding: 4pt; display: none; }
 #stop-btn { display: none; }
 #waveform-selection { display: inline-block; width: stretch; text-align: center; margin-left: auto; margin-right: auto; }
+
+#sequencer-hints { flex-direction: column; }
+.hint-line { display: inline; }
+.hint-line div { display: inline-block; }
+#sound-hints { width: 100%; display: inline-block; }
   </style>
 </head>
 <body class="flex flex-col justify-between items-center bg-slate-950">
@@ -239,13 +244,10 @@ main { margin-top: 0pt; }
             </div>
       </div>
       
-          <div id="sequencer-hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2">
-            <div class="flex items-center gap-4">
-              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Gate = Play Note</span>
-              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Accent = Filter Spike + Louder</span>
-              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-fuchsia-500"></span> Slide = Portamento Glide</span>
-            </div>
-
+          <div id="sequencer-hints" class="mt-4 flex text-[11px] text-slate-600 font-semibold gap-2">
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Gate = Play Note</div>
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-amber-500"></div> Accent = Filter Spike + Louder</div>
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-fuchsia-500"></div> Slide = Portamento Glide</div>
           </div>
         </div>
     
@@ -328,7 +330,7 @@ main { margin-top: 0pt; }
             
           </div>
           
-          <div class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2">Drag knobs vertically to adjust parameter
+          <div id="sound-hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2 text-center items-center">Drag knobs vertically to adjust parameter
           </div>
       </div>
     </div>
@@ -648,46 +650,59 @@ main { margin-top: 0pt; }
        5. ROTARY KNOBS INTERACTION LOGIC
        ========================================================================= */
 
+class Knob {
+  constructor(id, onChange) {
+    this.knob = document.getElementById(id);
+    this.onChange = onChange;
+    document.addEventListener('pointerdown', (e) =>
+      this.onPointerDown(e));
+    document.addEventListener('pointermove', (e) =>
+      this.onPointerMove(e));
+    document.addEventListener('pointerup', (e) => this.onPointerUp(e));
+    
+    this.isDragging = false;
+    this.startY = 0;
+    this.currentValue = parseFloat(this.knob.dataset.value || 0.5);
+    this.updateRotation(this.currentValue);
+  }
+  
+  updateRotation(val) {
+    // Map 0..1 value to degrees (-135deg to +135deg)
+    const degrees = -135 + val * 270;
+    this.knob.style.transform = `rotate(${degrees}deg)`;
+  }
+
+  onPointerDown(e) {
+    if (e.target.closest(".knob-container") != this.knob) {
+      console.log("Other target", e.target.closest(".knob-container"))
+      return;
+    }
+    this.isDragging = true;
+    this.startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+  }
+  
+  onPointerMove(e) {
+    if (e.target.closest(".knob-container") != this.knob) return;
+    if (!this.isDragging) return;
+    const currentY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+    const deltaY = this.startY - currentY;
+    this.startY = currentY;
+
+    this.currentValue = Math.min(1, Math.max(0, this.currentValue + deltaY * 0.008));
+    this.knob.dataset.value = this.currentValue;
+    this.updateRotation(this.currentValue);
+    this.onChange(this.currentValue);
+  }
+
+  onPointerUp(e) {
+    if (e.target.closest(".knob-container") != this.knob) return;
+    this.isDragging = false;
+  }
+}
+
+var knobs = [];
     function setupKnob(id, onChange) {
-      const knob = document.getElementById(id);
-      let isDragging = false;
-      let startY = 0;
-      let currentValue = parseFloat(knob.dataset.value || 0.5);
-
-      function updateRotation(val) {
-        // Map 0..1 value to degrees (-135deg to +135deg)
-        const degrees = -135 + val * 270;
-        knob.style.transform = `rotate(${degrees}deg)`;
-      }
-
-      updateRotation(currentValue);
-
-      function onPointerDown(e) {
-        isDragging = true;
-        startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-        document.addEventListener('pointermove', onPointerMove);
-        document.addEventListener('pointerup', onPointerUp);
-      }
-
-      function onPointerMove(e) {
-        if (!isDragging) return;
-        const currentY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-        const deltaY = startY - currentY;
-        startY = currentY;
-
-        currentValue = Math.min(1, Math.max(0, currentValue + deltaY * 0.008));
-        knob.dataset.value = currentValue;
-        updateRotation(currentValue);
-        onChange(currentValue);
-      }
-
-      function onPointerUp() {
-        isDragging = false;
-        document.removeEventListener('pointermove', onPointerMove);
-        document.removeEventListener('pointerup', onPointerUp);
-      }
-
-      knob.addEventListener('pointerdown', onPointerDown);
+      knobs.push(new Knob(id, onChange));
     }
 
     // Initialize Knobs
