@@ -35,6 +35,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html _site
+          cp favicon.png _site
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
