@@ -109,15 +109,12 @@ body, html { width: 100%; height: 100%; }
     .note-button { width: 20pt; }
 
 #header { padding: 0pt, height: auto; }
-#led-display { width: stretch; margin-bottom: 0pt; }
-#start-audio-btn { font-size: smaller; padding: 2pt; }
-
-#sequence-settings,
-#knobs-and-switches,
-#transport-bar,
-#hints 
-{ border: 2pt solid blue; }
-
+#led-display { width: stretch; margin-top: 2pt; margin-bottom: 0pt; }
+main { margin-top: 0pt; }
+#sequence-settings { margin-bottom: 2pt; }
+#sequencer-tab { padding: 4pt; display: none; }
+#stop-btn { display: none; }
+#waveform-selection { display: inline-block; width: stretch; text-align: center; margin-left: auto; margin-right: auto; }
   </style>
 </head>
 <body class="flex flex-col justify-between items-center bg-slate-950">
@@ -125,22 +122,10 @@ body, html { width: 100%; height: 100%; }
   <!-- Top Title Banner -->
   <header id="header" class="w-full max-w-6xl flex flex-col sm:flex-row justify-between items-center mb-4">
     
-    <div id="activity-header" class="flex items-center gap-3">
-      <div class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-        <i data-lucide="activity" class="w-4 h-2"></i>
-      </div>
-      
-      <div>
-        <button id="start-audio-btn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-md shadow-lg shadow-emerald-900/40 flex items-center gap-2 text-sm transition animate-pulse">
-          <i data-lucide="power" class="w-4 h-2"></i> START AUDIO ENGINE
-        </button>
-      </div>
-    </div>
-    
     <div id="led-display" class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
       
       <!-- LED Display & Visualizer (4 cols) -->
-      <div class="lg:col-span-4 flex flex-col justify-between bg-slate-950 rounded-xl p-4 border-2 border-slate-700 led-display min-h-[160px]">
+      <div class="lg:col-span-4 flex flex-col justify-between bg-slate-950 rounded-xl p-1 border-2 border-slate-700 led-display min-h-[160px]">
         <div class="flex justify-between items-center border-b border-emerald-950 pb-2">
           <div class="flex items-center gap-2">
             <div id="play-led" class="w-3 h-3 rounded-full bg-slate-800 border border-slate-700"></div>
@@ -150,7 +135,7 @@ body, html { width: 100%; height: 100%; }
         </div>
 
         <!-- Oscilloscope / Visualizer Canvas -->
-        <div class="relative w-full h-20 my-2 bg-slate-950 rounded overflow-hidden flex items-center justify-center">
+        <div class="relative w-full h-16 my-2 bg-slate-950 rounded overflow-hidden flex items-center justify-center">
           <canvas id="visualizer-canvas" class="w-full h-full block"></canvas>
           <div id="vis-placeholder" class="absolute inset-0 flex items-center justify-center text-xs text-emerald-900 font-mono pointer-events-none">
             [AUDIO ENGINE INACTIVE]
@@ -163,203 +148,193 @@ body, html { width: 100%; height: 100%; }
         </div>
       </div>
     </div>
-    
   </header>
 
   <!-- Main Synthesizer Box -->
-  <main class="w-full max-w-6xl brushed-metal rounded-2xl p-4 sm:p-8 border-2 border-slate-400 text-slate-900 shadow-2xl relative my-auto">
+  <main class="redbox w-full max-w-6xl brushed-metal rounded-2xl p-2 sm:p-8 border-2 border-slate-400 text-slate-900 shadow-2xl relative my-auto">
     
-    <div id="sequence-settings">
-      <div id="preset-selector" class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-slate-500/40 pb-4 mb-6 gap-4">
-  
-        <!-- Pattern Preset Selector & Utility Bar -->
-        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-          <div class="flex flex-col">
-            <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
-            <select id="pattern-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
-              <option value="phuture">Phuture Acid (Classic)</option>
-              <option value="higher">Higher State Drive</option>
-              <option value="dafunk">Da Funk Bounce</option>
-              <option value="hypnotic">Hypnotic Squelch</option>
-              <option value="random">Generate Random Acid</option>
-              <option value="clear">Clear Pattern</option>
-            </select>
-          </div>
-  
-          <button id="randomize-btn" title="Randomize Sequence" class="self-end px-3 py-1.5 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
-            <i data-lucide="shuffle" class="w-3.5 h-3.5"></i> Random
-          </button>
-        </div>
+    <div id="transport-bar" class="flex flex-wrap items-center justify-between gap-4 bg-slate-400/40 p-3 rounded-xl border border-slate-400/80 mb-2">
+      <button id="play-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
+        <i data-lucide="play" class="w-4 h-4 fill-emerald-700"></i> PLAY
+      </button>
         
-      </div>
-  
-      <!-- Swing / Shuffle -->
-      <div id="swing" class="flex items-center gap-2">
-        <label class="text-xs font-bold text-slate-800">SWING:</label>
-        <input type="range" id="swing-slider" min="0" max="50" value="0" class="w-16 accent-slate-800 cursor-pointer">
-        <span id="swing-val" class="font-mono text-xs font-bold text-slate-900">0%</span>
-      </div>
-        
-      <div id="sequencer-grid" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
-        <div class="min-w-[700px]">
-          
-          <!-- Step Indicators (LEDs) -->
-          <div class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
-            <script>
-              for (let i = 0; i < 16; i++) {
-                document.write(`
-                  <div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
-                    <span class="text-[9px] font-mono text-slate-500 mb-1">${i + 1}</span>
-                    <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>
-                    <div id="step-note-${i}"></div>
-                    <div id="step-oct-${i}"></div>
-                    <div id="step-gate-${i}" class="note-button"></div>
-                    <div id="step-accent-${i}" class="note-button"></div>
-                    <div id="step-slide-${i}" class="note-button"></div>
-                  </div>
-                `);
-              }
-            </script>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div id="knobs-and-switches" class="bg-slate-300/60 rounded-xl p-4 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+      <button id="stop-btn" class="px-5 py-2.5 synth-btn text-rose-800 font-bold rounded-lg text-sm flex items-center gap-2 hover:bg-white">
+        <i data-lucide="square" class="w-4 h-4 fill-rose-700"></i> STOP
+      </button>
       
-      <div id="waveform-selection" class="flex items-center gap-1 p-1">
-        <span class="text-[10px] font-bold text-slate-700 px-1">WAVE:</span>
-        <button id="wave-saw" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">SAW</button>
-        <button id="wave-sqr" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">SQR</button>
-      </div>
-      
-      <!-- Rotary Knobs Sound Controls (8 cols) -->
-      <div id="rotary-knobs" class="lg:col-span-8 grid grid-cols-3 sm:grid-cols-6 gap-3 items-center text-center">
-        
-        <!-- Knob 1: Cutoff -->
-        <div class="flex flex-col items-center">
-          <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">CUTOFF</span>
-          <div class="knob-container" id="knob-cutoff" data-value="0.4">
-            <div class="knob-body"></div>
-            <div class="knob-cap"></div>
-            <div class="knob-indicator"></div>
-          </div>
-          <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-cutoff">400 Hz</span>
-        </div>
-
-        <!-- Knob 2: Resonance -->
-        <div class="flex flex-col items-center">
-          <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">RESONANCE</span>
-          <div class="knob-container" id="knob-reso" data-value="0.7">
-            <div class="knob-body"></div>
-            <div class="knob-cap"></div>
-            <div class="knob-indicator"></div>
-          </div>
-          <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-reso">7.0</span>
-        </div>
-
-        <!-- Knob 3: Env Mod -->
-        <div class="flex flex-col items-center">
-          <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">ENV MOD</span>
-          <div class="knob-container" id="knob-envmod" data-value="0.6">
-            <div class="knob-body"></div>
-            <div class="knob-cap"></div>
-            <div class="knob-indicator"></div>
-          </div>
-          <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-envmod">60%</span>
-        </div>
-
-        <!-- Knob 4: Decay -->
-        <div class="flex flex-col items-center">
-          <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
-          <div class="knob-container" id="knob-decay" data-value="0.3">
-            <div class="knob-body"></div>
-            <div class="knob-cap"></div>
-            <div class="knob-indicator"></div>
-          </div>
-          <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-decay">300ms</span>
-        </div>
-
-        <!-- Knob 5: Accent -->
-        <div class="flex flex-col items-center">
-          <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">ACCENT</span>
-          <div class="knob-container" id="knob-accent" data-value="0.8">
-            <div class="knob-body"></div>
-            <div class="knob-cap"></div>
-            <div class="knob-indicator"></div>
-          </div>
-          <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-accent">80%</span>
-        </div>
-
-        <!-- Knob 6: Distortion -->
-        <div class="flex flex-col items-center">
-          <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DRIVE</span>
-          <div class="knob-container" id="knob-drive" data-value="0.35">
-            <div class="knob-body"></div>
-            <div class="knob-cap"></div>
-            <div class="knob-indicator"></div>
-          </div>
-          <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-drive">35%</span>
-        </div>
-
-      </div>
-      
-
-    </div>
-    
-    <!-- Transport Controls & Waveform Toggle Bar -->
-    <div id="transport-bar" class="flex flex-wrap items-center justify-between gap-4 bg-slate-400/40 p-3 rounded-xl border border-slate-400/80 mb-6">
-      
-      <!-- Play / Stop & BPM -->
-      <div class="flex flex-wrap items-center gap-3">
-        <button id="play-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
-          <i data-lucide="play" class="w-4 h-4 fill-emerald-700"></i> PLAY
-        </button>
-        <button id="stop-btn" class="px-4 py-2.5 synth-btn text-rose-800 font-bold rounded-lg text-sm flex items-center gap-2 hover:bg-white">
-          <i data-lucide="square" class="w-4 h-4 fill-rose-700"></i> STOP
-        </button>
-
-        <div class="h-6 w-px bg-slate-500/50 mx-1"></div>
-
-        <!-- Tempo / BPM Slider -->
-        <div class="flex items-center gap-2">
+      <div id="song-settings">
+        <div id="tempo" class="flex items-center gap-2">
           <label class="text-xs font-bold text-slate-800">TEMPO:</label>
           <input type="range" id="tempo-slider" min="60" max="180" value="124" class="w-24 accent-slate-800 cursor-pointer">
-          <span id="tempo-val" class="font-mono text-xs font-bold text-slate-900 w-8">124</span>
+          <span id="tempo-val" class="font-mono text-xs font-bold text-slate-900 w-8">124
+          </span>
         </div>
-      </div>
-
-      <!-- Waveform Selection & Effects Toggles -->
-      <div class="flex flex-wrap items-center gap-4">
+      
+        <div id="swing" class="flex items-center gap-2">
+          <label class="text-xs font-bold text-slate-800">SWING:</label>
+          <input type="range" id="swing-slider" min="0" max="50" value="0" class="w-24 accent-slate-800 cursor-pointer">
+          <span id="swing-val" class="font-mono text-xs font-bold text-slate-900">0%</span>
+        </div>
         
-
-
-        <!-- Delay Effect Toggle -->
-        <div class="flex items-center gap-2">
+        <div id="delay" class="flex items-center gap-2">
           <label class="text-xs font-bold text-slate-800">DELAY:</label>
           <input type="checkbox" id="delay-toggle" checked class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
         </div>
-
-
-
       </div>
+
     </div>
-
-
-
-    <!-- Instruction Hints -->
-    <div id="hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2">
-      <div class="flex items-center gap-4">
-        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Gate = Play Note</span>
-        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Accent = Filter Spike + Louder</span>
-        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-fuchsia-500"></span> Slide = Portamento Glide</span>
+    
+    <div id="tab-control">
+      <div id="tab-buttons" class="flex items-center gap-1 p-1">
+        <span class="text-[10px] font-bold text-slate-700 px-1"></span>
+        <button id="sound-btn" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">SOUND</button>
+        <button id="sequencer-btn" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">SEQUENCER</button>
       </div>
-      <div>Drag knobs vertically to adjust parameters</div>
+      
+      <div id="tab-content">
+        <div id="sequencer-tab" class="bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
+      
+            <div id="preset-selector" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <div class="flex flex-col">
+                <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
+                <select id="pattern-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
+                  <option value="phuture">Phuture Acid (Classic)</option>
+                  <option value="higher">Higher State Drive</option>
+                  <option value="dafunk">Da Funk Bounce</option>
+                  <option value="hypnotic">Hypnotic Squelch</option>
+                  <option value="random">Generate Random Acid</option>
+                  <option value="clear">Clear Pattern</option>
+                </select>
+              </div>
+      
+              <button id="randomize-btn" title="Randomize Sequence" class="self-end px-3 py-1.5 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="shuffle" class="w-3.5 h-3.5"></i> Random
+              </button>
+            </div>
+          
+          </div>
+
+          <div id="sequencer-grid" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
+            <div class="min-w-[700px]">
+              
+              <!-- Step Indicators (LEDs) -->
+              <div class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
+                <script>
+                  for (let i = 0; i < 16; i++) {
+                    document.write(`
+                      <div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
+                        <span class="text-[9px] font-mono text-slate-500 mb-1">${i + 1}</span>
+                        <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>
+                        <div id="step-note-${i}"></div>
+                        <div id="step-oct-${i}"></div>
+                        <div id="step-gate-${i}" class="note-button"></div>
+                        <div id="step-accent-${i}" class="note-button"></div>
+                        <div id="step-slide-${i}" class="note-button"></div>
+                      </div>
+                    `);
+                  }
+                </script>
+              </div>
+            </div>
+      </div>
+      
+          <div id="sequencer-hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2">
+            <div class="flex items-center gap-4">
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Gate = Play Note</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Accent = Filter Spike + Louder</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-fuchsia-500"></span> Slide = Portamento Glide</span>
+            </div>
+
+          </div>
+        </div>
+    
+        <div id="sound-tab" class="bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
+          
+          <div id="waveform-selection" class="items-center gap-1 p-1 text-center">
+            
+            <button id="wave-saw" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">SAWTOOTH</button>
+            <button id="wave-sqr" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">SQUARE</button>
+            
+          </div>
+          
+          <div id="rotary-knobs" class="lg:col-span-8 grid grid-cols-3 sm:grid-cols-6 gap-2 items-center text-center">
+            
+            <!-- Knob 1: Cutoff -->
+            <div class="flex flex-col items-center">
+              <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">CUTOFF</span>
+              <div class="knob-container" id="knob-cutoff" data-value="0.4">
+                <div class="knob-body"></div>
+                <div class="knob-cap"></div>
+                <div class="knob-indicator"></div>
+              </div>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-cutoff">400 Hz</span>
+            </div>
+    
+            <!-- Knob 2: Resonance -->
+            <div class="flex flex-col items-center">
+              <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">RESONANCE</span>
+              <div class="knob-container" id="knob-reso" data-value="0.7">
+                <div class="knob-body"></div>
+                <div class="knob-cap"></div>
+                <div class="knob-indicator"></div>
+              </div>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-reso">7.0</span>
+            </div>
+    
+            <!-- Knob 3: Env Mod -->
+            <div class="flex flex-col items-center">
+              <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">ENV MOD</span>
+              <div class="knob-container" id="knob-envmod" data-value="0.6">
+                <div class="knob-body"></div>
+                <div class="knob-cap"></div>
+                <div class="knob-indicator"></div>
+              </div>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-envmod">60%</span>
+            </div>
+    
+            <!-- Knob 4: Decay -->
+            <div class="flex flex-col items-center">
+              <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
+              <div class="knob-container" id="knob-decay" data-value="0.3">
+                <div class="knob-body"></div>
+                <div class="knob-cap"></div>
+                <div class="knob-indicator"></div>
+              </div>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-decay">300ms</span>
+            </div>
+    
+            <!-- Knob 5: Accent -->
+            <div class="flex flex-col items-center">
+              <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">ACCENT</span>
+              <div class="knob-container" id="knob-accent" data-value="0.8">
+                <div class="knob-body"></div>
+                <div class="knob-cap"></div>
+                <div class="knob-indicator"></div>
+              </div>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-accent">80%</span>
+            </div>
+    
+            <!-- Knob 6: Distortion -->
+            <div class="flex flex-col items-center">
+              <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DRIVE</span>
+              <div class="knob-container" id="knob-drive" data-value="0.35">
+                <div class="knob-body"></div>
+                <div class="knob-cap"></div>
+                <div class="knob-indicator"></div>
+              </div>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-drive">35%</span>
+            </div>
+            
+          </div>
+          
+          <div class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2">Drag knobs vertically to adjust parameter
+          </div>
+      </div>
     </div>
 
   </main>
 
-  <!-- Footer -->
   <footer class="mt-4 text-xs text-slate-600 text-center">
     TB-303 Web Synthesizer Simulator &bull; Built with Tone.js & Web Audio API
   </footer>
@@ -758,43 +733,18 @@ body, html { width: 100%; height: 100%; }
       document.getElementById('val-drive').textContent = `${Math.round(val * 100)}%`;
     });
 
-    /* =========================================================================
-       6. GLOBAL CONTROLS & EVENT LISTENERS
-       ========================================================================= */
-
-    // Audio Context Engine Start
-    const startAudioBtn = document.getElementById('start-audio-btn');
-    startAudioBtn.addEventListener('click', async () => {
-      await Tone.start();
-      isAudioStarted = true;
-      document.getElementById('audio-status').innerHTML = `
-        <span class="text-xs text-emerald-400 bg-emerald-950/80 px-3 py-1.5 rounded border border-emerald-500/40 font-mono flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> AUDIO READY
-        </span>
-      `;
-      document.getElementById('vis-placeholder').style.display = 'none';
-    });
-
     // Play/Stop Controls
     const playBtn = document.getElementById('play-btn');
     const stopBtn = document.getElementById('stop-btn');
     const playLed = document.getElementById('play-led');
 
     playBtn.addEventListener('click', async () => {
-      if (!isAudioStarted) {
-        await Tone.start();
-        isAudioStarted = true;
-        document.getElementById('audio-status').innerHTML = `
-          <span class="text-xs text-emerald-400 bg-emerald-950/80 px-3 py-1.5 rounded border border-emerald-500/40 font-mono flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> AUDIO READY
-          </span>
-        `;
-        document.getElementById('vis-placeholder').style.display = 'none';
-      }
-
       if (!isPlaying) {
+        await initializeAudio();
         Tone.Transport.start();
         isPlaying = true;
+        stopBtn.style.display = "flex";
+        playBtn.style.display = "none";
         playLed.className = 'w-3 h-3 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/80 animate-pulse';
       }
     });
@@ -803,13 +753,24 @@ body, html { width: 100%; height: 100%; }
       Tone.Transport.stop();
       isPlaying = false;
       currentStep = 0;
+      stopBtn.style.display = "none";
+      playBtn.style.display = "flex";
       playLed.className = 'w-3 h-3 rounded-full bg-slate-800 border border-slate-700';
       document.querySelectorAll('[id^="step-led-"]').forEach(led => {
         led.className = 'w-3 h-3 rounded-full bg-slate-950 border border-slate-800';
       });
       document.getElementById('display-step').textContent = 'STEP: 01/16';
     });
+    
+    stopBtn.style.display = "none";
 
+    async function initializeAudio() {
+      if (isAudioStarted) return;
+      await Tone.start();
+      isAudioStarted = true;
+      document.getElementById('vis-placeholder').style.display = 'none';
+    }
+    
     // Tempo Control
     const tempoSlider = document.getElementById('tempo-slider');
     const tempoVal = document.getElementById('tempo-val');
@@ -859,6 +820,25 @@ body, html { width: 100%; height: 100%; }
       swingVal.textContent = `${e.target.value}%`;
     });
 
+    const soundTabBtn = document.getElementById('sound-btn');
+    const soundTab = document.getElementById('sound-tab');
+    const sequencerTabBtn = document.getElementById('sequencer-btn');
+    const sequencerTab = document.getElementById('sequencer-tab');
+    
+    soundTabBtn.addEventListener('click', async () => {
+      soundTab.style.display = "block";
+      soundTabBtn.classList.add('active-led');
+      sequencerTab.style.display = "none";
+      sequencerTabBtn.classList.remove('active-led');
+    });
+    
+    sequencerTabBtn.addEventListener('click', async () => {
+      soundTab.style.display = "none";
+      soundTabBtn.classList.remove('active-led');
+      sequencerTab.style.display = "block";
+      sequencerTabBtn.classList.add('active-led');
+    });
+    
     // Preset Selection
     const patternSelect = document.getElementById('pattern-select');
     patternSelect.addEventListener('change', (e) => {
