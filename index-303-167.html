@@ -224,22 +224,7 @@ main { margin-top: 0pt; }
             <div class="min-w-[700px]">
               
               <!-- Step Indicators (LEDs) -->
-              <div class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
-                <script>
-                  for (let i = 0; i < 16; i++) {
-                    document.write(`
-                      <div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
-                        <span class="text-[9px] font-mono text-slate-500 mb-1">${i + 1}</span>
-                        <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>
-                        <div id="step-note-${i}"></div>
-                        <div id="step-oct-${i}"></div>
-                        <div id="step-gate-${i}" class="note-button"></div>
-                        <div id="step-accent-${i}" class="note-button"></div>
-                        <div id="step-slide-${i}" class="note-button"></div>
-                      </div>
-                    `);
-                  }
-                </script>
+              <div id="grid" class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
               </div>
             </div>
       </div>
@@ -504,8 +489,27 @@ main { margin-top: 0pt; }
     const gridGateEl = document.getElementById('grid-gate');
     const gridAccentEl = document.getElementById('grid-accent');
     const gridSlideEl = document.getElementById('grid-slide');
-
+    const grid = document.getElementById("grid");
+    
     const gridNoteSelectors = document.querySelectorAll(".note-selector");
+    
+    function drawGrid() {
+      grid.innerHTML = "";
+      for (let i = 0; i < 16; i++) {
+        grid.innerHTML += `<div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
+                        <span class="text-[9px] font-mono text-slate-500 mb-1">${i + 1}</span>
+                        <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>
+                        <div id="step-note-${i}"></div>
+                        <div id="step-oct-${i}"></div>
+                        <div id="step-gate-${i}" class="note-button"></div>
+                        <div id="step-accent-${i}" class="note-button"></div>
+                        <div id="step-slide-${i}" class="note-button"></div>
+                      </div>
+                    `;
+      }
+    }
+    
+    drawGrid();
     
     function renderGrid() {
      // gridNotesEl.innerHTML = '';
@@ -650,57 +654,57 @@ main { margin-top: 0pt; }
        5. ROTARY KNOBS INTERACTION LOGIC
        ========================================================================= */
 
-class Knob {
-  constructor(id, onChange) {
-    this.knob = document.getElementById(id);
-    this.onChange = onChange;
-    document.addEventListener('pointerdown', (e) =>
-      this.onPointerDown(e));
-    document.addEventListener('pointermove', (e) =>
-      this.onPointerMove(e));
-    document.addEventListener('pointerup', (e) => this.onPointerUp(e));
+    class Knob {
+      constructor(id, onChange) {
+        this.knob = document.getElementById(id);
+        this.onChange = onChange;
+        document.addEventListener('pointerdown', (e) =>
+          this.onPointerDown(e));
+        document.addEventListener('pointermove', (e) =>
+          this.onPointerMove(e));
+        document.addEventListener('pointerup', (e) => this.onPointerUp(e));
+        
+        this.isDragging = false;
+        this.startY = 0;
+        this.currentValue = parseFloat(this.knob.dataset.value || 0.5);
+        this.updateRotation(this.currentValue);
+      }
+      
+      updateRotation(val) {
+        // Map 0..1 value to degrees (-135deg to +135deg)
+        const degrees = -135 + val * 270;
+        this.knob.style.transform = `rotate(${degrees}deg)`;
+      }
     
-    this.isDragging = false;
-    this.startY = 0;
-    this.currentValue = parseFloat(this.knob.dataset.value || 0.5);
-    this.updateRotation(this.currentValue);
-  }
-  
-  updateRotation(val) {
-    // Map 0..1 value to degrees (-135deg to +135deg)
-    const degrees = -135 + val * 270;
-    this.knob.style.transform = `rotate(${degrees}deg)`;
-  }
-
-  onPointerDown(e) {
-    if (e.target.closest(".knob-container") != this.knob) {
-      console.log("Other target", e.target.closest(".knob-container"))
-      return;
+      onPointerDown(e) {
+        if (e.target.closest(".knob-container") != this.knob) {
+          console.log("Other target", e.target.closest(".knob-container"))
+          return;
+        }
+        this.isDragging = true;
+        this.startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      }
+      
+      onPointerMove(e) {
+        if (e.target.closest(".knob-container") != this.knob) return;
+        if (!this.isDragging) return;
+        const currentY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+        const deltaY = this.startY - currentY;
+        this.startY = currentY;
+    
+        this.currentValue = Math.min(1, Math.max(0, this.currentValue + deltaY * 0.008));
+        this.knob.dataset.value = this.currentValue;
+        this.updateRotation(this.currentValue);
+        this.onChange(this.currentValue);
+      }
+    
+      onPointerUp(e) {
+        if (e.target.closest(".knob-container") != this.knob) return;
+        this.isDragging = false;
+      }
     }
-    this.isDragging = true;
-    this.startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-  }
-  
-  onPointerMove(e) {
-    if (e.target.closest(".knob-container") != this.knob) return;
-    if (!this.isDragging) return;
-    const currentY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-    const deltaY = this.startY - currentY;
-    this.startY = currentY;
 
-    this.currentValue = Math.min(1, Math.max(0, this.currentValue + deltaY * 0.008));
-    this.knob.dataset.value = this.currentValue;
-    this.updateRotation(this.currentValue);
-    this.onChange(this.currentValue);
-  }
-
-  onPointerUp(e) {
-    if (e.target.closest(".knob-container") != this.knob) return;
-    this.isDragging = false;
-  }
-}
-
-var knobs = [];
+    var knobs = [];
     function setupKnob(id, onChange) {
       knobs.push(new Knob(id, onChange));
     }
@@ -857,15 +861,20 @@ var knobs = [];
     // Preset Selection
     const patternSelect = document.getElementById('pattern-select');
     patternSelect.addEventListener('change', (e) => {
+      
       const val = e.target.value;
       if (val === 'random') {
         randomizePattern();
-      } else if (val === 'clear') {
-        pattern = Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, accent: false, slide: false }));
-      } else if (PRESETS[val]) {
-        pattern = JSON.parse(JSON.stringify(PRESETS[val]));
+      } else  {
+        if (val === 'clear') {
+          pattern = Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, accent: false, slide: false }));
+        } else if (PRESETS[val]) {
+          pattern = JSON.parse(JSON.stringify(PRESETS[val]));
+        }
+        drawGrid();
+        renderGrid();
       }
-      renderGrid();
+      
     });
 
     // Random Pattern Generator
@@ -881,6 +890,7 @@ var knobs = [];
           slide: Math.random() > 0.70
         };
       });
+      drawGrid();
       renderGrid();
     }
     randomizeBtn.addEventListener('click', randomizePattern);
