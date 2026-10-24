@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-          tags: "Acid303:${{ steps.version.outputs.version }}"
+          tags: "name:${{ steps.version.outputs.version }}"
 
       - name: Create tag & GitHub release
         uses: softprops/action-gh-release@v3
