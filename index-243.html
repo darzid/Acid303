@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;800;900&display=swap');
 
@@ -94,6 +95,8 @@ main { margin-top: 0pt; }
      border-top: 3px solid #228ee5;
      background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
    }
+   
+#guest-btn { display: none; }
   </style>
 </head>
 <body class="flex flex-col justify-between items-center bg-slate-950">
@@ -129,10 +132,12 @@ main { margin-top: 0pt; }
     </div>
   </header>
 
+
+  
   <!-- Main Synthesizer Box -->
   <main class="redbox w-full max-w-6xl brushed-metal rounded-2xl p-2 sm:p-8 border-2 border-slate-400 text-slate-900 shadow-2xl relative my-auto">
-    
     <div id="transport-bar" class="flex flex-wrap items-center justify-between gap-4 bg-slate-400/40 p-3 rounded-xl border border-slate-400/80 mb-2">
+      
       <button id="play-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
         <i data-lucide="play" class="w-4 h-4 fill-emerald-700"></i> PLAY
       </button>
@@ -164,53 +169,11 @@ main { margin-top: 0pt; }
     </div>
     
     <div id="tab-control">
-      <div id="tab-buttons" class="flex items-center gap-1 p-1">
-        <span class="text-[10px] font-bold text-slate-700 px-1"></span>
-        <button id="sound-btn" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">SOUND</button>
-        <button id="sequencer-btn" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">SEQUENCER</button>
+      <div class="tab-strip flex items-center gap-1 p-1">
       </div>
       
-      <div id="tab-content">
-        <div id="sequencer-tab" class="bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
-      
-            <div id="preset-selector" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-              <div class="flex flex-col">
-                <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
-                <select id="pattern-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
-                  <option value="phuture">Phuture Acid (Classic)</option>
-                  <option value="higher">Higher State Drive</option>
-                  <option value="dafunk">Da Funk Bounce</option>
-                  <option value="hypnotic">Hypnotic Squelch</option>
-                  <option value="random">Generate Random Acid</option>
-                  <option value="clear">Clear Pattern</option>
-                </select>
-              </div>
-      
-              <button id="randomize-btn" title="Randomize Sequence" class="self-end px-3 py-1.5 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
-                <i data-lucide="shuffle" class="w-3.5 h-3.5"></i> Random
-              </button>
-            </div>
-          
-          </div>
-
-          <div id="sequencer-grid" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
-            <div class="min-w-[700px]">
-              
-              <!-- Step Indicators (LEDs) -->
-              <div id="grid" class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
-              </div>
-            </div>
-      </div>
-      
-          <div id="sequencer-hints" class="mt-4 flex text-[11px] text-slate-600 font-semibold gap-2">
-            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Gate = Play Note</div>
-            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-amber-500"></div> Accent = Filter Spike + Louder</div>
-            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-fuchsia-500"></div> Slide = Portamento Glide</div>
-          </div>
-        </div>
-    
-        <div id="sound-tab" class="bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
+      <div class="tab-container">
+        <div title="SOUND" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
           
           <div id="waveform-selection" class="items-center gap-1 p-1 text-center">
             
@@ -289,8 +252,68 @@ main { margin-top: 0pt; }
             
           </div>
           
-          <div id="sound-hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2 text-center items-center">Drag knobs vertically to adjust parameter
+          <div id="sound-hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2 text-center items-center">Drag knobs vertically to adjust parameter</div>
           </div>
+        <div title="SEQUENCER" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
+      
+            <div id="preset-selector" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <div class="flex flex-col">
+                <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
+                <select id="pattern-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
+                  <option value="phuture">Phuture Acid (Classic)</option>
+                  <option value="higher">Higher State Drive</option>
+                  <option value="dafunk">Da Funk Bounce</option>
+                  <option value="hypnotic">Hypnotic Squelch</option>
+                  <option value="random">Generate Random Acid</option>
+                  <option value="clear">Clear Pattern</option>
+                </select>
+              </div>
+      
+              <button id="randomize-btn" title="Randomize Sequence" class="self-end px-3 py-1.5 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="shuffle" class="w-3.5 h-3.5"></i> Random
+              </button>
+            </div>
+          
+          </div>
+
+          <div id="sequencer-grid" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
+            <div class="min-w-[700px]">
+              
+              <!-- Step Indicators (LEDs) -->
+              <div id="grid" class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
+              </div>
+            </div>
+      </div>
+      
+          <div id="sequencer-hints" class="mt-4 flex text-[11px] text-slate-600 font-semibold gap-2">
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Gate = Play Note</div>
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-amber-500"></div> Accent = Filter Spike + Louder</div>
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-fuchsia-500"></div> Slide = Portamento Glide</div>
+          </div>
+        </div>
+        <div title="JAM" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
+      
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <button id="host-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
+                <i data-lucide="radio" class="w-4 h-4 fill-emerald-700"></i> START as HOST
+              </button>
+              <button id="join-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
+                <i data-lucide="plug-zap" class="w-4 h-4 fill-emerald-700"></i> JOIN as GUEST
+              </button>
+              <div id="qr-code"></div>
+              <div id="qr-reader"></div>
+            </div>
+          
+          </div>
+
+          <div id="sequencer-hints" class="mt-4 flex text-[11px] text-slate-600 font-semibold gap-2">
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Gate = Play Note</div>
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-amber-500"></div> Accent = Filter Spike + Louder</div>
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-fuchsia-500"></div> Slide = Portamento Glide</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -307,7 +330,7 @@ main { margin-top: 0pt; }
     /* =========================================================================
        1. SYNTH ENGINE & SOUND ARCHITECTURE (Tone.js)
        ========================================================================= */
-    
+    let toneP2PSync;
     let isAudioStarted = false;
     let isPlaying = false;
     let currentStep = 0;
@@ -726,6 +749,232 @@ main { margin-top: 0pt; }
       document.getElementById('val-drive').textContent = `${Math.round(val * 100)}%`;
     });
 
+
+class ToneP2PSync {
+  constructor(toneInstance) {
+    this.Tone = toneInstance;
+    this.pc = null;
+    this.dataChannel = null;
+    this.isHost = false;
+    this.timeOffset = 0; // Verschil in milliseconden tussen apparaten
+  }
+
+  /**
+   * 1. Wordt aangeroepen op Apparaat A (Host)
+   * Genereert een SDP offer om om te zetten in een QR-code.
+   */
+  async createHost() {
+    this.isHost = true;
+    this.pc = new RTCPeerConnection({ iceServers: [] }); // P2P lokaal
+    
+    this.dataChannel = this.pc.createDataChannel("tone-sync");
+    this._setupDataChannel();
+
+    const offer = await this.pc.createOffer();
+    await this.pc.setLocalDescription(offer);
+
+    return new Promise((resolve) => {
+      // Wacht tot ICE candidates verzameld zijn voor een complete QR-code
+      this.pc.onicecandidate = (event) => {
+        if (!event.candidate) {
+          resolve(btoa(JSON.stringify(this.pc.localDescription)));
+        }
+      };
+    });
+  }
+
+  /**
+   * 2. Wordt aangeroepen op Apparaat B (Guest) die de QR van de Host scant
+   */
+  async joinAsGuest(encodedOffer) {
+    this.isHost = false;
+    this.pc = new RTCPeerConnection({ iceServers: [] });
+
+    this.pc.ondatachannel = (event) => {
+      this.dataChannel = event.channel;
+      this._setupDataChannel();
+    };
+
+    const offer = JSON.parse(atob(encodedOffer));
+    await this.pc.setRemoteDescription(offer);
+
+    const answer = await this.pc.createAnswer();
+    await this.pc.setLocalDescription(answer);
+
+    return new Promise((resolve) => {
+      this.pc.onicecandidate = (event) => {
+        if (!event.candidate) {
+          resolve(btoa(JSON.stringify(this.pc.localDescription)));
+        }
+      };
+    });
+  }
+
+  /**
+   * 3. Host verwerkt het antwoord van de Guest (tweede QR-code scannen)
+   */
+  async handleAnswer(encodedAnswer) {
+    const answer = JSON.parse(atob(encodedAnswer));
+    await this.pc.setRemoteDescription(answer);
+  }
+
+  _setupDataChannel() {
+    this.dataChannel.onopen = () => {
+      console.log("P2P Verbinding geopend!");
+      this._syncClock();
+    };
+
+    this.dataChannel.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      this._handleMessage(msg);
+    };
+  }
+
+  // Simpele klok-synchronisatie (Ping-Pong voor latency-meting)
+  _syncClock() {
+    if (!this.isHost) return;
+    const start = performance.now();
+    this.dataChannel.send(JSON.stringify({ type: 'PING', clientTime: start }));
+  }
+
+  _handleMessage(msg) {
+    switch (msg.type) {
+      case 'PING':
+        this.dataChannel.send(JSON.stringify({
+          type: 'PONG',
+          clientTime: msg.clientTime,
+          serverTime: performance.now()
+        }));
+        break;
+
+      case 'PONG':
+        const now = performance.now();
+        const rtt = now - msg.clientTime;
+        const remoteTime = msg.serverTime + (rtt / 2);
+        this.timeOffset = remoteTime - now;
+        console.log(`Klok gesynchroniseerd. Offset: ${this.timeOffset.toFixed(2)}ms (RTT: ${rtt.toFixed(2)}ms)`);
+        break;
+
+      case 'START':
+        // Ontvangen door guest: start Tone.Transport op exact afgesproken tijd
+        this.Tone.Transport.bpm.value = msg.bpm;
+        this.Tone.Transport.start(msg.audioTime);
+        break;
+
+      case 'STOP':
+        this.Tone.Transport.stop();
+        break;
+
+      case 'BPM':
+        this.Tone.Transport.bpm.rampTo(msg.bpm, 0.1);
+        break;
+    }
+  }
+
+  /**
+   * Start het afspelen synchroon over alle verbonden apparaten (alleen door Host aan te roepen)
+   */
+  startPlayback(bpm = null) {
+    if (!this.isHost) return;
+  
+    if (this.Tone.Transport.bpm.value != bpm)
+      this.Tone.Transport.bpm.value = bpm;
+    
+    // Plan de start 0.5 seconde in de toekomst zodat het bericht de peers op tijd bereikt
+    const targetAudioTime = this.Tone.now() + 0.5;
+    this.Tone.Transport.start(targetAudioTime);
+
+    if (this.dataChannel && this.dataChannel.readyState === 'open') {
+      this.dataChannel.send(JSON.stringify({
+        type: 'START',
+        bpm: bpm,
+        audioTime: targetAudioTime
+      }));
+    }
+  }
+
+  stopPlayback() {
+    if (!this.isHost) return;
+    this.Tone.Transport.stop();
+    if (this.dataChannel && this.dataChannel.readyState === 'open') {
+      this.dataChannel.send(JSON.stringify({ type: 'STOP' }));
+    }
+  }
+
+  updateBpm(bpm) {
+    if (!this.isHost) return;
+    this.Tone.Transport.bpm.rampTo(bpm, 0.1);
+    if (this.dataChannel && this.dataChannel.readyState === 'open') {
+      this.dataChannel.send(JSON.stringify({ type: 'BPM', bpm }));
+    }
+  }
+}
+
+
+// Initialiseer je sync manager
+const sync = new ToneP2PSync(Tone);
+
+const hostBtn = document.getElementById("host-btn");
+const joinBtn = document.getElementById('join-btn');
+
+// Voor de Host:
+hostBtn.addEventListener('click', async () => {
+  await Tone.start();
+  
+  const qrDataString = await sync.createHost();
+  console.log(qrDataString);
+  
+  var qrcode = new QRCode(document.getElementById("qr-code"), {
+      text: "https://nu.nl",
+      width: 128,
+      height: 128,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+  // Toon qrDataString in een QR-code generator op het scherm van Telefoon A
+  hostBtn.classList.add("active");
+  joinBtn.style.display = "none";
+});
+
+// Voor de Guest:
+joinBtn.addEventListener('click', async () => {
+  await Tone.start();
+  // Open de camera, scan de QR-code van de host en krijg 'scannedOffer'
+  const scannedOffer = "...ABC123"; 
+  const answerString = await sync.joinAsGuest(scannedOffer);
+  // Toon answerString als QR-code op het scherm van Telefoon B, zodat de Host deze kan scannen
+  alert("answer " + answer);
+});
+
+// Zodra Host de QR van de Guest scant via de camera:
+async function onGuestScanned(scannedAnswerFromGuest) {
+    function onScanSuccess(decodedText, decodedResult) {
+      // handle the scanned code as you like, for example:
+      console.log(`Code matched = ${decodedText}`, decodedResult);
+    }
+    
+    function onScanFailure(error) {
+      // handle scan failure, usually better to ignore and keep scanning.
+      // for example:
+      console.warn(`Code scan error = ${error}`);
+    }
+  
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+      "qr-reader",
+      { fps: 10, qrbox: {width: 250, height: 250} },
+      /* verbose= */ false);
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    
+    await sync.handleAnswer(scannedAnswerFromGuest);
+    console.log("Verbonden met gast!");
+}
+
+
+
+
+
     // Play/Stop Controls
     const playBtn = document.getElementById('play-btn');
     const stopBtn = document.getElementById('stop-btn');
@@ -734,7 +983,11 @@ main { margin-top: 0pt; }
     playBtn.addEventListener('click', async () => {
       if (!isPlaying) {
         await initializeAudio();
-        Tone.Transport.start();
+        
+        if (sync.isHost)
+          sync.startPlayback(); 
+        else 
+          Tone.Transport.start();
         isPlaying = true;
         stopBtn.style.display = "flex";
         playBtn.style.display = "none";
@@ -743,7 +996,11 @@ main { margin-top: 0pt; }
     });
 
     stopBtn.addEventListener('click', () => {
-      Tone.Transport.stop();
+      if (!isPlaying) return;
+      if (sync.isHost)
+        sync.stopPlayback(); 
+      else 
+        Tone.Transport.stop();
       isPlaying = false;
       currentStep = 0;
       stopBtn.style.display = "none";
@@ -760,6 +1017,7 @@ main { margin-top: 0pt; }
     async function initializeAudio() {
       if (isAudioStarted) return;
       await Tone.start();
+      toneP2PSync = new ToneP2PSync(Tone);
       isAudioStarted = true;
       document.getElementById('vis-placeholder').style.display = 'none';
     }
@@ -772,6 +1030,9 @@ main { margin-top: 0pt; }
     tempoSlider.addEventListener('input', (e) => {
       const bpm = e.target.value;
       Tone.Transport.bpm.value = bpm;
+      if (sync.isHost) 
+        sync.updateBpm(bpm);
+        
       tempoVal.textContent = bpm;
       displayTempo.textContent = `${bpm} BPM`;
     });
@@ -813,6 +1074,47 @@ main { margin-top: 0pt; }
       swingVal.textContent = `${e.target.value}%`;
     });
 
+    const tabControl = document.getElementById("tab-control");
+    
+    const tabStrip = tabControl.querySelector(".tab-strip")
+    const tabContainer = tabControl.querySelector(".tab-container");
+    console.log("tabctrl", tabContainer.outerHTML)
+    const tabs = tabControl.querySelectorAll(".tab-container .tab");
+    console.log("tabs", tabs);
+    let isFirst = true;
+    tabs.forEach(tab => {
+      let tabButton = document.createElement("button");
+      tabButton.innerText = tab.title;
+      tabButton.className = "px-2 py-1 text-xs font-bold rounded synth-btn text-slate-900";
+      tabStrip.appendChild(tabButton);
+      if (isFirst) {
+        tabButton.classList.add("active-led");
+        tab.classList.add("active-tab");
+        tab.style.display = "block";
+        isFirst = false;
+      }
+      else {
+        tabButton.classList.remove("active-led");
+        tab.classList.remove("active-tab");
+        tab.style.display = "none";
+      }
+      tabButton.addEventListener("click", () => {
+        let activeTabButton = tabStrip.querySelector(".active-led");
+        let activeTab = tabContainer.querySelector(".active-tab")
+        
+        if (activeTab) {
+          if (tab == activeTab) return;
+          activeTab.style.display = "none";
+          activeTab.classList.remove("active-tab");
+          activeTabButton.classList.remove("active-led");
+        }
+        tab.style.display = "block";
+        tab.classList.add("active-tab");
+        tabButton.classList.add('active-led');
+      });
+    });
+
+/*
     const soundTabBtn = document.getElementById('sound-btn');
     const soundTab = document.getElementById('sound-tab');
     const sequencerTabBtn = document.getElementById('sequencer-btn');
@@ -820,7 +1122,7 @@ main { margin-top: 0pt; }
     
     soundTabBtn.addEventListener('click', async () => {
       soundTab.style.display = "block";
-      soundTabBtn.classList.add('active-led');
+soundTabBtn.classList.add('active-led');
       sequencerTab.style.display = "none";
       sequencerTabBtn.classList.remove('active-led');
     });
@@ -832,6 +1134,15 @@ main { margin-top: 0pt; }
       sequencerTabBtn.classList.add('active-led');
     });
     
+    jamTabBtn.addEventListener('click', async () => {
+      soundTab.style.display = "none";
+      soundTabBtn.classList.remove('active-led');
+      sequencerTab.style.display = "none";
+      sequencerTabBtn.classList.remove('active-led');
+      jamTab.style.display = "block";
+      jamTab.classList.add('active-led');
+    });
+  */
     // Preset Selection
     const patternSelect = document.getElementById('pattern-select');
     patternSelect.addEventListener('change', (e) => {
@@ -917,6 +1228,7 @@ main { margin-top: 0pt; }
     }
 
     drawVisualizer();
+
 
   </script>
 </body>
