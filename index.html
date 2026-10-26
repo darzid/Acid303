@@ -8,6 +8,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;800;900&display=swap');
 
@@ -46,9 +47,9 @@ body { font-family: 'Share Tech Mono', monospace; font-size: smaller; }
   box-shadow: 0 0 5px #38bdf8;
 }
 
-    /* Metallic Buttons */
-    .synth-btn {
-      background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
+/* Metallic Buttons */
+.synth-btn {
+background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
       box-shadow: 0 3px 0 #64748b, 0 4px 5px rgba(0,0,0,0.3);
       transition: all 0.05s ease;
     }
@@ -91,12 +92,14 @@ main { margin-top: 0pt; }
 .hint-line div { display: inline-block; }
 #sound-hints { width: 100%; display: inline-block; }
 
-#tab-buttons .synth-btn.active-led {
+.tab-strip .synth-btn.active-led {
      border-top: 3px solid #228ee5;
      background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
    }
    
 #guest-btn { display: none; }
+
+#scanner-view { background: yellow;
   </style>
 </head>
 <body class="flex flex-col justify-between items-center bg-slate-950">
@@ -296,22 +299,21 @@ main { margin-top: 0pt; }
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
       
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-              <button id="host-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
-                <i data-lucide="radio" class="w-4 h-4 fill-emerald-700"></i> START as HOST
+              <button id="invite-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
+                <i data-lucide="radio" class="w-4 h-4 fill-emerald-700"></i> INVITE GUEST
               </button>
               <button id="join-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
-                <i data-lucide="plug-zap" class="w-4 h-4 fill-emerald-700"></i> JOIN as GUEST
+                <i data-lucide="plug-zap" class="w-4 h-4 fill-emerald-700"></i> JOIN HOST
               </button>
-              <div id="qr-code"></div>
-              <div id="qr-reader"></div>
+
+              <div style="margin: 15pt; background: white">
+                <div id="qr-code" style="border: 0pt solid white; padding: 5"></div>
+                <div id="qr-scanner"></div>
+              </div>
+
+
             </div>
           
-          </div>
-
-          <div id="sequencer-hints" class="mt-4 flex text-[11px] text-slate-600 font-semibold gap-2">
-            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Gate = Play Note</div>
-            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-amber-500"></div> Accent = Filter Spike + Louder</div>
-            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-fuchsia-500"></div> Slide = Portamento Glide</div>
           </div>
         </div>
       </div>
@@ -749,230 +751,374 @@ main { margin-top: 0pt; }
       document.getElementById('val-drive').textContent = `${Math.round(val * 100)}%`;
     });
 
-
-class ToneP2PSync {
+class ToneStarNetwork {
   constructor(toneInstance) {
     this.Tone = toneInstance;
-    this.pc = null;
-    this.dataChannel = null;
     this.isHost = false;
-    this.timeOffset = 0; // Verschil in milliseconden tussen apparaten
+
+    // Host state: stores active guest peer connections & data channels
+    // Map<peerId, { pc: RTCPeerConnection, channel: RTCDataChannel }>
+    this.peers = new Map();
+    this.pendingPeerId = null;
+    this.pendingPc = null;
+
+    // Guest state
+    this.guestPc = null;
+    this.guestChannel = null;
+    this.timeOffset = 0; // Difference between Host clock and Guest clock
+
+    // Event listener callbacks
+    this.onPeerConnected = null;
+    this.onPeerDisconnected = null;
+    this.onPadTriggered = null; // (instrument, pitch, velocity, when)
   }
 
+  // ==========================================
+  // HOST METHODS
+  // ==========================================
+
   /**
-   * 1. Wordt aangeroepen op Apparaat A (Host)
-   * Genereert een SDP offer om om te zetten in een QR-code.
+   * Host prepares an invitation token (SDP Offer) for ONE new guest.
+   * Return value is a Base64 string to encode into a QR code.
    */
-  async createHost() {
+  async prepareGuestInvitation() {
     this.isHost = true;
-    this.pc = new RTCPeerConnection({ iceServers: [] }); // P2P lokaal
-    
-    this.dataChannel = this.pc.createDataChannel("tone-sync");
-    this._setupDataChannel();
+    inviteBtn.disabled = true;
+    const peerId = 'peer_' + Math.random().toString(36).substring(2, 9);
+    const pc = new RTCPeerConnection({ iceServers: []});
+   // { urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' },] });
 
-    const offer = await this.pc.createOffer();
-    await this.pc.setLocalDescription(offer);
+    // Use unordered, maxRetransmits: 0 for minimal latency (UDP style)
+    const channel = pc.createDataChannel('jam-sync', {
+      ordered: false,
+      maxRetransmits: 0
+    });
+
+    this.pendingPeerId = peerId;
+    this.pendingPc = pc;
+    this._attachChannelEvents(channel, peerId);
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
 
     return new Promise((resolve) => {
-      // Wacht tot ICE candidates verzameld zijn voor een complete QR-code
-      this.pc.onicecandidate = (event) => {
-        if (!event.candidate) {
-          resolve(btoa(JSON.stringify(this.pc.localDescription)));
+      pc.onicecandidate = (e) => {
+        if (!e.candidate) {
+          const payload = {
+            peerId: peerId,
+            sdp: pc.localDescription
+          };
+          resolve(btoa(JSON.stringify(payload)));
         }
       };
     });
   }
 
   /**
-   * 2. Wordt aangeroepen op Apparaat B (Guest) die de QR van de Host scant
+   * Host scans the Answer QR code generated by the guest.
    */
-  async joinAsGuest(encodedOffer) {
+  async acceptGuestAnswer(encodedAnswer) {
+    const { peerId, sdp } = JSON.parse(atob(encodedAnswer));
+    if (peerId !== this.pendingPeerId || !this.pendingPc) {
+      throw new Error('Mismatched peer handshake session.');
+    }
+
+    await this.pendingPc.setRemoteDescription(new RTCSessionDescription(sdp));
+    this.pendingPeerId = null;
+    this.pendingPc = null;
+  }
+
+  // ==========================================
+  // GUEST METHODS
+  // ==========================================
+
+  /**
+   * Guest scans the Host's QR code (SDP Offer) and generates an SDP Answer string.
+   */
+  async joinHost(encodedOffer) {
     this.isHost = false;
-    this.pc = new RTCPeerConnection({ iceServers: [] });
+    const { peerId, sdp } = JSON.parse(atob(encodedOffer));
 
-    this.pc.ondatachannel = (event) => {
-      this.dataChannel = event.channel;
-      this._setupDataChannel();
+    this.guestPc = new RTCPeerConnection({ iceServers: [] });
+
+    this.guestPc.ondatachannel = (event) => {
+      this.guestChannel = event.channel;
+      this._attachChannelEvents(this.guestChannel, 'HOST');
     };
 
-    const offer = JSON.parse(atob(encodedOffer));
-    await this.pc.setRemoteDescription(offer);
-
-    const answer = await this.pc.createAnswer();
-    await this.pc.setLocalDescription(answer);
+    await this.guestPc.setRemoteDescription(new RTCSessionDescription(sdp));
+    const answer = await this.guestPc.createAnswer();
+    await this.guestPc.setLocalDescription(answer);
 
     return new Promise((resolve) => {
-      this.pc.onicecandidate = (event) => {
-        if (!event.candidate) {
-          resolve(btoa(JSON.stringify(this.pc.localDescription)));
+      this.guestPc.onicecandidate = (e) => {
+        if (!e.candidate) {
+          const payload = {
+            peerId: peerId,
+            sdp: this.guestPc.localDescription
+          };
+          resolve(btoa(JSON.stringify(payload)));
         }
       };
     });
   }
 
-  /**
-   * 3. Host verwerkt het antwoord van de Guest (tweede QR-code scannen)
-   */
-  async handleAnswer(encodedAnswer) {
-    const answer = JSON.parse(atob(encodedAnswer));
-    await this.pc.setRemoteDescription(answer);
-  }
+  // ==========================================
+  // MESSAGING & RELAY LOGIC
+  // ==========================================
 
-  _setupDataChannel() {
-    this.dataChannel.onopen = () => {
-      console.log("P2P Verbinding geopend!");
-      this._syncClock();
+  _attachChannelEvents(channel, peerId) {
+    channel.onopen = () => {
+      if (this.isHost) {
+        this.peers.set(peerId, { pc: this.pendingPc, channel: channel });
+        if (this.onPeerConnected) this.onPeerConnected(peerId);
+        
+        // Immediately sync Tone.Transport status to the newly connected guest
+        this._sendTo(channel, {
+          type: 'TRANSPORT_STATE',
+          state: this.Tone.Transport.state,
+          bpm: this.Tone.Transport.bpm.value,
+          seconds: this.Tone.Transport.seconds,
+          hostAudioTime: this.Tone.now()
+        });
+
+        // Start ping routine for clock synchronization
+        this._measureClockOffset(channel);
+      } else {
+        if (this.onPeerConnected) this.onPeerConnected('HOST');
+      }
     };
 
-    this.dataChannel.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      this._handleMessage(msg);
+    channel.onclose = () => {
+      if (this.isHost) {
+        this.peers.delete(peerId);
+        if (this.onPeerDisconnected) this.onPeerDisconnected(peerId);
+      }
+    };
+
+    channel.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      this._routeMessage(msg, peerId);
     };
   }
 
-  // Simpele klok-synchronisatie (Ping-Pong voor latency-meting)
-  _syncClock() {
-    if (!this.isHost) return;
-    const start = performance.now();
-    this.dataChannel.send(JSON.stringify({ type: 'PING', clientTime: start }));
-  }
-
-  _handleMessage(msg) {
+  _routeMessage(msg, senderId) {
     switch (msg.type) {
       case 'PING':
-        this.dataChannel.send(JSON.stringify({
-          type: 'PONG',
-          clientTime: msg.clientTime,
-          serverTime: performance.now()
-        }));
+        if (this.guestChannel) {
+          this._sendTo(this.guestChannel, {
+            type: 'PONG',
+            clientSendTime: msg.clientSendTime,
+            hostReceiveTime: performance.now()
+          });
+        }
         break;
 
       case 'PONG':
-        const now = performance.now();
-        const rtt = now - msg.clientTime;
-        const remoteTime = msg.serverTime + (rtt / 2);
-        this.timeOffset = remoteTime - now;
-        console.log(`Klok gesynchroniseerd. Offset: ${this.timeOffset.toFixed(2)}ms (RTT: ${rtt.toFixed(2)}ms)`);
+        if (this.isHost) {
+          const now = performance.now();
+          const rtt = now - msg.clientSendTime;
+          // One-way transit time estimate: rtt / 2
+          const guestTimeEstimate = msg.hostReceiveTime + (rtt / 2);
+          const offset = guestTimeEstimate - now;
+          
+          const peer = this.peers.get(senderId);
+          if (peer) peer.timeOffset = offset;
+        }
         break;
 
-      case 'START':
-        // Ontvangen door guest: start Tone.Transport op exact afgesproken tijd
+      case 'TRANSPORT_STATE':
+        // Guest adopts Host's tempo and playback state
         this.Tone.Transport.bpm.value = msg.bpm;
-        this.Tone.Transport.start(msg.audioTime);
+        if (msg.state === 'started') {
+          // Compensate start position with network drift
+          const elapsedSinceHostEvent = this.Tone.now() - msg.hostAudioTime;
+          this.Tone.Transport.seconds = msg.seconds + Math.max(0, elapsedSinceHostEvent);
+          this.Tone.Transport.start();
+        } else {
+          this.Tone.Transport.stop();
+          this.Tone.Transport.seconds = msg.seconds;
+        }
         break;
 
-      case 'STOP':
-        this.Tone.Transport.stop();
-        break;
+      case 'PAD_PLAY':
+        // 1. Trigger local synthesizer/sampler
+        if (this.onPadTriggered) {
+          this.onPadTriggered(msg.instrument, msg.note, msg.velocity, msg.scheduledTime);
+        }
 
-      case 'BPM':
-        this.Tone.Transport.bpm.rampTo(msg.bpm, 0.1);
+        // 2. If Host received this from Guest, relay to ALL other guests
+        if (this.isHost) {
+          for (const [id, peer] of this.peers.entries()) {
+            if (id !== senderId && peer.channel.readyState === 'open') {
+              this._sendTo(peer.channel, msg);
+            }
+          }
+        }
         break;
+    }
+  }
+
+  _measureClockOffset(channel) {
+    this._sendTo(channel, {
+      type: 'PING',
+      clientSendTime: performance.now()
+    });
+  }
+
+  _sendTo(channel, obj) {
+    if (channel && channel.readyState === 'open') {
+      channel.send(JSON.stringify(obj));
+    }
+  }
+
+  // ==========================================
+  // PLAYBACK & QUANTIZED LIVE PERFORMANCE
+  // ==========================================
+
+  /**
+   * Host-only: Starts or stops all connected devices simultaneously.
+   */
+  startTransport(bpm = 120) {
+    if (!this.isHost) return;
+    this.Tone.Transport.bpm.value = bpm;
+    
+    // Schedule 150ms in the future so guests receive packet before playback starts
+    const futureStartTime = this.Tone.now() + 0.15;
+    this.Tone.Transport.start(futureStartTime);
+
+    for (const peer of this.peers.values()) {
+      this._sendTo(peer.channel, {
+        type: 'TRANSPORT_STATE',
+        state: 'started',
+        bpm: bpm,
+        seconds: 0,
+        hostAudioTime: futureStartTime
+      });
+    }
+  }
+
+  stopTransport() {
+    if (!this.isHost) return;
+    this.Tone.Transport.stop();
+    for (const peer of this.peers.values()) {
+      this._sendTo(peer.channel, {
+        type: 'TRANSPORT_STATE',
+        state: 'stopped',
+        bpm: this.Tone.Transport.bpm.value,
+        seconds: 0,
+        hostAudioTime: this.Tone.now()
+      });
     }
   }
 
   /**
-   * Start het afspelen synchroon over alle verbonden apparaten (alleen door Host aan te roepen)
+   * Triggers a drum pad or 303 note with gentle quantization.
+   * Can be called by Host OR Guest.
+   *
+   * @param {string} instrument - '303', 'kick', 'snare', 'hihat'
+   * @param {string} note - e.g. 'C2', 'G2'
+   * @param {number} velocity - 0.0 to 1.0
+   * @param {number} snapStrength - 0.0 (no snap) to 1.0 (hard snap). Default 0.65 (gentle)
    */
-  startPlayback(bpm = null) {
-    if (!this.isHost) return;
-  
-    if (this.Tone.Transport.bpm.value != bpm)
-      this.Tone.Transport.bpm.value = bpm;
+  triggerPad(instrument, note = 'C2', velocity = 0.8, snapStrength = 0.65) {
+    const now = this.Tone.now();
+    const bpm = this.Tone.Transport.bpm.value;
     
-    // Plan de start 0.5 seconde in de toekomst zodat het bericht de peers op tijd bereikt
-    const targetAudioTime = this.Tone.now() + 0.5;
-    this.Tone.Transport.start(targetAudioTime);
+    // Duration of a 16th note subdivision
+    const sixteenthDuration = (60 / bpm) / 4;
+    
+    // Position within the current 16th note interval
+    const remainder = now % sixteenthDuration;
+    let deltaToNearestGrid = (remainder > sixteenthDuration / 2) 
+      ? (sixteenthDuration - remainder) 
+      : -remainder;
 
-    if (this.dataChannel && this.dataChannel.readyState === 'open') {
-      this.dataChannel.send(JSON.stringify({
-        type: 'START',
-        bpm: bpm,
-        audioTime: targetAudioTime
-      }));
+    // Apply gentle snap factor: pull the note closer to the 16th grid
+    // If it falls slightly early/late, we shift it by snapStrength percentage
+    let scheduledTime = now + (deltaToNearestGrid * snapStrength);
+
+    // AudioContext can never schedule in the past
+    if (scheduledTime < now) scheduledTime = now;
+
+    // 1. Play on this device immediately at the scheduled time
+    if (this.onPadTriggered) {
+      this.onPadTriggered(instrument, note, velocity, scheduledTime);
     }
-  }
 
-  stopPlayback() {
-    if (!this.isHost) return;
-    this.Tone.Transport.stop();
-    if (this.dataChannel && this.dataChannel.readyState === 'open') {
-      this.dataChannel.send(JSON.stringify({ type: 'STOP' }));
-    }
-  }
+    // 2. Broadcast to network
+    const payload = {
+      type: 'PAD_PLAY',
+      instrument,
+      note,
+      velocity,
+      scheduledTime
+    };
 
-  updateBpm(bpm) {
-    if (!this.isHost) return;
-    this.Tone.Transport.bpm.rampTo(bpm, 0.1);
-    if (this.dataChannel && this.dataChannel.readyState === 'open') {
-      this.dataChannel.send(JSON.stringify({ type: 'BPM', bpm }));
+    if (this.isHost) {
+      // Host relays to all connected guests
+      for (const peer of this.peers.values()) {
+        this._sendTo(peer.channel, payload);
+      }
+    } else if (this.guestChannel) {
+      // Guest sends to Host (who will relay to other guests)
+      this._sendTo(this.guestChannel, payload);
     }
   }
 }
 
-
 // Initialiseer je sync manager
-const sync = new ToneP2PSync(Tone);
+const sync = new ToneStarNetwork(Tone);
 
-const hostBtn = document.getElementById("host-btn");
+const inviteBtn = document.getElementById("invite-btn");
 const joinBtn = document.getElementById('join-btn');
 
-// Voor de Host:
-hostBtn.addEventListener('click', async () => {
-  await Tone.start();
-  
-  const qrDataString = await sync.createHost();
-  console.log(qrDataString);
-  
-  var qrcode = new QRCode(document.getElementById("qr-code"), {
-      text: "https://nu.nl",
-      width: 128,
-      height: 128,
-      colorDark: "#000000",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H
-    });
 
+function displayQrCode(message) {
+  document.getElementById('qr-code').innerHTML = '';
+  new QRCode(document.getElementById('qr-code'), {
+    text: message,
+    width: 256,
+    height: 256,
+    correctLevel: QRCode.CorrectLevel.L
+  });
+}
+
+async function scanQrCode(callback) {
+  // Open camera on Host to scan Phone 2's answer right after
+  const scanner = new Html5Qrcode("qr-scanner");
+  scanner.start(
+    { facingMode: "environment" }, 
+    { fps: 10 }, 
+    async (answerString) => {
+      await callback(answerString);
+      await scanner.stop();
+    }
+  );
+}
+
+// Voor de Host:
+inviteBtn.addEventListener('click', async () => {
+  await Tone.start();
+  const offerString = await sync.prepareGuestInvitation();
+  displayQrCode(offerString);
+  await scanQrCode((answerString) => net.acceptGuestAnswer(answerString));
+  
   // Toon qrDataString in een QR-code generator op het scherm van Telefoon A
-  hostBtn.classList.add("active");
+  inviteBtn.classList.add("active");
   joinBtn.style.display = "none";
 });
 
-// Voor de Guest:
+// Guest scans Host's QR and displays an Answer QR
 joinBtn.addEventListener('click', async () => {
   await Tone.start();
-  // Open de camera, scan de QR-code van de host en krijg 'scannedOffer'
-  const scannedOffer = "...ABC123"; 
-  const answerString = await sync.joinAsGuest(scannedOffer);
-  // Toon answerString als QR-code op het scherm van Telefoon B, zodat de Host deze kan scannen
-  alert("answer " + answer);
-});
-
-// Zodra Host de QR van de Guest scant via de camera:
-async function onGuestScanned(scannedAnswerFromGuest) {
-    function onScanSuccess(decodedText, decodedResult) {
-      // handle the scanned code as you like, for example:
-      console.log(`Code matched = ${decodedText}`, decodedResult);
-    }
-    
-    function onScanFailure(error) {
-      // handle scan failure, usually better to ignore and keep scanning.
-      // for example:
-      console.warn(`Code scan error = ${error}`);
-    }
   
-    let html5QrcodeScanner = new Html5QrcodeScanner(
-      "qr-reader",
-      { fps: 10, qrbox: {width: 250, height: 250} },
-      /* verbose= */ false);
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-    
-    await sync.handleAnswer(scannedAnswerFromGuest);
-    console.log("Verbonden met gast!");
-}
-
-
-
+  joinBtn.classList.add("active");
+  inviteBtn.style.display = "none";
+  
+  let answerString = await scanQrCode((offerString) => net.joinHost(offerString));
+  displayQrCode(answerString);
+});
 
 
     // Play/Stop Controls
@@ -985,7 +1131,7 @@ async function onGuestScanned(scannedAnswerFromGuest) {
         await initializeAudio();
         
         if (sync.isHost)
-          sync.startPlayback(); 
+          sync.startTransport(); 
         else 
           Tone.Transport.start();
         isPlaying = true;
@@ -998,7 +1144,7 @@ async function onGuestScanned(scannedAnswerFromGuest) {
     stopBtn.addEventListener('click', () => {
       if (!isPlaying) return;
       if (sync.isHost)
-        sync.stopPlayback(); 
+        sync.stopTransport(); 
       else 
         Tone.Transport.stop();
       isPlaying = false;
