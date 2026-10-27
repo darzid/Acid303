@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="JamConnect.js"></script>
+	<script src="connect-13.js"></script>
+	<style>
+		body { background: black; }
+		textarea { width: stretch; height: 200px; }
+	</style>
+</head>
+
+<body>
+	<div class="connect">
+	  <div>
+	  	<button id="invite-btn">INVITE</button>
+	  	Invite code:<input type="text" id="invite-code" disabled="true" style="display: none"></div>
+	  	
+	  	<button id="join-btn" style="display: none">SCAN INVITE</button>
+	  	Accept code:<input id="invite-accepted-code" style="display: none">
+	  	
+	    <button id="accept-btn" style="display: none">SCAN ACCEPT</button>
+	    
+	  	<button id="host-play-btn" style="display: none">PLAY</button>
+	  	<button id="guest-play-btn" disabled="true" style="display: none">PLAY</button>
+	  </div>
+	  <textarea id="log"></textarea>
+   </div>
+  </div>
+<script>
+const inviteBtn = document.getElementById("invite-btn");
+const joinBtn = document.getElementById('join-btn');
+const acceptBtn = document.getElementById('accept-btn');
+const hostPlayBtn = document.getElementById('host-play-btn');
+const guestPlayBtn = document.getElementById('guest-play-btn');
+
+const inviteCodeInput = document.getElementById('invite-code');
+const inviteAcceptedCodeInput = document.getElementById('invite-accepted-code');
+
+const log = document.getElementById('log');
+
+const syncHost = new JamConnect(Tone);
+const syncGuest = new JamConnect(Tone);
+
+// Voor de Host:
+inviteBtn.addEventListener('click', async () => {
+  inviteBtn.disabled = true;
+	
+  await Tone.start();
+  
+  const inviteCode = await syncHost.prepareGuestInvitation();
+  log.innerHTML += "Host displays invite QR code\r\n";
+  inviteCodeInput.value = inviteCode;
+  inviteCodeInput.style.display = "block";
+  
+  joinBtn.style.display = "block";
+});
+
+// Guest scans Host's QR and displays an Answer QR
+joinBtn.addEventListener('click', async () => {
+  joinBtn.disabled = true;
+  
+  await Tone.start();
+  
+	Tone.Transport.on("start", () => guestPlayBtn.innerText = "PLAYING");
+	Tone.Transport.on("stop", () => guestPlayBtn.innerText = "STOPPED");
+
+  log.innerHTML += "Guest accepts invite and generates Accept QR code\r\n";
+  let answerString = await syncGuest.joinHost(inviteCodeInput.value);
+  inviteAcceptedCodeInput.value = answerString;
+  inviteAcceptedCodeInput.style.display = "block";
+  
+  acceptBtn.style.display = "block";
+});
+
+acceptBtn.addEventListener('click', async () => {
+  acceptBtn.disabled = true;
+  log.innerHTML += "Host scans accepted invite\r\n";
+  await syncHost.acceptGuestAnswer(inviteAcceptedCodeInput.value);
+  log.innerHTML += "Guest added\r\n";
+  
+  hostPlayBtn.style.display = "block";
+  guestPlayBtn.style.display = "block";
+  
+});
+
+hostPlayBtn.addEventListener('click', async () => {
+	if (hostPlayBtn.innerText == "PLAY") {
+		hostPlayBtn.innerText = "STOP";
+		syncHost.startTransport(130);
+	} else {
+		hostPlayBtn.innerText = "PLAY";
+		syncHost.stopTransport();
+	}
+});
+
+type JamConnectUserRoles = {
+	Host = "Host",
+	Guest = "Guest"
+}
+
+type JamConnectActions = {
+	InviteJamGuest = "InviteJamGuest",
+	JoinJamSession = "JoinJamSession",
+	StartJamTransport = "StartJamTransport",
+	StopJamTransport = "StopJamTransport"
+}
+
+class JamConnectViewModel {
+	constructor(toneInstance, qrScannerElementId, qrCodeDisplayElementId) {
+		this._tone = toneInstance;
+		this._jamConnect = new JamConnect(this.tone);
+		this._qrScannerElementId = qrScannerElementId;
+		this._qrCodeDisplayElementId = qrCodeDisplayElementId;
+		this._userRole = null;
+		
+		this._actions = [
+			new InviteJamGuestViewModel(this),
+			new JoinJamSessionViewModel(this),
+			new StartJamTransportViewModel(this),
+			new StopJamTransportViewModel(this)
+		];
+	}
+	
+	get tone() { return this._tone; }
+	get jamConnect() { return this._jamConnect; }
+	
+	get userRole() { return this._userRole; }
+	
+	get actions() { return this._actions; }
+	get activeActions() { return this.actions.filter(a => a.isRunning); }
+	
+	getAction(name) { return this.actions.find(p => p.name == name); }
+	
+	canInviteGuest() {
+		const action = this.getAction(JamConnectActions.InviteJamGuest);
+		return action.canStart;
+	}
+	async inviteGuest() {
+		const action = this.getAction(JamConnectActions.InviteJamGuest);
+		await action.execute();
+	}
+	
+	canJoinSession() {
+		const action = this.getAction(JamConnectActions.JoinJamSession);
+		return action.canStart;
+	}
+	async joinSession() {
+		const action = this.getAction(JamConnectActions.JoinJamSession);
+		await action.execute();
+	}
+	
+	canStartTransport() {
+		const action = this.getAction(JamConnectActions.StartJamTransport);
+		return action.canStart;
+	}
+	async startTransport() {
+		const action = this.getAction(JamConnectActions.StartJamTransport);
+		await action.execute();
+	}
+	
+	canStopTransport() {
+		const action = this.getAction(JamConnectActions.StopJamTransport);
+		return action.canStart;
+	}
+	async stopTransport() {
+		const action = this.getAction(JamConnectActions.StopJamTransport);
+		await action.execute();
+	}
+	
+	async scanQrCode(qrCodeScannedCallback) {
+	  // Open camera on Host to scan Phone 2's answer right after
+	  const scanner = new Html5Qrcode(this._qrScannerElementId);
+	  scanner.start(
+	    { facingMode: "environment" }, 
+	    { fps: 10 }, 
+	    async (inviteMessage) => {
+	      return await qrCodeScannedCallback(message);
+	      await scanner.stop();
+	    }
+	  );
+	}
+	
+	displayQrCode(message) {
+		const qrCodeDisplayElement = document.getElementById(this._qrCodeDisplayElementId);
+	  qrCodeDisplayElement.innerHTML = '';
+	  new QRCode(qrCodeDisplayElement, {
+	    text: message,
+	    width: 256,
+	    height: 256,
+	    correctLevel: QRCode.CorrectLevel.L
+	  });
+	}
+}
+
+class ActionViewModel {
+	constructor(jamConnectViewModel, name) {
+		this._jamConnectViewModel = jamConnectViewModel;
+		this._name = name;
+		this._isRunning = false;
+	}
+	
+	get jamConnectViewModel() { return this._jamConnectViewModel; }
+	get name() { return this._name; }
+	get canStart() { 
+		const [canStart, reason] = this.canActionStart();
+		return canStart;
+	}
+	get isRunning() { return this._isRunning; }
+	
+	canActionStart() { 
+		if (this.isRunning) 
+			return [false, "Invite process is already running"];
+		
+		const startPreventionReason = this._getStartPreventionReason();
+		if (startPreventionReason)
+			return [false, startPreventionReason]; 
+		
+		return [true, ""];
+	}
+	
+	async execute() {
+		const [canStart, reason] = this.canStart();
+		if (!canStart) throw reason;
+		this._isRunning = true;
+		this._executeAction();
+		this._isRunning = false;
+	}
+	
+	_getStartPreventionReason() {
+	}
+}
+
+class InviteJamGuestViewModel extends ActionViewModel {
+	constructor(jamConnectViewModel) {
+		super(jamConnectViewModel, JamConnectAction.InviteJamGuest);
+	}
+	
+	async _executeAction() {
+		const inviteMessage = await this.jamConnectViewModel.jamConnect.prepareGuestInvitation();
+		this.jamConnectViewModel.displayQrCode(inviteMessage);
+		await this.jamConnectViewModel.scanQrCode((inviteAcceptedMessage) => {
+			this.jamConnectViewModel.jamConnect.acceptGuestAnswer(inviteAcceptedMessage);
+		});
+	}
+	
+	_getStartPreventionReason() {
+		if (this.jamConnectViewModel.userRole == JamConnectUserRole.Guest)
+			return "Guests cannot start a new session";
+	}
+}
+
+class JoinJamSessionViewModel extends ActionViewModel {
+	constructor(jamConnectViewModel, qrScannerElementId, qrCodeDisplayElementId) {
+		super(jamConnectViewModel, JamConnectAction.JoinJamSession);
+		this._qrScannerElementId = qrScannerElementId;
+		this._qrCodeDisplayElementId = qrCodeDisplayElementId;
+	}
+	
+	async _executeAction() {
+		await this.jamConnectViewModel.scanQrCode((inviteMessage) => {
+			const inviteAcceptedMessage = this.jamConnectViewModel.jamConnect.joinHost(inviteMessage);
+			this.jamConnectViewModel.displayQrCode(inviteAcceptedMessage);
+		});
+	}
+	
+	_getStartPreventionReason() { 
+		if (this.jamConnectViewModel.userRole == JamConnectUserRole.Host)
+			return "Hosts cannot join an existing session";
+	}
+}
+
+class StartJamTransportViewModel extends ActionViewModel {
+	constructor(jamConnectViewModel) {
+		super(jamConnectViewModel, JamConnectAction.StartJamTransport);
+	}
+	
+	async _executeAction() {
+		jamConnectViewModel.jamConnect.startTransport(130);
+	}
+}
+
+class StopJamTransportViewModel extends ActionViewModel {
+	constructor(jamConnectViewModel) {
+		super(jamConnectViewModel, JamConnectAction.StartJamTransport);
+	}
+	
+	async _executeAction() {
+		jamConnectViewModel.jamConnect.stopTransport();
+	}
+	
+	_getStartPreventionReason() { 
+		if (this.jamConnectViewModel.userRole == JamConnectUserRole.Guest)
+			return "Guests cannot start";
+			
+	}
+}
+}
+</script>
+</body>
+
+</html>
