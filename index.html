@@ -780,7 +780,7 @@ main { margin-top: 0pt; }
     stopBtn.style.display = "none";
 
 		function onStateChanged(state) {
-		  console.log("onStateChanged4", state)
+		  console.log("onStateChanged5", state)
     	inviteBtn.disabled = !state.canInvite || state.isInviting;
     	inviteBtn.classList.toggle("active", state.isInviting);
     	joinBtn.style.display = state.isInviting ? "none" : "block";
@@ -789,8 +789,9 @@ main { margin-top: 0pt; }
     	playBtn.disabled = !state.canStart || state.isPlaying;
     	playBtn.classList.toggle("active", state.isPlaying);
     	stopBtn.disabled = !state.canStop;
-    	tempoVal.textContent = state.bpm;
-      displayTempo.textContent = `${state.bpm} BPM`;
+    	
+    	tempoVal.textContent = parseInt(state.bpm);
+      displayTempo.textContent = `${parseInt(state.bpm)} BPM`;
     }
 
     async function initializeAudio() {
