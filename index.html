@@ -2,18 +2,18 @@
 <html lang="en" class="h-full bg-slate-950 text-slate-100">
 <head>
   <meta charset="UTF-8">
-
-  <title>TB-303 Acid Synthesizer & Sequencer</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JAM303 Acid Synthesizer & Sequencer</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;800;900&display=swap');
 
-body, html { width: 100%; height: 100%; }
-body { font-family: 'Share Tech Mono', monospace; font-size: smaller; }
+body, html { width: 100%; height: 100%; font-size: large; }
+body { font-family: 'Share Tech Mono', monospace; }
 .font-synth { font-family: 'Orbitron', sans-serif; }
 
 /* Custom Brushed Aluminum Background */
@@ -678,7 +678,7 @@ main { margin-top: 0pt; }
     
       onPointerDown(e) {
         if (e.target.closest(".knob-container") != this.knob) {
-          console.log("Other target", e.target.closest(".knob-container"))
+          //console.log("Other target", e.target.closest(".knob-container"))
           return;
         }
         this.isDragging = true;
@@ -1225,9 +1225,9 @@ joinBtn.addEventListener('click', async () => {
     
     const tabStrip = tabControl.querySelector(".tab-strip")
     const tabContainer = tabControl.querySelector(".tab-container");
-    console.log("tabctrl", tabContainer.outerHTML)
+  
     const tabs = tabControl.querySelectorAll(".tab-container .tab");
-    console.log("tabs", tabs);
+    
     let isFirst = true;
     tabs.forEach(tab => {
       let tabButton = document.createElement("button");
