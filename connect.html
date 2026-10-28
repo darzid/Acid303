@@ -47,12 +47,12 @@ function onStateChanged(state) {
 	stopBtn.disabled = !state.canStop;
 }
 
-const vm = new JamConnectClient(document.getElementById("jamconnect"), onStateChanged);
+const jcClient = new JamConnectClient(document.getElementById("jamconnect"), onStateChanged);
 
-inviteBtn.addEventListener('click', async () => await vm.invite());
-joinBtn.addEventListener('click', async () => await vm.join());
-playBtn.addEventListener('click', async () => await vm.startTransport());
-stopBtn.addEventListener('click', async () => await vm.stopTransport());
+inviteBtn.addEventListener('click', async () => await jcClient.invite());
+joinBtn.addEventListener('click', async () => await jcClient.join());
+playBtn.addEventListener('click', async () => await jcClient.startTransport());
+stopBtn.addEventListener('click', async () => await jcClient.stopTransport());
 
 Tone.Transport.on("start", () => {
 	playBtn.innerText = "PLAYING";

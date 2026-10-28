@@ -422,43 +422,29 @@ class JamConnectClient {
 		await action.execute();
 	}
 	
-	async scanQrCode(qrCodeScannedCallback) {
-	  // Open camera on Host to scan Phone 2's answer right after
-	  const scanner = new Html5Qrcode(this._qrScannerElementId);
-	  const qrCodeScannerElement = document.getElementById(this._qrScannerElementId);
-	  qrCodeScannerElement.style.display = "block";
-	  scanner.start(
-	    { facingMode: "environment" }, 
-	    { fps: 10 },
-	    async (inviteMessage) => {
-	      await qrCodeScannedCallback(message);
-	      await scanner.stop();
-	    }
-	  );
-	}
-	
-	async scanQrCode(qrCodeScannedCallback) {
+  async scanQrCode(qrCodeScannedCallback) {
     const scanner = new Html5Qrcode(this._qrScannerElementId);
     const qrCodeScannerElement = document.getElementById(this._qrScannerElementId);
     qrCodeScannerElement.style.display = "block";
   
-    // 1. Camera constraints met resolutie en focusMode
-    const cameraConfig = {
-      facingMode: "environment",
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-      advanced: [
-        { focusMode: "continuous" }
-      ]
-    };
+    // 1. Eerste argument: EXACT 1 key
+    const cameraConfig = { facingMode: "environment" };
   
-    // 2. Scanner configuratie met visuele qrbox
+    // 2. Tweede argument: scan config + videoConstraints voor resolutie & focus
     const scanConfig = {
       fps: 15,
       qrbox: (viewfinderWidth, viewfinderHeight) => {
         const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
         const edge = Math.floor(minEdge * 0.7);
         return { width: edge, height: edge };
+      },
+      videoConstraints: {
+        facingMode: "environment",
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        advanced: [
+          { focusMode: "continuous" }
+        ]
       }
     };
   
@@ -466,18 +452,49 @@ class JamConnectClient {
       cameraConfig,
       scanConfig,
       async (inviteMessage) => {
-        // Let op: parameter heet inviteMessage
         await qrCodeScannedCallback(inviteMessage);
         await scanner.stop();
       },
       (errorMessage) => {
-        // Optionele frame-parse foutmeldingen negeren
-        console.warn("Scan error", errorMessage);
+        // Optionele frame parse errors negeren
       }
     );
   
-    // 3. Forceer focus & zoom na het starten (voor browsers die initial constraints negeren)
+    // 3. Optioneel: focus & zoom forceren via de stream track
     await this._applyCameraCapabilities(this._qrScannerElementId);
+  }
+
+  async _applyCameraCapabilities(elementId) {
+    const video = document.querySelector(`#${elementId} video`);
+    if (!video || !video.srcObject) return;
+  
+    const [track] = video.srcObject.getVideoTracks();
+    if (!track || typeof track.getCapabilities !== "function") return;
+  
+    const capabilities = track.getCapabilities();
+    const constraintsToApply = {};
+  
+    // Continue autofocus forceren (vooral Android Chrome)
+    if (capabilities.focusMode && capabilities.focusMode.includes("continuous")) {
+      constraintsToApply.focusMode = "continuous";
+    }
+  
+    // Lichte zoom toepassen als macro-scherpstellen faalt
+    // Veel moderne telefoons kunnen niet dichtbij focussen; 1.5x zoom lost dit op
+    if (capabilities.zoom && capabilities.zoom.min !== undefined) {
+      const targetZoom = Math.min(1.5, capabilities.zoom.max);
+      if (targetZoom > capabilities.zoom.min) {
+        constraintsToApply.zoom = targetZoom;
+      }
+    }
+  
+    if (Object.keys(constraintsToApply).length > 0) {
+      try {
+        await track.applyConstraints({ advanced: [constraintsToApply] });
+      } catch (err) {
+        console.warn("Kon geavanceerde camera constraints niet toepassen:", err);
+      }
+    }
   }
 
 	hideQrScanner() {
@@ -589,7 +606,12 @@ class StartJamTransportAction extends JamAction {
 	}
 	
 	async _executeAction() {
-		this.client.connector.startTransport(130);
+	  if (!this.client.userRole) {
+	    Tone.Transport.start();
+	    console.log("Local start");
+	  }
+	  else
+		  this.client.connector.startTransport();
 		this.client._isPlaying = true;
 	}
 	
@@ -605,7 +627,10 @@ class StopJamTransportAction extends JamAction {
 	}
 	
 	async _executeAction() {
-		this.client.connector.stopTransport();
+	  if (!this.client.userRole)
+	    Tone.Transport.stop();
+	  else
+		  this.client.connector.stopTransport();
 		this.client._isPlaying = false;
 	}
 	
