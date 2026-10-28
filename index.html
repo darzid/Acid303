@@ -141,7 +141,7 @@ main { margin-top: 0pt; }
   
   <!-- Main Synthesizer Box -->
   <main class="redbox w-full max-w-6xl brushed-metal rounded-2xl p-2 sm:p-8 border-2 border-slate-400 text-slate-900 shadow-2xl relative my-auto">
-    <div id="transport-bar" class="flex flex-wrap items-center justify-between gap-4 bg-slate-400/40 p-3 rounded-xl border border-slate-400/80 mb-2">
+    <div id="transport-bar" class="flex flex-wrap items-center justify-between gap-1 bg-slate-400/40 p-1 rounded-xl border border-slate-400/80 mb-2">
       
       <button id="play-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
         <i data-lucide="play" class="w-4 h-4 fill-emerald-700"></i> PLAY
@@ -780,7 +780,7 @@ main { margin-top: 0pt; }
     stopBtn.style.display = "none";
 
 		function onStateChanged(state) {
-		  console.log("onStateChanged5", state)
+		  console.log("onStateChanged6", state)
     	inviteBtn.disabled = !state.canInvite || state.isInviting;
     	inviteBtn.classList.toggle("active", state.isInviting);
     	joinBtn.style.display = state.isInviting ? "none" : "block";
