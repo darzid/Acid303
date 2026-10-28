@@ -47,7 +47,8 @@ function onStateChanged(state) {
 	stopBtn.disabled = !state.canStop;
 }
 
-const jcClient = new JamConnectClient(document.getElementById("jamconnect"), onStateChanged);
+const jcClient = new JamConnectClient(document.getElementById("jamconnect"));
+jcClient.onStateChanged = onStateChanged;
 
 inviteBtn.addEventListener('click', async () => await jcClient.invite());
 joinBtn.addEventListener('click', async () => await jcClient.join());

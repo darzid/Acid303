@@ -182,7 +182,7 @@ class JamConnector {
           const elapsedSinceHostEvent = this.Tone.now() - msg.hostAudioTime;
           this.Tone.Transport.seconds = msg.seconds + Math.max(0, elapsedSinceHostEvent);
           this.Tone.Transport.start();
-        } else {
+        } else if (msg.state === 'stopped') {
           this.Tone.Transport.stop();
           this.Tone.Transport.seconds = msg.seconds;
         }
@@ -252,6 +252,20 @@ class JamConnector {
       this._sendTo(peer.channel, {
         type: 'TRANSPORT_STATE',
         state: 'stopped',
+        bpm: this.Tone.Transport.bpm.value,
+        seconds: 0,
+        hostAudioTime: this.Tone.now()
+      });
+    }
+  }
+  
+  updateBpm(bpm) {
+    if (!this.isHost) return;
+    this.Tone.Transport.bpm.value = bpm;
+    for (const peer of this.peers.values()) {
+      this._sendTo(peer.channel, {
+        type: 'TRANSPORT_STATE',
+        state: 'bpmchanged',
         bpm: this.Tone.Transport.bpm.value,
         seconds: 0,
         hostAudioTime: this.Tone.now()
@@ -364,6 +378,17 @@ class JamConnectClient {
 	get userRole() { return this._userRole; }
 	get isPlaying() { return this._isPlaying; }
 	get bpm() { return Tone.Transport.bpm.value; }
+	set bpm(value) {
+	  if (!this.userRole) {
+	    Tone.Transport.bpm.value = value;
+	    console.log("Local bpm change")
+	  }
+	  else if (!this.canChangeBpm) 
+	    return;
+	  else
+	    this.connector.updateBpm(value);
+	  this.stateChanged();
+	}
 	get actions() { return this._actions; }
 	get activeActions() { return this.actions.filter(a => a.isRunning); }
 	
