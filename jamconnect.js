@@ -346,9 +346,9 @@ class JamConnectClient {
 		this._connector = new JamConnector(this.tone);
 		this._parentElement = parentElement;
 		this._parentElement.innerHTML = `
-    		<div id="jamconnect-qr-code" style="display: none; margin: 10pt; margin-bottom: 30pt;"></div>
+    		<div id="jamconnect-qr-code" style="display: none; margin: 10pt; margin-bottom: 10pt;"></div>
         <br>
-        <div id="jamconnect-qr-scanner" style="display: none; width: 80%; margin: 10pt;"></div>`;
+        <div id="jamconnect-qr-scanner" style="display: none; min-width: 260px; margin: 10pt;"></div>`;
     this._qrCodeDisplayElementId = "jamconnect-qr-code";
 		this._qrScannerElementId= "jamconnect-qr-scanner";
 		this._userRole = null;
