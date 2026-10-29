@@ -456,7 +456,7 @@
     stopBtn.style.display = "none";
 
 		function onStateChanged(state) {
-		  console.log("onStateChanged19", state)
+		  console.log("onStateChanged09", state)
     	inviteBtn.disabled = !state.canInvite || state.isInviting;
     	inviteBtn.classList.toggle("active", state.isInviting);
     	joinBtn.style.display = state.isInviting ? "none" : "block";
