@@ -4,33 +4,14 @@ lucide.createIcons();
 /* =========================================================================
    1. SYNTH ENGINE, DRUM JAM VOICES & SOUND ARCHITECTURE (Tone.js)
    ========================================================================= */
-const jcClient = new JamConnectClient(document.getElementById("jamconnect"), JamConnectClientTypes.Instrument);
+const jcClient = new JamConnectClient(document.getElementById("jamconnect"));
 jcClient.onStateChanged = onStateChanged;
 
 let isAudioStarted = false;
 let currentStep = 0;
 let isApplyingRemoteUpdate = false;
 
-///
-/// MASTER AUDIO
-///
-
-// Ping Pong Delay Unit
-const delay = new Tone.PingPongDelay({
-  delayTime: "8n.",
-  feedback: 0.3,
-  wet: 0.25
-});
-
-// Audio Visualizer Analyser
-const waveAnalyser = new Tone.Waveform(128);
-const visualizer = new Visualizer(waveAnalyser, "visualizer-canvas");
-
-
-///
-/// 303
-///
-
+// Comment
 // Default 303 Sound Parameters & Normalized Knob Values (0..1)
 const knobValues = {
   cutoff: 0.4,
@@ -84,131 +65,55 @@ const distortion = new Tone.Distortion({
   wet: 0.6
 });
 
+// Ping Pong Delay Unit
+const delay = new Tone.PingPongDelay({
+  delayTime: "8n.",
+  feedback: 0.3,
+  wet: 0.25
+});
+
+// Audio Visualizer Analyser
+const waveAnalyser = new Tone.Waveform(128);
+const visualizer = new Visualizer(waveAnalyser, "visualizer-canvas");
 
 // Chain 303 Audio Routing
 tb303.chain(distortion, delay, waveAnalyser, Tone.Destination);
 
-
-///
-/// DRUMS
-///
-
 // Synthesized 909-style Drum Voices for Live Jam Pads
-const DRUMS = {
-  kickDrum: new Tone.MembraneSynth({
-    pitchDecay: 0.04,
-    octaves: 6,
-    oscillator: { type: 'sine' },
-    envelope: { attack: 0.001, decay: 0.35, sustain: 0.01, release: 0.2 }
-  }).connect(waveAnalyser),
-  
-  snareDrum: new Tone.NoiseSynth({
-    noise: { type: 'white' },
-    envelope: { attack: 0.001, decay: 0.18, sustain: 0 }
-  }).connect(waveAnalyser),
-  
-  hihatDrum: new Tone.MetalSynth({
-    frequency: 320,
-    envelope: { attack: 0.001, decay: 0.07, release: 0.02 },
-    harmonicity: 5.1,
-    modulationIndex: 32,
-    resonance: 4000,
-    octaves: 1.5
-  }).connect(waveAnalyser),
-  
-  clapDrum: new Tone.NoiseSynth({
-    noise: { type: 'pink' },
-    envelope: { attack: 0.003, decay: 0.14, sustain: 0 }
-  }).connect(delay)
-}
-DRUMS.hihatDrum.volume.value = -8;
+const kickDrum = new Tone.MembraneSynth({
+  pitchDecay: 0.04,
+  octaves: 6,
+  oscillator: { type: 'sine' },
+  envelope: { attack: 0.001, decay: 0.35, sustain: 0.01, release: 0.2 }
+}).connect(waveAnalyser);
 
-const SEQUENCER_CONSTANTS = {
-  NOTES: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
-  PRESETS: {
-    phuture: [
-      { note: 'C', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'C', octave: 3, gate: true, accent: false, slide: true },
-      { note: 'C', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'D#', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'C', octave: 2, gate: false, accent: false, slide: false },
-      { note: 'F', octave: 2, gate: true, accent: false, slide: true },
-      { note: 'G', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'A#', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'C', octave: 3, gate: true, accent: true, slide: true },
-      { note: 'C', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'D#', octave: 3, gate: true, accent: true, slide: false },
-      { note: 'C', octave: 2, gate: false, accent: false, slide: false },
-      { note: 'F', octave: 2, gate: true, accent: false, slide: true },
-      { note: 'G', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'A#', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'G#', octave: 2, gate: true, accent: true, slide: false }
-    ],
-    higher: [
-      { note: 'C', octave: 1, gate: true, accent: true, slide: false },
-      { note: 'C', octave: 1, gate: true, accent: false, slide: false },
-      { note: 'C', octave: 2, gate: true, accent: true, slide: true },
-      { note: 'C', octave: 1, gate: true, accent: false, slide: false },
-      { note: 'C', octave: 1, gate: true, accent: true, slide: false },
-      { note: 'D#', octave: 2, gate: true, accent: false, slide: true },
-      { note: 'C', octave: 1, gate: true, accent: false, slide: false },
-      { note: 'G', octave: 1, gate: true, accent: true, slide: false },
-      { note: 'C', octave: 1, gate: true, accent: true, slide: false },
-      { note: 'C', octave: 2, gate: true, accent: false, slide: true },
-      { note: 'A#', octave: 1, gate: true, accent: true, slide: false },
-      { note: 'G#', octave: 1, gate: true, accent: false, slide: false },
-      { note: 'G', octave: 1, gate: true, accent: true, slide: true },
-      { note: 'F', octave: 1, gate: true, accent: false, slide: false },
-      { note: 'D#', octave: 1, gate: true, accent: true, slide: false },
-      { note: 'D', octave: 1, gate: true, accent: false, slide: false }
-    ],
-    dafunk: [
-      { note: 'G', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'G', octave: 2, gate: false, accent: false, slide: false },
-      { note: 'A#', octave: 2, gate: true, accent: false, slide: true },
-      { note: 'C', octave: 3, gate: true, accent: true, slide: false },
-      { note: 'G', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'F', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'G', octave: 2, gate: false, accent: false, slide: false },
-      { note: 'D#', octave: 2, gate: true, accent: false, slide: true },
-      { note: 'F', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'D', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'C', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'A#', octave: 1, gate: true, accent: false, slide: false },
-      { note: 'C', octave: 2, gate: true, accent: true, slide: true },
-      { note: 'D#', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'F', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'G', octave: 2, gate: true, accent: false, slide: false }
-    ],
-    hypnotic: [
-      { note: 'E', octave: 2, gate: true, accent: true, slide: true },
-      { note: 'E', octave: 3, gate: true, accent: false, slide: false },
-      { note: 'E', octave: 2, gate: true, accent: false, slide: true },
-      { note: 'G', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'E', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'A', octave: 2, gate: true, accent: true, slide: true },
-      { note: 'B', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'D', octave: 3, gate: true, accent: true, slide: false },
-      { note: 'E', octave: 2, gate: true, accent: false, slide: true },
-      { note: 'E', octave: 3, gate: true, accent: true, slide: false },
-      { note: 'D', octave: 3, gate: true, accent: false, slide: true },
-      { note: 'B', octave: 2, gate: true, accent: true, slide: false },
-      { note: 'A', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'G', octave: 2, gate: true, accent: true, slide: true },
-      { note: 'F#', octave: 2, gate: true, accent: false, slide: false },
-      { note: 'D', octave: 2, gate: true, accent: false, slide: false }
-    ]
-  }
-}
+const snareDrum = new Tone.NoiseSynth({
+  noise: { type: 'white' },
+  envelope: { attack: 0.001, decay: 0.18, sustain: 0 }
+}).connect(waveAnalyser);
+
+const hihatDrum = new Tone.MetalSynth({
+  frequency: 320,
+  envelope: { attack: 0.001, decay: 0.07, release: 0.02 },
+  harmonicity: 5.1,
+  modulationIndex: 32,
+  resonance: 4000,
+  octaves: 1.5
+}).connect(waveAnalyser);
+hihatDrum.volume.value = -8;
+
+const clapDrum = new Tone.NoiseSynth({
+  noise: { type: 'pink' },
+  envelope: { attack: 0.003, decay: 0.14, sustain: 0 }
+}).connect(delay);
 
 /* =========================================================================
    2. PATTERNS & SEQUENCER STATE
    ========================================================================= */
 
-//const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 // Preset Acid Patterns
-/*
 const PRESETS = {
   phuture: [
     { note: 'C', octave: 2, gate: true, accent: true, slide: false },
@@ -283,10 +188,9 @@ const PRESETS = {
     { note: 'D', octave: 2, gate: true, accent: false, slide: false }
   ]
 };
-*/
 
 // Current Active Pattern State
-let pattern = JSON.parse(JSON.stringify(SEQUENCER_CONSTANTS.PRESETS.phuture));
+let pattern = JSON.parse(JSON.stringify(PRESETS.phuture));
 
 /* =========================================================================
    3. RENDER SEQUENCER UI GRID
@@ -342,7 +246,7 @@ function renderGrid() {
     const noteSelect = document.createElement('select');
     noteSelect.id = `select-note-${i}`;
     noteSelect.className = 'w-full bg-slate-950 text-emerald-400 text-[10px] font-mono border border-slate-700 rounded p-0.5 outline-none cursor-pointer focus:border-emerald-500';
-    SEQUENCER_CONSTANTS.NOTES.forEach(n => {
+    NOTES.forEach(n => {
       const opt = document.createElement('option');
       opt.value = n;
       opt.textContent = n;
@@ -449,9 +353,6 @@ function updateSingleStepUI(i, stepData) {
 }
 
 renderGrid();
-
-
-
 
 /* =========================================================================
    4. AUDIO SEQUENCER LOOP & ACCENT/SLIDE SYNTHESIS LOGIC
@@ -652,6 +553,8 @@ stopBtn.addEventListener('click', async () => {
   await jcClient.stopTransport();
 });
 
+stopBtn.style.display = "none";
+
 function syncTransportUI(isPlaying) {
   if (isPlaying) {
     stopBtn.style.display = "flex";
@@ -730,9 +633,6 @@ function applyWaveform(type, silentNetwork = false) {
 waveSaw.addEventListener('click', () => applyWaveform('sawtooth', false));
 waveSqr.addEventListener('click', () => applyWaveform('square', false));
 
-
-
-
 delayToggle.addEventListener('change', (e) => {
   delay.wet.value = e.target.checked ? 0.25 : 0;
   if (!isApplyingRemoteUpdate) {
@@ -750,9 +650,6 @@ swingSlider.addEventListener('input', (e) => {
   }
 });
 
-
-
-/// SEQUENCER
 patternSelect.addEventListener('change', (e) => {
   const val = e.target.value;
   if (val === 'random') {
@@ -760,8 +657,8 @@ patternSelect.addEventListener('change', (e) => {
   } else {
     if (val === 'clear') {
       pattern = Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, accent: false, slide: false }));
-    } else if (SEQUENCER_CONSTANTS.PRESETS[val]) {
-      pattern = JSON.parse(JSON.stringify(SEQUENCER_CONSTANTS.PRESETS[val]));
+    } else if (PRESETS[val]) {
+      pattern = JSON.parse(JSON.stringify(PRESETS[val]));
     }
     drawGrid();
     renderGrid();
@@ -788,9 +685,6 @@ function randomizePattern() {
 }
 
 randomizeBtn.addEventListener('click', randomizePattern);
-
-
-
 
 /* =========================================================================
    7. WEBRTC JAM CALLBACKS, LIVE JAM PADS & WEB MIDI API INTEGRATION
@@ -903,16 +797,16 @@ jcClient.connector.onPadTriggered = (instrument, note, velocity = 0.85, schedule
   const playAt = Math.max(Tone.now(), scheduledTime || Tone.now());
   switch (instrument) {
     case 'kick':
-      DRUMS.kickDrum.triggerAttackRelease(note || 'C1', '8n', playAt, velocity);
+      kickDrum.triggerAttackRelease(note || 'C1', '8n', playAt, velocity);
       break;
     case 'snare':
-      DRUMS.snareDrum.triggerAttackRelease('16n', playAt, velocity);
+      snareDrum.triggerAttackRelease('16n', playAt, velocity);
       break;
     case 'hihat':
-      DRUMS.hihatDrum.triggerAttackRelease('32n', playAt, velocity);
+      hihatDrum.triggerAttackRelease('32n', playAt, velocity);
       break;
     case 'clap':
-      DRUMS.clapDrum.triggerAttackRelease('16n', playAt, velocity);
+      clapDrum.triggerAttackRelease('16n', playAt, velocity);
       break;
     case '303-accent':
       play303StepNote(note || 'C3', { accent: true, slide: !!extra.slide, duration: '16n' }, playAt);
@@ -937,9 +831,6 @@ document.querySelectorAll('.jam-pad').forEach((padBtn) => {
   });
 });
 
-
-
-
 // Web MIDI API Controller Support (Hardware MIDI Input + Network MIDI Sync)
 const midiSelect = document.getElementById('midi-input-select');
 const midiDot = document.getElementById('midi-dot');
@@ -947,7 +838,7 @@ let activeMidiInput = null;
 
 function midiNoteToName(midiNumber) {
   const octave = Math.floor(midiNumber / 12) - 1;
-  const noteName = SEQUENCER_CONSTANTS.NOTES[midiNumber % 12];
+  const noteName = NOTES[midiNumber % 12];
   return `${noteName}${Math.max(1, Math.min(4, octave))}`;
 }
 
@@ -1025,10 +916,6 @@ async function initWebMidi() {
 }
 
 initWebMidi();
-
-
-
-
 
 // Auto-Join Jam Session when opening a shared Invite URL (?session=303-XXXX&token=YYYY)
 window.addEventListener('DOMContentLoaded', () => {

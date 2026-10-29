@@ -3,7 +3,7 @@
  * Uses PeerJS signaling server (with custom signaling server option) so QR codes and
  * invite links only carry a compact Session ID + Auth Key Token.
  */
-
+//
 const DEFAULT_ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
@@ -12,15 +12,23 @@ const DEFAULT_ICE_SERVERS = [
 
 const PEER_PREFIX = 'acid303-jam-';
 
-const JamConnectClientTypes = {
-  Instrument: "Instrument",
-  Modulator: "Modulator"
+function generateRandomCode(length = 6, alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ') {
+  const bytes = new Uint8Array(length);
+  if (window.crypto && window.crypto.getRandomValues) {
+    window.crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  let out = '';
+  for (let i = 0; i < length; i++) {
+    out += alphabet[bytes[i] % alphabet.length];
+  }
+  return out;
 }
 
 class JamConnector {
-  constructor(toneInstance, clientType, options = {}) {
+  constructor(toneInstance, options = {}) {
     this.Tone = toneInstance;
-    this.clientType = clientType;
     this.isHost = false;
     this.signalConfig = options.signalConfig || {}; // Optional custom PeerJS host/port/path
 
@@ -143,8 +151,8 @@ class JamConnector {
     this.disconnect();
     this.isHost = true;
 
-    this.sessionId = existingSessionId || `303-${JamConnector.generateRandomCode(4)}`;
-    this.authToken = existingAuthToken || JamConnector.generateRandomCode(8, '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz');
+    this.sessionId = existingSessionId || `303-${generateRandomCode(4)}`;
+    this.authToken = existingAuthToken || generateRandomCode(8, '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz');
     const fullPeerId = `${PEER_PREFIX}${this.sessionId}`;
 
     this._emitConnectionState('connecting', 'Registering session on signaling server...');
@@ -222,7 +230,7 @@ class JamConnector {
   }
 
   _handleIncomingGuestConnection(conn) {
-    const peerId = conn.peer || ('guest_' + JamConnector.generateRandomCode(4));
+    const peerId = conn.peer || ('guest_' + generateRandomCode(4));
     const metaToken = conn.metadata && conn.metadata.authToken;
     const guestName = (conn.metadata && conn.metadata.name) || `Jammer-${peerId.slice(-4)}`;
 
@@ -342,7 +350,7 @@ class JamConnector {
     this.authToken = parsed.authToken;
 
     const targetHostPeerId = `${PEER_PREFIX}${this.sessionId}`;
-    const myGuestId = `${PEER_PREFIX}guest-${JamConnector.generateRandomCode(5)}`;
+    const myGuestId = `${PEER_PREFIX}guest-${generateRandomCode(5)}`;
 
     this._emitConnectionState('connecting', `Joining session ${this.sessionId}...`);
 
@@ -903,20 +911,6 @@ class JamConnector {
       extra
     });
   }
-  
-  static generateRandomCode(length = 6, alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ') {
-    const bytes = new Uint8Array(length);
-    if (window.crypto && window.crypto.getRandomValues) {
-      window.crypto.getRandomValues(bytes);
-    } else {
-      for (let i = 0; i < length; i++) bytes[i] = Math.floor(Math.random() * 256);
-    }
-    let out = '';
-    for (let i = 0; i < length; i++) {
-      out += alphabet[bytes[i] % alphabet.length];
-    }
-    return out;
-  }
 }
 
 const JamConnectUserRoles = {
@@ -932,13 +926,12 @@ const JamConnectActions = {
 };
 
 class JamConnectClient {
-  constructor(parentElement, clientType) {
+  constructor(parentElement) {
     this._tone = Tone;
-    this._connector = new JamConnector(this._tone, clientType);
+    this._connector = new JamConnector(this._tone);
     this._parentElement = parentElement;
     this._userRole = null;
     this._isPlaying = false;
-    this._qrCodeManager = new QrCodeManager("jamconnect-qr-scanner", "jamconnect-qr-code");
     this._scanner = null;
     this._isScannerRunning = false;
 
@@ -968,8 +961,6 @@ class JamConnectClient {
   get tone() { return this._tone; }
   get connector() { return this._connector; }
   get userRole() { return this._userRole; }
-  get clientType() { return this.connector.clientType; }
-  
   get isPlaying() { return this._isPlaying; }
   get bpm() { return Tone.Transport.bpm.value; }
   set bpm(value) {
@@ -1001,6 +992,8 @@ class JamConnectClient {
 
   _renderJamUI() {
     if (!this._parentElement) return;
+    this._qrCodeDisplayElementId = "jamconnect-qr-code";
+    this._qrScannerElementId = "jamconnect-qr-scanner";
 
     this._parentElement.innerHTML = `
       <div class="w-full flex flex-col gap-3 mt-2 text-slate-100">
@@ -1219,7 +1212,7 @@ class JamConnectClient {
           scanToggleBtn.textContent = 'SCAN QR';
         } else {
           scanToggleBtn.textContent = 'STOP CAM';
-          await this._qrCodeManager.scanQrCode(async (scannedText) => {
+          await this.scanQrCode(async (scannedText) => {
             scanToggleBtn.textContent = 'SCAN QR';
             const parsed = JamConnector.parseInviteInput(scannedText);
             if (parsed) {
@@ -1351,11 +1344,95 @@ class JamConnectClient {
   }
 
   async startTransport() {
-    await this.getAction(JamConnectActions.StartJamTransport).execute();
+    const action = this.getAction(JamConnectActions.StartJamTransport);
+    await action.execute();
   }
 
   async stopTransport() {
-    await this.getAction(JamConnectActions.StopJamTransport).execute();
+    const action = this.getAction(JamConnectActions.StopJamTransport);
+    await action.execute();
+  }
+
+  async scanQrCode(qrCodeScannedCallback) {
+    await this.stopScanner();
+    const qrCodeScannerElement = document.getElementById(this._qrScannerElementId);
+    if (!qrCodeScannerElement || typeof Html5Qrcode === 'undefined') return;
+    qrCodeScannerElement.style.display = "block";
+
+    const scanner = new Html5Qrcode(this._qrScannerElementId);
+    this._scanner = scanner;
+    this._isScannerRunning = true;
+
+    const cameraConfig = { facingMode: "environment" };
+    const scanConfig = {
+      fps: 15,
+      qrbox: (viewfinderWidth, viewfinderHeight) => {
+        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+        const edge = Math.floor(minEdge * 0.75);
+        return { width: edge, height: edge };
+      }
+    };
+
+    try {
+      await scanner.start(
+        cameraConfig,
+        scanConfig,
+        async (inviteMessage) => {
+          await this.stopScanner();
+          if (qrCodeScannedCallback) {
+            await qrCodeScannedCallback(inviteMessage);
+          }
+        },
+        () => {}
+      );
+    } catch (err) {
+      this._isScannerRunning = false;
+      qrCodeScannerElement.style.display = "none";
+      const errEl = document.getElementById('jam-join-error');
+      if (errEl) {
+        errEl.textContent = 'Camera unavailable. Paste the Invite Link or Session ID + Token below.';
+        errEl.style.display = 'block';
+      }
+    }
+  }
+
+  async stopScanner() {
+    if (this._scanner && this._isScannerRunning) {
+      try {
+        await this._scanner.stop();
+        await this._scanner.clear();
+      } catch (_) {}
+    }
+    this._scanner = null;
+    this._isScannerRunning = false;
+    this.hideQrScanner();
+  }
+
+  hideQrScanner() {
+    const qrCodeScannerElement = document.getElementById(this._qrScannerElementId);
+    if (qrCodeScannerElement) qrCodeScannerElement.style.display = "none";
+  }
+
+  displayQrCode(message) {
+    const qrCodeDisplayElement = document.getElementById(this._qrCodeDisplayElementId);
+    if (!qrCodeDisplayElement || typeof QRCode === 'undefined') return;
+    qrCodeDisplayElement.innerHTML = '';
+    new QRCode(qrCodeDisplayElement, {
+      text: message,
+      width: 180,
+      height: 180,
+      colorDark: "#0f172a",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    qrCodeDisplayElement.style.display = "flex";
+  }
+
+  hideQrCode() {
+    const qrCodeDisplayElement = document.getElementById(this._qrCodeDisplayElementId);
+    if (qrCodeDisplayElement) {
+      qrCodeDisplayElement.style.display = "none";
+    }
   }
 }
 
@@ -1424,7 +1501,7 @@ class InviteJamGuestAction extends JamAction {
     if (urlInput) urlInput.value = inviteUrl;
 
     // QR code now embeds ONLY the short session URL (~70 chars instead of 2500+ chars SDP!)
-    this.client._qrCodeManager.displayQrCode(inviteUrl);
+    this.client.displayQrCode(inviteUrl);
   }
 
   _getStartPreventionReason() {
@@ -1463,6 +1540,7 @@ class StartJamTransportAction extends JamAction {
     } else {
       this.client.connector.startTransport(this.client.bpm);
     }
+    this.client._isPlaying = true;
   }
 
   _getStartPreventionReason() {
@@ -1484,6 +1562,7 @@ class StopJamTransportAction extends JamAction {
     } else {
       this.client.connector.stopTransport();
     }
+    this.client._isPlaying = false;
   }
 
   _getStartPreventionReason() {
@@ -1491,96 +1570,5 @@ class StopJamTransportAction extends JamAction {
       return "Host has locked transport control";
     }
     if (!this.client.isPlaying) return "Not running";
-  }
-}
-
-class QrCodeManager {
-  constructor(qrScannerElementId, qrCodeDisplayElementId) {
-    this._qrScannerElementId = qrScannerElementId;
-    this._qrCodeDisplayElementId = qrCodeDisplayElementId;
-    this._scanner = null;
-    this._isScannerRunning = false;
-  }
-  
-  async scanQrCode(qrScannerElementId, qrCodeScannedCallback) {
-    await this.stopScanner();
-    const qrCodeScannerElement = document.getElementById(this._qrScannerElementId);
-    if (!qrCodeScannerElement || typeof Html5Qrcode === 'undefined') return;
-    qrCodeScannerElement.style.display = "block";
-
-    const scanner = new Html5Qrcode(this._qrScannerElementId);
-    this._scanner = scanner;
-    this._isScannerRunning = true;
-
-    const cameraConfig = { facingMode: "environment" };
-    const scanConfig = {
-      fps: 15,
-      qrbox: (viewfinderWidth, viewfinderHeight) => {
-        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-        const edge = Math.floor(minEdge * 0.75);
-        return { width: edge, height: edge };
-      }
-    };
-
-    try {
-      await scanner.start(
-        cameraConfig,
-        scanConfig,
-        async (message) => {
-          await this.stopScanner();
-          if (qrCodeScannedCallback) {
-            await qrCodeScannedCallback(message);
-          }
-        },
-        () => {}
-      );
-    } catch (err) {
-      this._isScannerRunning = false;
-      qrCodeScannerElement.style.display = "none";
-      const errEl = document.getElementById('jam-join-error');
-      if (errEl) {
-        errEl.textContent = 'Camera unavailable. Paste the Invite Link or Session ID + Token below.';
-        errEl.style.display = 'block';
-      }
-    }
-  }
-
-  async stopScanner() {
-    if (this._scanner && this._isScannerRunning) {
-      try {
-        await this._scanner.stop();
-        await this._scanner.clear();
-      } catch (_) {}
-    }
-    this._scanner = null;
-    this._isScannerRunning = false;
-    this.hideQrScanner();
-  }
-
-  hideQrScanner() {
-    const qrCodeScannerElement = document.getElementById(this._qrScannerElementId);
-    if (qrCodeScannerElement) qrCodeScannerElement.style.display = "none";
-  }
-
-  displayQrCode(message) {
-    const qrCodeDisplayElement = document.getElementById(this._qrCodeDisplayElementId);
-    if (!qrCodeDisplayElement || typeof QRCode === 'undefined') return;
-    qrCodeDisplayElement.innerHTML = '';
-    new QRCode(qrCodeDisplayElement, {
-      text: message,
-      width: 180,
-      height: 180,
-      colorDark: "#0f172a",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.M
-    });
-    qrCodeDisplayElement.style.display = "flex";
-  }
-
-  hideQrCode() {
-    const qrCodeDisplayElement = document.getElementById(this._qrCodeDisplayElementId);
-    if (qrCodeDisplayElement) {
-      qrCodeDisplayElement.style.display = "none";
-    }
   }
 }
