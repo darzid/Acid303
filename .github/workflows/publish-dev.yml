@@ -27,8 +27,8 @@ jobs:
       - name: Copy dev files (standalone bubble, no main code)
         run: |
           mkdir -p _site/dev
-          cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js styles.css tabcontrol.js visualizer.js _site/
-          cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js styles.css tabcontrol.js visualizer.js _site/dev/
+          mkdir -p _site/dev/images
+          cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js server.js styles.css tabcontrol.js visualizer.js images/copy.png images/share.png _site/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
