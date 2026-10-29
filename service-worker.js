@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Jam303';
+const CACHE_NAME = 'Jam303-dev-v1';
 const ASSETS = [
   './',
   './app.js',
@@ -13,8 +13,6 @@ const ASSETS = [
   './visualizer.js'
 ];
 
-
-//blablablablabla555ggggggggg
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
@@ -36,17 +34,14 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  // Network-first for dev bubble so updates are always fresh and never mixed with main cache
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(event.request).then((response) => {
+    fetch(event.request)
+      .then((response) => {
         const responseClone = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         return response;
-      }).catch(() => {
-        return caches.match('./jamconnect-demo.html');
-      });
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });

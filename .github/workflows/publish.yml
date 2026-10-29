@@ -13,8 +13,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: pages-main
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -23,8 +23,6 @@ jobs:
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
         
       - name: Version Increment
         uses: reecetech/version-increment@2026.8.4
@@ -35,7 +33,7 @@ jobs:
   
       - name: Copy files
         run: |
-          mkdir -p _site/dev
+          mkdir _site
           cp app.js _site
           cp connect.html _site
           cp favicon.ico _site
@@ -46,9 +44,6 @@ jobs:
           cp styles.css _site
           cp tabcontrol.js _site
           cp visualizer.js _site
-          if git rev-parse --verify origin/dev >/dev/null 2>&1; then
-            git archive origin/dev app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js styles.css tabcontrol.js visualizer.js | tar -x -C _site/dev/
-          fi
           
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

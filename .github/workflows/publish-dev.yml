@@ -13,8 +13,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: pages-dev
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -23,14 +23,12 @@ jobs:
     steps:
       - name: Checkout dev branch
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Build main at root and dev branch at /dev
+      - name: Copy dev files (standalone bubble, no main code)
         run: |
           mkdir -p _site/dev
+          cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js styles.css tabcontrol.js visualizer.js _site/
           cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js styles.css tabcontrol.js visualizer.js _site/dev/
-          git archive origin/main app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js styles.css tabcontrol.js visualizer.js | tar -x -C _site/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
@@ -46,6 +44,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}dev/
 
     steps:
-      - name: Deploy Dev branch to GitHub Pages (/dev/)
+      - name: Deploy Dev to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
