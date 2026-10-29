@@ -50,8 +50,8 @@ class JamConnector {
     this.permissions = {
       allowGuestTransport: true,
       allowGuestTempo: true,
-      allowGuestPattern: true,
-      allowGuestSynth: true,
+      allowGuestPattern: false,
+      allowGuestSynth: false,
       allowGuestMidi: true
     };
 
@@ -1051,10 +1051,10 @@ class JamConnectClient {
                   <input type="checkbox" id="perm-tempo" checked class="accent-emerald-500 rounded" /> Tempo/Play
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" id="perm-pattern" checked class="accent-emerald-500 rounded" /> 303 Pattern
+                  <input type="checkbox" id="perm-pattern" class="accent-emerald-500 rounded" /> 303 Pattern
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" id="perm-synth" checked class="accent-emerald-500 rounded" /> Synth Knobs
+                  <input type="checkbox" id="perm-synth" class="accent-emerald-500 rounded" /> Synth Knobs
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer">
                   <input type="checkbox" id="perm-midi" checked class="accent-emerald-500 rounded" /> Live MIDI/Pads
