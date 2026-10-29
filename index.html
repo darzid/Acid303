@@ -2,16 +2,16 @@
 <html lang="en" class="h-full bg-slate-950 text-slate-100">
 <head>
   <meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JAM303 Acid Synthesizer & Sequencer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="visualizer.js"></script>
   <script src="jamconnect.js"></script>
-
 
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -28,6 +28,7 @@
           <div class="flex items-center gap-2">
             <div id="play-led" class="w-3 h-3 rounded-full bg-slate-800 border border-slate-700"></div>
             <span class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">SEQ STATUS</span>
+            <span id="jam-badge" class="hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-700">LIVE JAM</span>
           </div>
           <span id="display-tempo" class="led-text text-xl font-bold font-mono">124 BPM</span>
         </div>
@@ -60,12 +61,11 @@
         <i data-lucide="square" class="w-4 h-4 fill-rose-700"></i> STOP
       </button>
       
-      <div id="song-settings">
+      <div id="song-settings" class="flex flex-wrap items-center gap-3">
         <div id="tempo" class="flex items-center gap-2">
           <label class="text-xs font-bold text-slate-800">TEMPO:</label>
           <input type="range" id="tempo-slider" min="60" max="180" value="124" class="w-24 accent-slate-800 cursor-pointer">
-          <span id="tempo-val" class="font-mono text-xs font-bold text-slate-900 w-8">124
-          </span>
+          <span id="tempo-val" class="font-mono text-xs font-bold text-slate-900 w-8">124</span>
         </div>
       
         <div id="swing" class="flex items-center gap-2">
@@ -90,10 +90,8 @@
         <div title="SOUND" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
           
           <div id="waveform-selection" class="items-center gap-1 p-1 text-center">
-            
             <button id="wave-saw" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">SAWTOOTH</button>
             <button id="wave-sqr" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">SQUARE</button>
-            
           </div>
           
           <div id="rotary-knobs" class="lg:col-span-8 grid grid-cols-3 sm:grid-cols-6 gap-2 items-center text-center">
@@ -166,8 +164,9 @@
             
           </div>
           
-          <div id="sound-hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2 text-center items-center">Drag knobs vertically to adjust parameter</div>
-          </div>
+          <div id="sound-hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2 text-center">Drag knobs vertically to adjust parameter (synced live in Jam Sessions)</div>
+        </div>
+
         <div title="SEQUENCER" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
       
@@ -193,12 +192,11 @@
 
           <div id="sequencer-grid" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
             <div class="min-w-[700px]">
-              
               <!-- Step Indicators (LEDs) -->
               <div id="grid" class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
               </div>
             </div>
-      </div>
+          </div>
       
           <div id="sequencer-hints" class="mt-4 flex text-[11px] text-slate-600 font-semibold gap-2">
             <div class="hint-line"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Gate = Play Note</div>
@@ -206,20 +204,82 @@
             <div class="hint-line"><div class="w-2 h-2 rounded-full bg-fuchsia-500"></div> Slide = Portamento Glide</div>
           </div>
         </div>
-        <div title="JAM" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
-      
-            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-              <button id="invite-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
-                <i data-lucide="radio" class="w-4 h-4 fill-emerald-700"></i> INVITE GUEST
-              </button>
-              <button id="join-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
-                <i data-lucide="plug-zap" class="w-4 h-4 fill-emerald-700"></i> JOIN HOST
-              </button>
-              
-              <div id="jamconnect"></div>
+
+        <div title="JAM" class="tab bg-slate-300/60 rounded-xl p-3 border border-slate-400/80 shadow-inner flex flex-col gap-3 mb-2">
+          <div class="flex flex-col w-full gap-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <button id="invite-btn" class="px-4 py-2 synth-btn text-emerald-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white tracking-wide">
+                  <i data-lucide="radio" class="w-4 h-4 fill-emerald-700"></i> HOST JAM SESSION
+                </button>
+                <button id="join-btn" class="px-4 py-2 synth-btn text-emerald-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white tracking-wide">
+                  <i data-lucide="plug-zap" class="w-4 h-4 fill-emerald-700"></i> JOIN SESSION
+                </button>
+              </div>
+
+              <!-- Web MIDI Status & Selector -->
+              <div class="flex items-center gap-2 bg-slate-900 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700">
+                <span id="midi-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span class="text-[10px] font-mono uppercase text-slate-400">MIDI:</span>
+                <select id="midi-input-select" class="bg-slate-950 text-emerald-400 font-mono text-xs px-2 py-0.5 rounded border border-slate-700 outline-none">
+                  <option value="">No MIDI Device</option>
+                </select>
+              </div>
             </div>
-          
+
+            <!-- WebRTC Signaling Session & QR / Link Container -->
+            <div id="jamconnect" class="w-full"></div>
+
+            <!-- Live Quantized Jam Pads & Note Triggers (Synced over WebRTC) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 mt-1 text-slate-100">
+              <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+                <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">LIVE JAM PADS &amp; MIDI TRIGGERS (QUANTIZED SYNC)</span>
+                <div class="flex items-center gap-2 text-xs font-mono">
+                  <label class="text-slate-400">QUANTIZE SNAP:</label>
+                  <select id="jam-snap-select" class="bg-slate-950 text-emerald-400 border border-slate-700 rounded px-2 py-0.5 text-xs">
+                    <option value="0.75">1/16 Tight (75%)</option>
+                    <option value="0.5" selected>1/16 Groove (50%)</option>
+                    <option value="0">Free / Immediate (0%)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Drum + Acid Stabs Row -->
+              <div class="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                <button type="button" data-pad-inst="kick" data-pad-note="C1" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-amber-600/30 active:bg-amber-500 active:text-slate-950 border border-amber-500/50 text-amber-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>KICK</span>
+                  <span class="text-[9px] text-slate-400">909 BD</span>
+                </button>
+                <button type="button" data-pad-inst="snare" data-pad-note="D1" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-rose-600/30 active:bg-rose-500 active:text-slate-950 border border-rose-500/50 text-rose-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>SNARE</span>
+                  <span class="text-[9px] text-slate-400">909 SD</span>
+                </button>
+                <button type="button" data-pad-inst="hihat" data-pad-note="F#1" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-sky-600/30 active:bg-sky-400 active:text-slate-950 border border-sky-500/50 text-sky-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>HI-HAT</span>
+                  <span class="text-[9px] text-slate-400">909 CH</span>
+                </button>
+                <button type="button" data-pad-inst="clap" data-pad-note="E1" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-fuchsia-600/30 active:bg-fuchsia-500 active:text-slate-950 border border-fuchsia-500/50 text-fuchsia-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>CLAP</span>
+                  <span class="text-[9px] text-slate-400">909 CP</span>
+                </button>
+                <button type="button" data-pad-inst="303" data-pad-note="C2" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-emerald-600/30 active:bg-emerald-400 active:text-slate-950 border border-emerald-500/50 text-emerald-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>303 C2</span>
+                  <span class="text-[9px] text-slate-400">BASS</span>
+                </button>
+                <button type="button" data-pad-inst="303" data-pad-note="D#2" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-emerald-600/30 active:bg-emerald-400 active:text-slate-950 border border-emerald-500/50 text-emerald-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>303 D#2</span>
+                  <span class="text-[9px] text-slate-400">MINOR 3RD</span>
+                </button>
+                <button type="button" data-pad-inst="303" data-pad-note="G2" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-emerald-600/30 active:bg-emerald-400 active:text-slate-950 border border-emerald-500/50 text-emerald-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>303 G2</span>
+                  <span class="text-[9px] text-slate-400">FIFTH</span>
+                </button>
+                <button type="button" data-pad-inst="303-accent" data-pad-note="C3" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-emerald-600/30 active:bg-emerald-400 active:text-slate-950 border border-emerald-500/50 text-emerald-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>303 C3!</span>
+                  <span class="text-[9px] text-amber-400">ACCENT</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -228,7 +288,7 @@
   </main>
 
   <footer class="mt-4 text-xs text-slate-600 text-center">
-    TB-303 Web Synthesizer Simulator &bull; Built with Tone.js & Web Audio API
+    TB-303 Web Synthesizer Simulator &bull; Built with Tone.js, PeerJS WebRTC &amp; Web MIDI API
   </footer>
   <script src="tabcontrol.js"></script>
   <script src="app.js"></script>

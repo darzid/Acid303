@@ -1,68 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title></title>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JAM303 Connect Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="jamconnect.js"></script>
-	<style>
-		body { background: black; }
-		textarea { width: stretch; height: 200px; }
-		button.active { box-shadow: 0 1px 0 #64748b, 0 2px 3px rgba(0,0,0,0.3); }
-	</style>
+  <style>
+    body { background: #090d16; color: #f1f5f9; font-family: monospace; padding: 16px; }
+    button.active { box-shadow: 0 1px 0 #64748b, 0 2px 3px rgba(0,0,0,0.3); }
+  </style>
 </head>
 
-<body>
-	<div class="connect">
-	  Test2
-	  <div>
-	  	<button id="invite-btn">INVITE</button>
-	  	<button id="join-btn">JOIN</button>
-	  	
-	  	<button id="play-btn">PLAY</button>
-	  	<button id="stop-btn">STOP</button>
-	  </div>
-	  <input id="invitecode" type="text">
-	  <div id="jamconnect"></div>
-   </div>
+<body class="max-w-2xl mx-auto">
+  <div class="connect flex flex-col gap-3">
+    <h1 class="text-lg font-bold text-emerald-400">JAM303 WebRTC Signaling Test</h1>
+    <div class="flex flex-wrap gap-2">
+      <button id="invite-btn" class="px-4 py-2 bg-emerald-600 text-slate-950 font-bold rounded">HOST SESSION</button>
+      <button id="join-btn" class="px-4 py-2 bg-sky-600 text-slate-950 font-bold rounded">JOIN SESSION</button>
+      <button id="play-btn" class="px-4 py-2 bg-amber-500 text-slate-950 font-bold rounded">PLAY</button>
+      <button id="stop-btn" class="px-4 py-2 bg-rose-600 text-white font-bold rounded">STOP</button>
+    </div>
+    <div id="jamconnect"></div>
   </div>
-  
+
 <script>
 const inviteBtn = document.getElementById("invite-btn");
 const joinBtn = document.getElementById('join-btn');
-
 const playBtn = document.getElementById('play-btn');
 const stopBtn = document.getElementById('stop-btn');
 
 function onStateChanged(state) {
-	inviteBtn.disabled = !state.canInvite;
-	inviteBtn.classList.toggle("active", state.isInviting);
-	joinBtn.disabled = !state.canJoin;
-	joinBtn.classList.toggle("active", state.isJoining);
-	playBtn.disabled = !state.canStart || state.isPlaying;
-	playBtn.classList.toggle("active", state.isPlaying);
-	stopBtn.disabled = !state.canStop;
+  inviteBtn.disabled = !state.canInvite;
+  inviteBtn.classList.toggle("active", state.isInviting);
+  joinBtn.disabled = !state.canJoin;
+  joinBtn.classList.toggle("active", state.isJoining);
+  playBtn.disabled = !state.canStart || state.isPlaying;
+  playBtn.classList.toggle("active", state.isPlaying);
+  stopBtn.disabled = !state.canStop;
 }
 
 const jcClient = new JamConnectClient(document.getElementById("jamconnect"));
 jcClient.onStateChanged = onStateChanged;
 
-inviteBtn.addEventListener('click', async () => await jcClient.invite());
-joinBtn.addEventListener('click', async () => await jcClient.join());
-playBtn.addEventListener('click', async () => await jcClient.startTransport());
+inviteBtn.addEventListener('click', async () => {
+  await Tone.start();
+  await jcClient.invite();
+});
+joinBtn.addEventListener('click', async () => {
+  await Tone.start();
+  await jcClient.join();
+});
+playBtn.addEventListener('click', async () => {
+  await Tone.start();
+  await jcClient.startTransport();
+});
 stopBtn.addEventListener('click', async () => await jcClient.stopTransport());
 
 Tone.Transport.on("start", () => {
-	playBtn.innerText = "PLAYING";
-	stopBtn.innerText = "STOP";
+  playBtn.innerText = "PLAYING";
+  stopBtn.innerText = "STOP";
 });
 Tone.Transport.on("stop", () => {
-	stopBtn.innerText = "STOPPED";
-	playBtn.innerText = "PLAY";
+  stopBtn.innerText = "STOPPED";
+  playBtn.innerText = "PLAY";
 });
 </script>
 </body>
