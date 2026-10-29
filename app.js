@@ -373,6 +373,7 @@ function play303StepNote(noteFreq, { accent = false, slide = false, duration = "
   tb303.triggerAttackRelease(noteFreq, duration, time);
 }
 
+
 // Tone.js Repeat Loop — locked to Transport ticks for multi-peer beat alignment
 Tone.Transport.scheduleRepeat((time) => {
   const sixteenthTicks = Tone.Time("16n").toTicks();
@@ -389,7 +390,9 @@ Tone.Transport.scheduleRepeat((time) => {
         led.className = 'w-3 h-3 rounded-full bg-slate-950 border border-slate-800';
       }
     });
-    document.getElementById('display-step').textContent = `STEP: ${String(stepIdx + 1).padStart(2, '0')}/16`;
+    
+    displayStep.textContent = `STEP: ${String(stepIdx + 1).padStart(2, '0')}/16`;
+    displayStep.classList.toggle("highlight", stepIdx == 0);
   }, time);
 
   if (stepData && stepData.gate) {
@@ -475,24 +478,31 @@ function setupKnob(id, paramKey, onChange) {
   knobsByName[paramKey] = new Knob(id, paramKey, onChange);
 }
 
+const cutoffValue = document.getElementById('val-cutoff');
+const resonanceValue = document.getElementById('val-reso');
+const envModValue = document.getElementById('val-envmod');
+const decayValue = document.getElementById('val-decay');
+const accentValue = document.getElementById('val-accent');
+const driveValue = document.getElementById('val-drive');
+
 setupKnob('knob-cutoff', 'cutoff', (val) => {
   const freq = 100 * Math.pow(80, val);
   params.cutoff = freq;
   tb303.filterEnvelope.baseFrequency = freq;
-  document.getElementById('val-cutoff').textContent = `${Math.round(freq)} Hz`;
+  cutoffValue.textContent = `${Math.round(freq)} Hz`;
 });
 
 setupKnob('knob-reso', 'reso', (val) => {
   const q = 1 + val * 19;
   params.resonance = q;
   tb303.filter.Q.value = q;
-  document.getElementById('val-reso').textContent = q.toFixed(1);
+  resonanceValue.textContent = q.toFixed(1);
 });
 
 setupKnob('knob-envmod', 'envmod', (val) => {
   params.envMod = val;
   tb303.filterEnvelope.octaves = val * 5;
-  document.getElementById('val-envmod').textContent = `${Math.round(val * 100)}%`;
+  envModValue.textContent = `${Math.round(val * 100)}%`;
 });
 
 setupKnob('knob-decay', 'decay', (val) => {
@@ -500,24 +510,25 @@ setupKnob('knob-decay', 'decay', (val) => {
   params.decay = decayTime;
   tb303.envelope.decay = decayTime;
   tb303.filterEnvelope.decay = decayTime;
-  document.getElementById('val-decay').textContent = `${Math.round(decayTime * 1000)}ms`;
+  decayValue.textContent = `${Math.round(decayTime * 1000)}ms`;
 });
 
 setupKnob('knob-accent', 'accent', (val) => {
   params.accent = val;
-  document.getElementById('val-accent').textContent = `${Math.round(val * 100)}%`;
+  accentValue.textContent = `${Math.round(val * 100)}%`;
 });
 
 setupKnob('knob-drive', 'drive', (val) => {
   params.drive = val;
   distortion.distortion = val;
-  document.getElementById('val-drive').textContent = `${Math.round(val * 100)}%`;
+  driveValue.textContent = `${Math.round(val * 100)}%`;
 });
 
 /* =========================================================================
    6. TRANSPORT, TEMPO, WAVEFORM, SWING & PRESET CONTROLS
    ========================================================================= */
-
+const placeholder = document.getElementById('vis-placeholder');
+const displayStep = document.getElementById('display-step');
 const inviteBtn = document.getElementById("invite-btn");
 const joinBtn = document.getElementById('join-btn');
 const playBtn = document.getElementById('play-btn');
@@ -540,7 +551,7 @@ async function initializeAudio() {
   if (isAudioStarted) return;
   await Tone.start();
   isAudioStarted = true;
-  const placeholder = document.getElementById('vis-placeholder');
+  
   if (placeholder) placeholder.style.display = 'none';
 }
 
@@ -568,7 +579,8 @@ function syncTransportUI(isPlaying) {
     document.querySelectorAll('[id^="step-led-"]').forEach(led => {
       led.className = 'w-3 h-3 rounded-full bg-slate-950 border border-slate-800';
     });
-    document.getElementById('display-step').textContent = 'STEP: 01/16';
+    displayStep.textContent = 'STEP: 01/16';
+    displayStep.classList.remove("highlight");
   }
 }
 
@@ -581,11 +593,11 @@ function onStateChanged(state) {
   playBtn.disabled = !state.canStart || state.isPlaying;
   stopBtn.disabled = !state.canStop;
   tempoSlider.disabled = !state.canChangeBpm;
-
+  tempoVal.disabled = !state.canChangeBpm;
   syncTransportUI(state.isPlaying);
 
   const roundedBpm = Math.round(state.bpm);
-  tempoVal.textContent = roundedBpm;
+  tempoVal.value = roundedBpm;
   tempoSlider.value = roundedBpm;
   displayTempo.textContent = `${roundedBpm} BPM`;
 
@@ -611,8 +623,19 @@ joinBtn.addEventListener('click', async () => {
 
 tempoSlider.addEventListener('input', (e) => {
   jcClient.bpm = parseInt(e.target.value, 10);
+  tempoVal.value = e.target.value;
 });
 
+tempoVal.addEventListener('dblclick', (e) => {
+  tempoVal.readOnly = false;
+});
+tempoVal.addEventListener('blur', (e) => {
+  tempoVal.readOnly = true;
+});
+tempoVal.addEventListener('input', (e) => {
+  jcClient.bpm = parseInt(e.target.value, 10);
+  tempoSlider.value = e.target.value;
+});
 function applyWaveform(type, silentNetwork = false) {
   params.waveform = type;
   tb303.oscillator.type = type;
@@ -723,7 +746,7 @@ jcClient.connector.applyFullStateSnapshot = (snapshot) => {
     if (typeof snapshot.bpm === 'number') {
       Tone.Transport.bpm.value = snapshot.bpm;
       tempoSlider.value = snapshot.bpm;
-      tempoVal.textContent = snapshot.bpm;
+      tempoVal.value = snapshot.bpm;
       displayTempo.textContent = `${snapshot.bpm} BPM`;
     }
     if (typeof snapshot.swingPct === 'number') {

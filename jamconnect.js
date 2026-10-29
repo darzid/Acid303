@@ -48,11 +48,11 @@ class JamConnector {
 
     // Sync permissions / flags
     this.permissions = {
-      allowGuestTransport: true,
-      allowGuestTempo: true,
-      allowGuestPattern: false,
-      allowGuestSynth: false,
-      allowGuestMidi: true
+      syncTransport: true,
+      syncMasterSettings: true,
+      syncPattern: false,
+      syncDeviceParameterChange: false,
+      syncMidi: true
     };
 
     this._pingInterval = null;
@@ -66,8 +66,8 @@ class JamConnector {
     this.onAuthError = null;           // (reason)
     this.onPadTriggered = null;        // (instrument, note, velocity, scheduledTime, extra)
     this.onPatternUpdated = null;      // (pattern, stepIndex, stepData)
-    this.onSynthParamUpdated = null;   // (paramName, value, rawParams)
-    this.onSongSettingUpdated = null;  // (settingName, value)
+    this.onDeviceParameterChanged = null;   // (paramName, value, rawParams)
+    this.onMasterSettingUpdated = null;  // (settingName, value)
     this.onMidiMessage = null;         // (midiEvent)
     this.onPermissionsUpdated = null;  // (permissions)
     this.getFullStateSnapshot = null;  // () => ({ pattern, params, bpm, swing, delayWet, isPlaying, step })
@@ -622,7 +622,7 @@ class JamConnector {
         break;
 
       case 'TRANSPORT_STATE':
-        if (this.isHost && !this.permissions.allowGuestTransport && senderId !== 'HOST') return;
+        if (this.isHost && !this.permissions.syncTransport && senderId !== 'HOST') return;
         this._applyTransportSync(msg);
         if (this.isHost) {
           this.broadcast(msg, senderId);
@@ -635,7 +635,7 @@ class JamConnector {
 
       case 'PATTERN_STEP_UPDATE':
       case 'PATTERN_FULL_UPDATE':
-        if (this.isHost && !this.permissions.allowGuestPattern && senderId !== 'HOST') return;
+        if (!this.permissions.syncPattern) return;
         if (this.onPatternUpdated) {
           this.onPatternUpdated(msg.pattern || null, msg.stepIndex, msg.stepData, msg.presetName);
         }
@@ -644,20 +644,21 @@ class JamConnector {
         }
         break;
 
-      case 'SYNTH_PARAM_UPDATE':
-        if (this.isHost && !this.permissions.allowGuestSynth && senderId !== 'HOST') return;
-        if (this.onSynthParamUpdated) {
-          this.onSynthParamUpdated(msg.param, msg.value, msg.normalizedValue);
+      case 'DEVICE_PARAMETER_CHANGE':
+        if (!this.permissions.syncDeviceParameterChange) return;
+        
+        if (this.onDeviceParameterChanged) {
+          this.onDeviceParameterChanged(msg.param, msg.value, msg.normalizedValue);
         }
         if (this.isHost) {
           this.broadcast(msg, senderId);
         }
         break;
 
-      case 'SONG_SETTING_UPDATE':
-        if (this.isHost && !this.permissions.allowGuestTempo && senderId !== 'HOST') return;
-        if (this.onSongSettingUpdated) {
-          this.onSongSettingUpdated(msg.setting, msg.value);
+      case 'MASTER_SETTING_UPDATE':
+        if (!this.permissions.syncMasterSettings) return;
+        if (this.onMasterSettingUpdated) {
+          this.onMasterSettingUpdated(msg.setting, msg.value);
         }
         if (this.isHost) {
           this.broadcast(msg, senderId);
@@ -665,7 +666,7 @@ class JamConnector {
         break;
 
       case 'PAD_PLAY':
-        if (this.isHost && !this.permissions.allowGuestMidi && senderId !== 'HOST') return;
+        if (!this.permissions.syncMidi) return;
         if (this.onPadTriggered) {
           const delaySec = Math.max(0, (msg.delayFromSendMs || 20) - (this.rtt / 2)) / 1000;
           const playTime = this.Tone.now() + delaySec;
@@ -677,7 +678,7 @@ class JamConnector {
         break;
 
       case 'MIDI_EVENT':
-        if (this.isHost && !this.permissions.allowGuestMidi && senderId !== 'HOST') return;
+        if (!this.permissions.syncMidi) return;
         if (this.onMidiMessage) {
           this.onMidiMessage(msg.event);
         }
@@ -777,7 +778,7 @@ class JamConnector {
   // ==========================================
 
   startTransport(bpm = this.Tone.Transport.bpm.value) {
-    if (!this.isHost && this.isConnectedToHost && !this.permissions.allowGuestTransport) return;
+    if (!this.isHost && this.isConnectedToHost && !this.permissions.syncTransport) return;
 
     this.Tone.Transport.bpm.value = bpm;
     const delaySec = 0.08; // 80ms lookahead for tight simultaneous start
@@ -799,7 +800,7 @@ class JamConnector {
   }
 
   stopTransport() {
-    if (!this.isHost && this.isConnectedToHost && !this.permissions.allowGuestTransport) return;
+    if (!this.isHost && this.isConnectedToHost && !this.permissions.syncTransport) return;
 
     this.Tone.Transport.stop();
     this.Tone.Transport.seconds = 0;
@@ -816,7 +817,7 @@ class JamConnector {
   }
 
   updateBpm(bpm) {
-    if (!this.isHost && this.isConnectedToHost && !this.permissions.allowGuestTempo) return;
+    if (!this.isHost && this.isConnectedToHost && !this.permissions.syncMasterSettings) return;
 
     this.Tone.Transport.bpm.value = bpm;
     this.broadcast({
@@ -845,18 +846,18 @@ class JamConnector {
     });
   }
 
-  sendSynthParamUpdate(param, value, normalizedValue = null) {
+  sendDeviceParameterChange(param, value, normalizedValue = null) {
     this.broadcast({
-      type: 'SYNTH_PARAM_UPDATE',
+      type: 'DEVICE_PARAMETER_CHANGE',
       param,
       value,
       normalizedValue
     });
   }
 
-  sendSongSettingUpdate(setting, value) {
+  sendMasterSettingUpdate(setting, value) {
     this.broadcast({
-      type: 'SONG_SETTING_UPDATE',
+      type: 'MASTER_SETTING_UPDATE',
       setting,
       value
     });
@@ -983,7 +984,7 @@ class JamConnectClient {
   get canStopTransport() { return this.getAction(JamConnectActions.StopJamTransport).canStart; }
   get canChangeBpm() {
     if (this.userRole === JamConnectUserRoles.Guest) {
-      return !!this.connector.permissions.allowGuestTempo;
+      return !!this.connector.permissions.syncMasterSettings;
     }
     return true;
   }
@@ -1045,19 +1046,19 @@ class JamConnectClient {
 
             <!-- Host Co-op Permissions -->
             <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 mt-1">
-              <div class="text-[10px] font-mono text-slate-400 uppercase mb-1.5">Guest Jam Permissions</div>
+              <div class="text-[10px] font-mono text-slate-400 uppercase mb-1.5">Jam Sync Options</div>
               <div class="flex flex-wrap gap-3 text-xs font-mono text-slate-300">
                 <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" id="perm-tempo" checked class="accent-emerald-500 rounded" /> Tempo/Play
+                  <input type="checkbox" id="sync-mastersettings" checked class="accent-emerald-500 rounded" /> Tempo/Play/Delay/Swing
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" id="perm-pattern" class="accent-emerald-500 rounded" /> 303 Pattern
+                  <input type="checkbox" id="sync-pattern" class="accent-emerald-500 rounded" /> Pattern
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" id="perm-synth" class="accent-emerald-500 rounded" /> Synth Knobs
+                  <input type="checkbox" id="sync-deviceparameterchange" class="accent-emerald-500 rounded" /> Synth Knobs
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" id="perm-midi" checked class="accent-emerald-500 rounded" /> Live MIDI/Pads
+                  <input type="checkbox" id="sync-midi" class="accent-emerald-500 rounded" /> Live MIDI/Pads
                 </label>
               </div>
             </div>
@@ -1231,16 +1232,16 @@ class JamConnectClient {
       if (!el) return;
       el.addEventListener('change', () => {
         const update = { [key]: el.checked };
-        if (key === 'allowGuestTempo') {
-          update.allowGuestTransport = el.checked;
+        if (key === 'syncMasterSettings') {
+          update.syncTransport = el.checked;
         }
         this.connector.sendPermissionsUpdate(update);
       });
     };
-    bindPerm('perm-tempo', 'allowGuestTempo');
-    bindPerm('perm-pattern', 'allowGuestPattern');
-    bindPerm('perm-synth', 'allowGuestSynth');
-    bindPerm('perm-midi', 'allowGuestMidi');
+    bindPerm('sync-mastersettings', 'syncMasterSettings');
+    bindPerm('sync-pattern', 'syncPattern');
+    bindPerm('sync-deviceparameterchange', 'syncDeviceParameterChange');
+    bindPerm('sync-midi', 'syncMidi');
 
     this.connector.onConnectionStateChange = (statusObj) => {
       this._updateStatusUI(statusObj);
@@ -1545,7 +1546,7 @@ class StartJamTransportAction extends JamAction {
 
   _getStartPreventionReason() {
     if (this.isRunning) return "Already running";
-    if (this.client.userRole === JamConnectUserRoles.Guest && !this.client.connector.permissions.allowGuestTransport) {
+    if (this.client.userRole === JamConnectUserRoles.Guest && !this.client.connector.permissions.syncTransport) {
       return "Host has locked transport control";
     }
   }
@@ -1566,7 +1567,7 @@ class StopJamTransportAction extends JamAction {
   }
 
   _getStartPreventionReason() {
-    if (this.client.userRole === JamConnectUserRoles.Guest && !this.client.connector.permissions.allowGuestTransport) {
+    if (this.client.userRole === JamConnectUserRoles.Guest && !this.client.connector.permissions.syncTransport) {
       return "Host has locked transport control";
     }
     if (!this.client.isPlaying) return "Not running";
