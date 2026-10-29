@@ -1,14 +1,20 @@
 const CACHE_NAME = 'Jam303';
 const ASSETS = [
   './',
+  './app.js',
   './connect.html',
   './favicon.ico',
   './index.html',
   './jamconnect.js',
   './manifest.json',
-  './service-worker.js'
+  './service-worker.js',
+  './styles.css',
+  './tabcontrol.js',
+  './visualizer.js'
 ];
 
+
+//blablablablabla555ggggggggg
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))

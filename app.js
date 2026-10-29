@@ -1,0 +1,566 @@
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    /* =========================================================================
+       1. SYNTH ENGINE & SOUND ARCHITECTURE (Tone.js)
+       ========================================================================= */
+    let jcClient = new JamConnectClient(document.getElementById("jamconnect"));
+    jcClient.onStateChanged = onStateChanged;
+    
+    let isAudioStarted = false;
+    let currentStep = 0;
+
+    // Default 303 Sound Parameters
+    const params = {
+      cutoff: 400,     // Hz
+      resonance: 7,    // Q factor
+      envMod: 0.6,     // 0 to 1
+      decay: 0.3,      // seconds
+      accent: 0.8,     // 0 to 1
+      drive: 0.35,     // distortion amount
+      waveform: 'sawtooth'
+    };
+
+    // TB-303 Synthesizer Engine Definition
+    const tb303 = new Tone.MonoSynth({
+      oscillator: {
+        type: params.waveform
+      },
+      envelope: {
+        attack: 0.003,
+        decay: params.decay,
+        sustain: 0,
+        release: 0.05
+      },
+      filter: {
+        Q: params.resonance,
+        type: 'lowpass',
+        rolloff: -24
+      },
+      filterEnvelope: {
+        attack: 0.003,
+        decay: params.decay,
+        sustain: 0.0,
+        release: 0.1,
+        baseFrequency: params.cutoff,
+        octaves: params.envMod * 5,
+        exponent: 2
+      }
+    });
+
+    // Saturation / Distortion Unit
+    const distortion = new Tone.Distortion({
+      distortion: params.drive,
+      wet: 0.6
+    });
+
+    // Ping Pong Delay Unit
+    const delay = new Tone.PingPongDelay({
+      delayTime: "8n.",
+      feedback: 0.3,
+      wet: 0.25
+    });
+
+    // Audio Visualizer Analyser
+    const waveAnalyser = new Tone.Waveform(128);
+		const visualizer = new Visualizer(waveAnalyser, "visualizer-canvas");
+		
+    // Chain Audio Routing
+    tb303.chain(distortion, delay, waveAnalyser, Tone.Destination);
+
+    /* =========================================================================
+       2. PATTERNS & SEQUENCER STATE
+       ========================================================================= */
+
+    const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    // Preset Acid Patterns
+    const PRESETS = {
+      phuture: [
+        { note: 'C', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'C', octave: 3, gate: true, accent: false, slide: true },
+        { note: 'C', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'D#', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'C', octave: 2, gate: false, accent: false, slide: false },
+        { note: 'F', octave: 2, gate: true, accent: false, slide: true },
+        { note: 'G', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'A#', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'C', octave: 3, gate: true, accent: true, slide: true },
+        { note: 'C', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'D#', octave: 3, gate: true, accent: true, slide: false },
+        { note: 'C', octave: 2, gate: false, accent: false, slide: false },
+        { note: 'F', octave: 2, gate: true, accent: false, slide: true },
+        { note: 'G', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'A#', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'G#', octave: 2, gate: true, accent: true, slide: false }
+      ],
+      higher: [
+        { note: 'C', octave: 1, gate: true, accent: true, slide: false },
+        { note: 'C', octave: 1, gate: true, accent: false, slide: false },
+        { note: 'C', octave: 2, gate: true, accent: true, slide: true },
+        { note: 'C', octave: 1, gate: true, accent: false, slide: false },
+        { note: 'C', octave: 1, gate: true, accent: true, slide: false },
+        { note: 'D#', octave: 2, gate: true, accent: false, slide: true },
+        { note: 'C', octave: 1, gate: true, accent: false, slide: false },
+        { note: 'G', octave: 1, gate: true, accent: true, slide: false },
+        { note: 'C', octave: 1, gate: true, accent: true, slide: false },
+        { note: 'C', octave: 2, gate: true, accent: false, slide: true },
+        { note: 'A#', octave: 1, gate: true, accent: true, slide: false },
+        { note: 'G#', octave: 1, gate: true, accent: false, slide: false },
+        { note: 'G', octave: 1, gate: true, accent: true, slide: true },
+        { note: 'F', octave: 1, gate: true, accent: false, slide: false },
+        { note: 'D#', octave: 1, gate: true, accent: true, slide: false },
+        { note: 'D', octave: 1, gate: true, accent: false, slide: false }
+      ],
+      dafunk: [
+        { note: 'G', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'G', octave: 2, gate: false, accent: false, slide: false },
+        { note: 'A#', octave: 2, gate: true, accent: false, slide: true },
+        { note: 'C', octave: 3, gate: true, accent: true, slide: false },
+        { note: 'G', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'F', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'G', octave: 2, gate: false, accent: false, slide: false },
+        { note: 'D#', octave: 2, gate: true, accent: false, slide: true },
+        { note: 'F', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'D', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'C', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'A#', octave: 1, gate: true, accent: false, slide: false },
+        { note: 'C', octave: 2, gate: true, accent: true, slide: true },
+        { note: 'D#', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'F', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'G', octave: 2, gate: true, accent: false, slide: false }
+      ],
+      hypnotic: [
+        { note: 'E', octave: 2, gate: true, accent: true, slide: true },
+        { note: 'E', octave: 3, gate: true, accent: false, slide: false },
+        { note: 'E', octave: 2, gate: true, accent: false, slide: true },
+        { note: 'G', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'E', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'A', octave: 2, gate: true, accent: true, slide: true },
+        { note: 'B', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'D', octave: 3, gate: true, accent: true, slide: false },
+        { note: 'E', octave: 2, gate: true, accent: false, slide: true },
+        { note: 'E', octave: 3, gate: true, accent: true, slide: false },
+        { note: 'D', octave: 3, gate: true, accent: false, slide: true },
+        { note: 'B', octave: 2, gate: true, accent: true, slide: false },
+        { note: 'A', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'G', octave: 2, gate: true, accent: true, slide: true },
+        { note: 'F#', octave: 2, gate: true, accent: false, slide: false },
+        { note: 'D', octave: 2, gate: true, accent: false, slide: false }
+      ]
+    };
+
+    // Current Active Pattern State
+    let pattern = JSON.parse(JSON.stringify(PRESETS.phuture));
+
+    /* =========================================================================
+       3. RENDER SEQUENCER UI GRID
+       ========================================================================= */
+
+    const gridNotesEl = document.getElementById('grid-notes');
+    const gridOctavesEl = document.getElementById('grid-octaves');
+    const gridGateEl = document.getElementById('grid-gate');
+    const gridAccentEl = document.getElementById('grid-accent');
+    const gridSlideEl = document.getElementById('grid-slide');
+    const grid = document.getElementById("grid");
+    
+    const gridNoteSelectors = document.querySelectorAll(".note-selector");
+    
+    function drawGrid() {
+      grid.innerHTML = "";
+      for (let i = 0; i < 16; i++) {
+        grid.innerHTML += `<div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
+                        <span class="text-[9px] font-mono text-slate-500 mb-1">${i + 1}</span>
+                        <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>
+                        <div id="step-note-${i}"></div>
+                        <div id="step-oct-${i}"></div>
+                        <div id="step-gate-${i}" class="note-button"></div>
+                        <div id="step-accent-${i}" class="note-button"></div>
+                        <div id="step-slide-${i}" class="note-button"></div>
+                      </div>
+                    `;
+      }
+    }
+    
+    drawGrid();
+    
+    function renderGrid() {
+     // gridNotesEl.innerHTML = '';
+      //gridOctavesEl.innerHTML = '';
+      //gridGateEl.innerHTML = '';
+      //gridAccentEl.innerHTML = '';
+      //gridSlideEl.innerHTML = '';
+
+      for (let i = 0; i < 16; i++) {
+        const step = pattern[i];
+        
+        // 1. Note Select Dropdown
+        const noteSelect = document.createElement('select');
+        noteSelect.className = 'w-full bg-slate-950 text-emerald-400 text-[10px] font-mono border border-slate-700 rounded p-0.5 outline-none cursor-pointer focus:border-emerald-500';
+        NOTES.forEach(n => {
+          const opt = document.createElement('option');
+          opt.value = n;
+          opt.textContent = n;
+          if (n === step.note) opt.selected = true;
+          noteSelect.appendChild(opt);
+        });
+        noteSelect.addEventListener('change', (e) => {
+          pattern[i].note = e.target.value;
+        });
+        document.getElementById(`step-note-${i}`).appendChild(noteSelect);
+
+        // 2. Octave Select Dropdown
+        const octSelect = document.createElement('select');
+        octSelect.className = 'w-full bg-slate-950 text-sky-400 text-[10px] font-mono border border-slate-700 rounded p-0.5 outline-none cursor-pointer focus:border-sky-500';
+        [1, 2, 3].forEach(o => {
+          const opt = document.createElement('option');
+          opt.value = o;
+          opt.textContent = 'Oct ' + o;
+          if (o === step.octave) opt.selected = true;
+          octSelect.appendChild(opt);
+        });
+        octSelect.addEventListener('change', (e) => {
+          pattern[i].octave = parseInt(e.target.value);
+        });
+        document.getElementById(`step-oct-${i}`).appendChild(octSelect);
+
+        // 3. Gate Toggle Button
+        const gateBtn = document.createElement('button');
+        gateBtn.className = `w-full h-7 rounded text-[10px] font-bold transition flex items-center justify-center ${step.gate ? 'bg-emerald-600 text-slate-950 shadow-md shadow-emerald-900/50' : 'bg-slate-800 text-slate-500 border border-slate-700'}`;
+        gateBtn.textContent = step.gate ? 'GATE' : 'OFF';
+        gateBtn.addEventListener('click', () => {
+          step.gate = !step.gate;
+          gateBtn.textContent = step.gate ? 'GATE' : 'OFF';
+          gateBtn.className = `w-full h-7 rounded text-[10px] font-bold transition flex items-center justify-center ${step.gate ? 'bg-emerald-600 text-slate-950 shadow-md shadow-emerald-900/50' : 'bg-slate-800 text-slate-500 border border-slate-700'}`;
+     
+         // renderGrid();
+        });
+        document.getElementById(`step-gate-${i}`).appendChild(gateBtn);
+
+       // gridGateEl.appendChild(gateBtn);
+
+        // 4. Accent Toggle Button
+        const accentBtn = document.createElement('button');
+        accentBtn.className = `w-full h-7 rounded text-[10px] font-bold transition flex items-center justify-center ${step.accent ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-900/50' : 'bg-slate-800 text-slate-500 border border-slate-700'}`;
+        accentBtn.textContent = step.accent ? 'ACC' : '---';
+        accentBtn.addEventListener('click', () => {
+          step.accent = !step.accent;
+          //renderGrid();
+          accentBtn.textContent = step.accent ? 'ACC' : '---';
+          accentBtn.className = `w-full h-7 rounded text-[10px] font-bold transition flex items-center justify-center ${step.accent ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-900/50' : 'bg-slate-800 text-slate-500 border border-slate-700'}`;
+      
+        });
+        document.getElementById(`step-accent-${i}`).appendChild(accentBtn);
+
+       // gridAccentEl.appendChild(accentBtn);
+
+        // 5. Slide Toggle Button
+        const slideBtn = document.createElement('button');
+        slideBtn.className = `w-full h-7 rounded text-[10px] font-bold transition flex items-center justify-center ${step.slide ? 'bg-fuchsia-600 text-slate-100 shadow-md shadow-fuchsia-900/50' : 'bg-slate-800 text-slate-500 border border-slate-700'}`;
+        slideBtn.textContent = step.slide ? 'SLD' : '---';
+        slideBtn.addEventListener('click', () => {
+          step.slide = !step.slide;
+          //renderGrid();
+          slideBtn.textContent = step.slide ? 'SLD' : '---';
+          slideBtn.className = `w-full h-7 rounded text-[10px] font-bold transition flex items-center justify-center ${step.slide ? 'bg-fuchsia-600 text-slate-100 shadow-md shadow-fuchsia-900/50' : 'bg-slate-800 text-slate-500 border border-slate-700'}`;
+      
+        });
+        document.getElementById(`step-slide-${i}`).appendChild(slideBtn);
+
+        //gridSlideEl.appendChild(slideBtn);
+      }
+    }
+
+    renderGrid();
+
+    /* =========================================================================
+       4. AUDIO SEQUENCER LOOP & ACCENT/SLIDE SYNTHESIS LOGIC
+       ========================================================================= */
+
+    // Tone.js Repeat Loop
+    Tone.Transport.scheduleRepeat((time) => {
+      const stepIdx = currentStep % 16;
+      const stepData = pattern[stepIdx];
+
+      // Update Step UI Highlights
+      Tone.Draw.schedule(() => {
+        document.querySelectorAll('[id^="step-led-"]').forEach((led, idx) => {
+          if (idx === stepIdx) {
+            led.className = 'w-3 h-3 rounded-full bg-emerald-400 border border-emerald-300 shadow-md shadow-emerald-400/80 scale-125';
+          } else {
+            led.className = 'w-3 h-3 rounded-full bg-slate-950 border border-slate-800';
+          }
+        });
+        document.getElementById('display-step').textContent = `STEP: ${String(stepIdx + 1).padStart(2, '0')}/16`;
+      }, time);
+
+      if (stepData.gate) {
+        const noteFreq = `${stepData.note}${stepData.octave}`;
+
+        // Accent Logic: Dynamic envelope intensity, volume, and filter cutoff spike
+        if (stepData.accent) {
+          tb303.volume.setValueAtTime(4, time);
+          tb303.filterEnvelope.octaves = params.envMod * 7.5 * params.accent;
+          tb303.envelope.decay = params.decay * 0.7; // Accented 303 notes have sharper decay
+        } else {
+          tb303.volume.setValueAtTime(0, time);
+          tb303.filterEnvelope.octaves = params.envMod * 4.5;
+          tb303.envelope.decay = params.decay;
+        }
+
+        // Slide (Portamento) Logic
+        if (stepData.slide) {
+          tb303.portamento = 0.08; // Smooth glissando transition
+        } else {
+          tb303.portamento = 0;
+        }
+
+        // Play Note
+        const noteDuration = stepData.slide ? "16n" : "16n";
+        tb303.triggerAttackRelease(noteFreq, noteDuration, time);
+      }
+
+      currentStep++;
+    }, "16n");
+
+    /* =========================================================================
+       5. ROTARY KNOBS INTERACTION LOGIC
+       ========================================================================= */
+
+    class Knob {
+      constructor(id, onChange) {
+        this.knob = document.getElementById(id);
+        this.onChange = onChange;
+        document.addEventListener('pointerdown', (e) =>
+          this.onPointerDown(e));
+        document.addEventListener('pointermove', (e) =>
+          this.onPointerMove(e));
+        document.addEventListener('pointerup', (e) => this.onPointerUp(e));
+        
+        this.isDragging = false;
+        this.startY = 0;
+        this.currentValue = parseFloat(this.knob.dataset.value || 0.5);
+        this.updateRotation(this.currentValue);
+      }
+      
+      updateRotation(val) {
+        // Map 0..1 value to degrees (-135deg to +135deg)
+        const degrees = -135 + val * 270;
+        this.knob.style.transform = `rotate(${degrees}deg)`;
+      }
+    
+      onPointerDown(e) {
+        if (e.target.closest(".knob-container") != this.knob) {
+          //console.log("Other target", e.target.closest(".knob-container"))
+          return;
+        }
+        this.isDragging = true;
+        this.startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      }
+      
+      onPointerMove(e) {
+        if (e.target.closest(".knob-container") != this.knob) return;
+        if (!this.isDragging) return;
+        const currentY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+        const deltaY = this.startY - currentY;
+        this.startY = currentY;
+    
+        this.currentValue = Math.min(1, Math.max(0, this.currentValue + deltaY * 0.008));
+        this.knob.dataset.value = this.currentValue;
+        this.updateRotation(this.currentValue);
+        this.onChange(this.currentValue);
+      }
+    
+      onPointerUp(e) {
+        if (e.target.closest(".knob-container") != this.knob) return;
+        this.isDragging = false;
+      }
+    }
+
+    var knobs = [];
+    function setupKnob(id, onChange) {
+      knobs.push(new Knob(id, onChange));
+    }
+
+    // Initialize Knobs
+    setupKnob('knob-cutoff', (val) => {
+      // Exponential mapping 100Hz to 8000Hz
+      const freq = 100 * Math.pow(80, val);
+      params.cutoff = freq;
+      tb303.filterEnvelope.baseFrequency = freq;
+      document.getElementById('val-cutoff').textContent = `${Math.round(freq)} Hz`;
+    });
+
+    setupKnob('knob-reso', (val) => {
+      // Resonance Q factor 1 to 20
+      const q = 1 + val * 19;
+      params.resonance = q;
+      tb303.filter.Q.value = q;
+      document.getElementById('val-reso').textContent = q.toFixed(1);
+    });
+
+    setupKnob('knob-envmod', (val) => {
+      params.envMod = val;
+      tb303.filterEnvelope.octaves = val * 5;
+      document.getElementById('val-envmod').textContent = `${Math.round(val * 100)}%`;
+    });
+
+    setupKnob('knob-decay', (val) => {
+      // Decay 0.1s to 1.2s
+      const decayTime = 0.1 + val * 1.1;
+      params.decay = decayTime;
+      tb303.envelope.decay = decayTime;
+      tb303.filterEnvelope.decay = decayTime;
+      document.getElementById('val-decay').textContent = `${Math.round(decayTime * 1000)}ms`;
+    });
+
+    setupKnob('knob-accent', (val) => {
+      params.accent = val;
+      document.getElementById('val-accent').textContent = `${Math.round(val * 100)}%`;
+    });
+
+    setupKnob('knob-drive', (val) => {
+      params.drive = val;
+      distortion.distortion = val;
+      document.getElementById('val-drive').textContent = `${Math.round(val * 100)}%`;
+    });
+
+    const inviteBtn = document.getElementById("invite-btn");
+    const joinBtn = document.getElementById('join-btn');
+    // Play/Stop Controls
+    const playBtn = document.getElementById('play-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const playLed = document.getElementById('play-led');
+
+    playBtn.addEventListener('click', async () => {
+      await initializeAudio();
+      jcClient.startTransport(); 
+      isPlaying = true;
+      stopBtn.style.display = "flex";
+      playBtn.style.display = "none";
+      playLed.className = 'w-3 h-3 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/80 animate-pulse';
+    });
+
+    stopBtn.addEventListener('click', () => {
+      jcClient.stopTransport();
+      currentStep = 0;
+      stopBtn.style.display = "none";
+      playBtn.style.display = "flex";
+      playLed.className = 'w-3 h-3 rounded-full bg-slate-800 border border-slate-700';
+      document.querySelectorAll('[id^="step-led-"]').forEach(led => {
+        led.className = 'w-3 h-3 rounded-full bg-slate-950 border border-slate-800';
+      });
+      document.getElementById('display-step').textContent = 'STEP: 01/16';
+    });
+    
+    stopBtn.style.display = "none";
+
+		function onStateChanged(state) {
+		  console.log("onStateChanged9", state)
+    	inviteBtn.disabled = !state.canInvite || state.isInviting;
+    	inviteBtn.classList.toggle("active", state.isInviting);
+    	joinBtn.style.display = state.isInviting ? "none" : "block";
+    	joinBtn.disabled = !state.canJoin || state.isJoining || state.isInviting;
+    	joinBtn.classList.toggle("active", state.isJoining);
+    	playBtn.disabled = !state.canStart || state.isPlaying;
+    	playBtn.classList.toggle("active", state.isPlaying);
+    	stopBtn.disabled = !state.canStop;
+    	
+    	tempoVal.textContent = parseInt(state.bpm);
+      displayTempo.textContent = `${parseInt(state.bpm)} BPM`;
+    }
+
+    async function initializeAudio() {
+      if (isAudioStarted) return;
+      await Tone.start();
+      
+      isAudioStarted = true;
+      document.getElementById('vis-placeholder').style.display = 'none';
+    }
+    
+    inviteBtn.addEventListener('click', async () => await jcClient.invite());
+    joinBtn.addEventListener('click', async () => await jcClient.join());
+
+    // Tempo Control
+    const tempoSlider = document.getElementById('tempo-slider');
+    const tempoVal = document.getElementById('tempo-val');
+    const displayTempo = document.getElementById('display-tempo');
+
+    tempoSlider.addEventListener('input', (e) => {
+      jcClient.bpm = parseInt(e.target.value);
+    });
+
+    // Waveform Controls
+    const waveSaw = document.getElementById('wave-saw');
+    const waveSqr = document.getElementById('wave-sqr');
+    const displayWaveform = document.getElementById('display-waveform');
+
+    waveSaw.addEventListener('click', () => {
+      params.waveform = 'sawtooth';
+      tb303.oscillator.type = 'sawtooth';
+      waveSaw.classList.add('active-led');
+      waveSqr.classList.remove('active-led');
+      displayWaveform.textContent = 'WAVE: SAWTOOTH';
+    });
+
+    waveSqr.addEventListener('click', () => {
+      params.waveform = 'square';
+      tb303.oscillator.type = 'square';
+      waveSqr.classList.add('active-led');
+      waveSaw.classList.remove('active-led');
+      displayWaveform.textContent = 'WAVE: SQUARE';
+    });
+
+    // Delay Toggle
+    const delayToggle = document.getElementById('delay-toggle');
+    delayToggle.addEventListener('change', (e) => {
+      delay.wet.value = e.target.checked ? 0.25 : 0;
+    });
+
+    // Swing / Shuffle Control
+    const swingSlider = document.getElementById('swing-slider');
+    const swingVal = document.getElementById('swing-val');
+    swingSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value) / 100;
+      Tone.Transport.swing = val;
+      Tone.Transport.swingSubdivision = "16n";
+      swingVal.textContent = `${e.target.value}%`;
+    });
+
+
+    // Preset Selection
+    const patternSelect = document.getElementById('pattern-select');
+    patternSelect.addEventListener('change', (e) => {
+      
+      const val = e.target.value;
+      if (val === 'random') {
+        randomizePattern();
+      } else  {
+        if (val === 'clear') {
+          pattern = Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, accent: false, slide: false }));
+        } else if (PRESETS[val]) {
+          pattern = JSON.parse(JSON.stringify(PRESETS[val]));
+        }
+        drawGrid();
+        renderGrid();
+      }
+      
+    });
+
+    // Random Pattern Generator
+    const randomizeBtn = document.getElementById('randomize-btn');
+    function randomizePattern() {
+      const acidNotes = ['C', 'D#', 'F', 'F#', 'G', 'A#'];
+      pattern = Array(16).fill(null).map(() => {
+        return {
+          note: acidNotes[Math.floor(Math.random() * acidNotes.length)],
+          octave: Math.random() > 0.6 ? 3 : (Math.random() > 0.3 ? 2 : 1),
+          gate: Math.random() > 0.25,
+          accent: Math.random() > 0.65,
+          slide: Math.random() > 0.70
+        };
+      });
+      drawGrid();
+      renderGrid();
+    }
+    randomizeBtn.addEventListener('click', randomizePattern);

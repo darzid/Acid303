@@ -34,12 +34,16 @@ jobs:
       - name: Copy files
         run: |
           mkdir _site
+          cp app.js _site
           cp connect.html _site
           cp favicon.ico _site
           cp index.html _site
           cp jamconnect.js _site
           cp manifest.json _site
           cp service-worker.js _site
+          cp styles.css _site
+          cp tabcontrol.js _site
+          cp visualizer.js _site
           
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
