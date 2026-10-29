@@ -61,25 +61,25 @@
         <i data-lucide="square" class="w-4 h-4 fill-rose-700"></i> STOP
       </button>
       
-      <div id="song-settings" class="flex flex-wrap items-center gap-3">
-        <div id="tempo" class="flex items-center gap-2">
+      <div>
+        <div id="tempo" class="flex items-center gap-1">
           <label class="text-xs font-bold text-slate-800">TEMPO:</label>
           <input type="range" id="tempo-slider" min="60" max="180" value="124" class="w-24 accent-slate-800 cursor-pointer">
-          <span id="tempo-val" class="font-mono text-xs font-bold text-slate-900 w-8">124</span>
+          <!--<span id="tempo-val" class="font-mono text-xs font-bold text-slate-900 w-8">124</span>-->
+          <input type="number" id="tempo-val" readonly="true" class="font-mono text-xs font-bold text-slate-900" min="60" max="180" value="124">
         </div>
-      
-        <div id="swing" class="flex items-center gap-2">
+        
+        <div id="swing" class="flex items-center gap-1">
           <label class="text-xs font-bold text-slate-800">SWING:</label>
           <input type="range" id="swing-slider" min="0" max="50" value="0" class="w-24 accent-slate-800 cursor-pointer">
           <span id="swing-val" class="font-mono text-xs font-bold text-slate-900">0%</span>
         </div>
         
-        <div id="delay" class="flex items-center gap-2">
+        <div id="delay" class="flex items-center gap-1">
           <label class="text-xs font-bold text-slate-800">DELAY:</label>
           <input type="checkbox" id="delay-toggle" checked class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
         </div>
       </div>
-
     </div>
     
     <div id="tab-control">

@@ -58,7 +58,9 @@ body { font-family: 'Share Tech Mono', monospace; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     
 .flex-rows { flex-direction: row; }
-    
+
+#display-step.highlight { color: yellow; }
+
 .note-button { width: 20pt; }
 
 #header { padding: 0pt; height: auto; }
@@ -81,3 +83,8 @@ main { margin-top: 0pt; }
 
 #invite-btn, #join-btn { width: 200px; }
 #guest-btn { display: none; }
+
+#transport-bar label,
+#transport-bar span { font-size: small; }
+
+#tempo-val { background: transparent; padding: 0; }
