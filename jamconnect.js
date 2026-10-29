@@ -344,13 +344,7 @@ class JamConnectClient {
 	constructor(parentElement) {
 		this._tone = Tone;
 		this._connector = new JamConnector(this.tone);
-		this._parentElement = parentElement;
-		this._parentElement.innerHTML = `
-    		<div id="jamconnect-qr-code" style="display: none; margin: 10pt; margin-bottom: 10pt;"></div>
-        <br>
-        <div id="jamconnect-qr-scanner" style="display: none; min-width: 260px; margin: 10pt;"></div>`;
-    this._qrCodeDisplayElementId = "jamconnect-qr-code";
-		this._qrScannerElementId= "jamconnect-qr-scanner";
+    this._qrCodeManager = new QrCodeManager(parentElement);
 		this._userRole = null;
 		this._isPlaying = false;
 		
@@ -446,102 +440,6 @@ class JamConnectClient {
 		const action = this.getAction(JamConnectActions.StopJamTransport);
 		await action.execute();
 	}
-	
-  async scanQrCode(qrCodeScannedCallback) {
-    const scanner = new Html5Qrcode(this._qrScannerElementId);
-    const qrCodeScannerElement = document.getElementById(this._qrScannerElementId);
-    qrCodeScannerElement.style.display = "block";
-  
-    // 1. Eerste argument: EXACT 1 key
-    const cameraConfig = { facingMode: "environment" };
-  
-    // 2. Tweede argument: scan config + videoConstraints voor resolutie & focus
-    const scanConfig = {
-      fps: 15,
-      qrbox: (viewfinderWidth, viewfinderHeight) => {
-        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-        const edge = Math.floor(minEdge * 0.7);
-        return { width: edge, height: edge };
-      },
-      videoConstraints: {
-        facingMode: "environment",
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        advanced: [
-          { focusMode: "continuous" }
-        ]
-      }
-    };
-  
-    await scanner.start(
-      cameraConfig,
-      scanConfig,
-      async (inviteMessage) => {
-        await qrCodeScannedCallback(inviteMessage);
-        await scanner.stop();
-      },
-      (errorMessage) => {
-        // Optionele frame parse errors negeren
-      }
-    );
-  
-    // 3. Optioneel: focus & zoom forceren via de stream track
-    await this._applyCameraCapabilities(this._qrScannerElementId);
-  }
-
-  async _applyCameraCapabilities(elementId) {
-    const video = document.querySelector(`#${elementId} video`);
-    if (!video || !video.srcObject) return;
-  
-    const [track] = video.srcObject.getVideoTracks();
-    if (!track || typeof track.getCapabilities !== "function") return;
-  
-    const capabilities = track.getCapabilities();
-    const constraintsToApply = {};
-  
-    // Continue autofocus forceren (vooral Android Chrome)
-    if (capabilities.focusMode && capabilities.focusMode.includes("continuous")) {
-      constraintsToApply.focusMode = "continuous";
-    }
-  
-    // Lichte zoom toepassen als macro-scherpstellen faalt
-    // Veel moderne telefoons kunnen niet dichtbij focussen; 1.5x zoom lost dit op
-    if (capabilities.zoom && capabilities.zoom.min !== undefined) {
-      const targetZoom = Math.min(1.5, capabilities.zoom.max);
-      if (targetZoom > capabilities.zoom.min) {
-        constraintsToApply.zoom = targetZoom;
-      }
-    }
-  
-    if (Object.keys(constraintsToApply).length > 0) {
-      try {
-        await track.applyConstraints({ advanced: [constraintsToApply] });
-      } catch (err) {
-        console.warn("Kon geavanceerde camera constraints niet toepassen:", err);
-      }
-    }
-  }
-
-	hideQrScanner() {
-		const qrCodeScannerElement = document.getElementById(this._qrScannerElementId);
-		qrCodeScannerElement.style.display = "none";
-	}
-	
-	displayQrCode(message) {
-		const qrCodeDisplayElement = document.getElementById(this._qrCodeDisplayElementId);
-	  qrCodeDisplayElement.innerHTML = '';
-	  new QRCode(qrCodeDisplayElement, {
-	    text: message,
-	    width: 256,
-	    height: 256,
-	    correctLevel: QRCode.CorrectLevel.L
-	  });
-	  qrCodeDisplayElement.style.display = "block";
-	}
-	
-	hideQrCode() {
-		qrCodeDisplayElement.style.display = "none";
-	}
 }
 
 class JamAction {
@@ -591,10 +489,10 @@ class InviteJamGuestAction extends JamAction {
 	
 	async _executeAction() {
 		const inviteMessage = await this.client.connector.prepareGuestInvitation();
-		this.client.displayQrCode(inviteMessage);
-		await this.client.scanQrCode((inviteAcceptedMessage) => {
+		this.client._qrCodeManager.displayQrCode(inviteMessage);
+		await this.client._qrCodeManager.scanQrCode((inviteAcceptedMessage) => {
 			this.client.connector.acceptGuestAnswer(inviteAcceptedMessage);
-			this.client.hideQrCode();
+			this.client._qrCodeManager.hideQrCode();
 		});
 	}
 	
@@ -605,17 +503,15 @@ class InviteJamGuestAction extends JamAction {
 }
 
 class JoinJamSessionAction extends JamAction {
-	constructor(jamConnectClient, qrScannerElementId, qrCodeDisplayElementId) {
+	constructor(jamConnectClient) {
 		super(jamConnectClient, JamConnectActions.JoinJamSession);
-		this._qrScannerElementId = qrScannerElementId;
-		this._qrCodeDisplayElementId = qrCodeDisplayElementId;
 	}
 	
 	async _executeAction() {
-		await this.client.scanQrCode((inviteMessage) => {
+		await this.client._qrCodeManager.scanQrCode((inviteMessage) => {
 			const inviteAcceptedMessage = this.client.connector.joinHost(inviteMessage);
-			this.client.displayQrCode(inviteAcceptedMessage);
-			this.client.connector.peerConnected = () => this.client.hideQrCode();
+			this.client._qrCodeManager.displayQrCode(inviteAcceptedMessage);
+			this.client.connector.peerConnected = () => this.client._qrCodeManager.hideQrCode();
 		});
 	}
 	
