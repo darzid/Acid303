@@ -28,9 +28,9 @@ jobs:
         run: |
           mkdir -p _site/dev
           mkdir -p _site/dev/images
-          cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js server.js styles.css tabcontrol.js visualizer.js images/copy.png images/share.png _site/
-          cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js server.js styles.css tabcontrol.js visualizer.js images/copy.png images/share.png _site/dev
-
+          cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js server.js styles.css tabcontrol.js visualizer.js _site/dev
+          cp images/copy.png images/share.png _site/dev/images
+          
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
