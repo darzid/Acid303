@@ -1036,10 +1036,10 @@ class JamConnectClient {
               <div class="flex gap-1.5">
                 <input id="jam-invite-url-input" type="text" readonly class="flex-1 bg-slate-950 text-slate-200 font-mono text-xs px-2.5 py-1.5 rounded border border-slate-700 outline-none" value="" />
                 <button id="jam-copy-link-btn" type="button" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-mono font-bold text-xs rounded transition shrink-0">
-                  COPY LINK
+                  <img src="images/copy.png">
                 </button>
                 <button id="jam-share-link-btn" type="button" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-mono font-bold text-xs rounded transition shrink-0">
-                  SHARE
+                  <img src="images/share.png">
                 </button>
               </div>
             </div>
