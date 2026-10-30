@@ -11,6 +11,8 @@ const DEFAULT_ICE_SERVERS = [
 ];
 
 const PEER_PREFIX = 'acid303-jam-';
+const PING_INTERVAL = 500;
+const HEARTBEAT_INTERVAL = 1000;
 
 function generateRandomCode(length = 6, alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ') {
   const bytes = new Uint8Array(length);
@@ -527,7 +529,7 @@ class JamConnector {
           this._measureClockOffset(peer.conn);
         }
       }
-    }, 2500);
+    }, PING_INTERVAL);
 
     // Send Transport phase/ticks heartbeat every 2 seconds while playing
     this._heartbeatInterval = setInterval(() => {
@@ -540,7 +542,7 @@ class JamConnector {
         seconds: this.Tone.Transport.seconds,
         hostTime: performance.now()
       });
-    }, 2000);
+    }, HEARTBEAT_INTERVAL);
   }
 
   _measureClockOffset(conn) {

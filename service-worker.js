@@ -1,19 +1,24 @@
 const CACHE_NAME = 'Jam303';
 const ASSETS = [
   './',
-  './app.js',
-  './connect.html',
-  './favicon.ico',
-  './favicon-192x192.png',
-  './favicon-512x512.png',
+  
+  './css/styles.css',
+    
+  './images/favicon.ico',
+  './images/favicon-192x192.png',
+  './images/favicon-512x512.png',
+  './images/copy.png',
+  './images/share.png',
+  
+  './js/app.js',
+  './js/jamconnect.js',
+  './js/tabcontrol.js',
+  './js/qrcodemanager.js',
+  './js/visualizer.js',
+  
   './index.html',
-  './jamconnect.js',
   './manifest.json',
-  './service-worker.js',
-  './styles.css',
-  './tabcontrol.js',
-  './qrcodemanager.js',
-  './visualizer.js'
+  './service-worker.js'
 ];
 
 self.addEventListener('install', (event) => {
