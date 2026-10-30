@@ -1,0 +1,50 @@
+name: Build and publish Dev Acid303 page
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-dev
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout dev branch
+        uses: actions/checkout@v4
+
+      - name: Copy dev files (standalone bubble, no main code)
+        run: |
+          mkdir -p _site/dev
+          mkdir -p _site/dev/images
+          cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js server.js styles.css tabcontrol.js visualizer.js _site/dev
+          cp images/copy.png images/share.png _site/dev/images
+          
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}dev/
+
+    steps:
+      - name: Deploy Dev to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
