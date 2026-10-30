@@ -3,19 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  
   <title>JAM303 Acid Synthesizer & Sequencer</title>
+  
   <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  <link rel="stylesheet" href="css/styles.css">
+    
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="visualizer.js"></script>
-  <script src="jamconnect.js"></script>
-
-  <link rel="stylesheet" href="styles.css">
+  
+  <script src="js/app.js"></script>
+  <script src="js/jamconnect.js"></script>
+  <script src="js/tabcontrol.js"></script>
+  <script src="js/visualizer.js"></script>
 </head>
+
 <body class="flex flex-col justify-between items-center bg-slate-950">
 
   <!-- Top Title Banner -->
@@ -292,7 +299,7 @@
   <footer class="mt-4 text-xs text-slate-600 text-center">
     TB-303 Web Synthesizer Simulator &bull; Built with Tone.js, PeerJS WebRTC &amp; Web MIDI API
   </footer>
-  <script src="tabcontrol.js"></script>
-  <script src="app.js"></script>
+
+  <script>App.run()</script>
 </body>
 </html>
