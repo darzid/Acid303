@@ -31,7 +31,7 @@ jobs:
           scheme: semver
           increment: patch
   
-      - name: Copy dev files (standalone bubble, no main code)
+      - name: Copy files
         run: |
           mkdir -p _site
           mkdir -p _site/images
