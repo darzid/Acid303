@@ -31,20 +31,12 @@ jobs:
           scheme: semver
           increment: patch
   
-      - name: Copy files
+      - name: Copy dev files (standalone bubble, no main code)
         run: |
-          mkdir _site
-          cp app.js _site
-          cp connect.html _site
-          cp favicon.ico _site
-          cp index.html _site
-          cp jamconnect.js _site
-          cp manifest.json _site
-          cp service-worker.js _site
-          cp styles.css _site
-          cp tabcontrol.js _site
-          cp qrcodemanager.js _site
-          cp visualizer.js _site
+          mkdir -p _site
+          mkdir -p _site/images
+          cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js server.js styles.css tabcontrol.js visualizer.js _site
+          cp images/copy.png images/share.png _site/images
           
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
