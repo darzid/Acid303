@@ -1,7 +1,7 @@
 // Initialize Lucide Icons
 lucide.createIcons();
 
-  if (location.origin !== "file://" && !location.origin.startsWith("http://localhost")) {
+  if (location.origin !== "file://") {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("./service-worker.js")
