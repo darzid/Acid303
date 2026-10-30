@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p _site
           mkdir -p _site/images
-          cp app.js favicon.ico favicon.png index.html jamconnect.js service-worker.js server.js styles.css tabcontrol.js visualizer.js _site
+          cp app.js favicon.ico favicon-192x192.png favicon-512x512.png index.html jamconnect.js service-worker.js server.js styles.css tabcontrol.js visualizer.js _site
           cp manifest.json _site
           cp images/copy.png images/share.png _site/images
           
