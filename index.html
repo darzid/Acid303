@@ -181,23 +181,12 @@
         <div title="SEQUENCER" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
       
-            <div id="preset-selector" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+            <div id="preset-selector" class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <div class="flex flex-col">
                 <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
                 <select id="pattern-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
-                  <option value="phuture">Phuture Acid (Classic)</option>
-                  <option value="higher">Higher State Drive</option>
-                  <option value="dafunk">Da Funk Bounce</option>
-                  <option value="hypnotic">Hypnotic Squelch</option>
                 </select>
               </div>
-      
-              <button id="randomize-btn" title="Randomize Sequence" class="self-end px-3 py-1.5 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
-                <i data-lucide="shuffle" class="w-3.5 h-3.5"></i> Random
-              </button>
-              <button id="clear-btn" title="Clear Sequence" class="self-end px-3 py-1.5 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
-                <i data-lucide="trash" class="w-3.5 h-3.5"></i> Clear
-              </button>
             </div>
           
           </div>
@@ -210,6 +199,21 @@
             </div>
           </div>
       
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4 mt-4">
+            <div  class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+     
+              <button id="randomize-btn" title="Randomize Sequence" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="dices" class="w-4 h-4"></i> Random
+              </button>
+              <button id="clear-btn" title="Clear Sequence" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="trash" class="w-4 h-4"></i> Clear
+              </button>
+              <button id="save-btn" title="Save Preset" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="save" class="w-4 h-4"></i> Save
+              </button>
+            </div>
+          </div>
+          
           <div id="sequencer-hints" class="mt-4 flex text-[11px] text-slate-600 font-semibold gap-2">
             <div class="hint-line"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Gate = Play Note</div>
             <div class="hint-line"><div class="w-2 h-2 rounded-full bg-amber-500"></div> Accent = Filter Spike + Louder</div>
