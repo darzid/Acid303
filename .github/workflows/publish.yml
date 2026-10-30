@@ -43,6 +43,7 @@ jobs:
           cp service-worker.js _site
           cp styles.css _site
           cp tabcontrol.js _site
+          cp qrcodemanager.js _site
           cp visualizer.js _site
           
       - name: Upload Pages artifact

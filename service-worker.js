@@ -10,6 +10,7 @@ const ASSETS = [
   './service-worker.js',
   './styles.css',
   './tabcontrol.js',
+  './qrcodemanager.js',
   './visualizer.js'
 ];
 
