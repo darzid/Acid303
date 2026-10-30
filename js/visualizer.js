@@ -9,7 +9,6 @@ class Visualizer {
 		this._isPlaying = false;
 		Tone.Transport.on("start", () => {
 		  this._isPlaying = true;
-		  console.log("playing")
 		});
     Tone.Transport.on("stop", () => {
     	this._isPlaying = false;
