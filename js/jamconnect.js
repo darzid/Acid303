@@ -937,7 +937,8 @@ class JamConnectClient {
     this._isPlaying = false;
     this._scanner = null;
     this._isScannerRunning = false;
-
+    this.isApplyingRemoteUpdate = false;
+    
     this._renderJamUI();
     this._bindInternalEvents();
 

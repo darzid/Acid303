@@ -11,7 +11,10 @@ const ASSETS = [
   './images/share.png',
   
   './js/app.js',
+  './js/audiograph.js',
   './js/jamconnect.js',
+  './js/knob.js',
+  './js/sequencer.js',
   './js/tabcontrol.js',
   './js/qrcodemanager.js',
   './js/visualizer.js',
@@ -21,6 +24,7 @@ const ASSETS = [
   './service-worker.js'
 ];
 
+////ttttgdgd
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))

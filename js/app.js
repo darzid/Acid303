@@ -1,5 +1,6 @@
 class App {
   static run() {
+    console.log("app run3")
     let swRegistration = null;
     if (location.origin !== "file://") {
       if ("serviceWorker" in navigator) {
@@ -14,360 +15,20 @@ class App {
     // Initialize Lucide Icons
     lucide.createIcons();
     
-    TabControl.render();
-    
-    /* =========================================================================
-       1. SYNTH ENGINE, DRUM JAM VOICES & SOUND ARCHITECTURE (Tone.js)
-       ========================================================================= */
     const jcClient = new JamConnectClient(document.getElementById("jamconnect"));
     jcClient.onStateChanged = onStateChanged;
     
+    TabControl.render();
+    Sequencer.render(jcClient);
+    
+    const visualizer = new Visualizer(waveAnalyser, "visualizer-canvas");
+
+    /* =========================================================================
+       1. SYNTH ENGINE, DRUM JAM VOICES & SOUND ARCHITECTURE (Tone.js)
+       ========================================================================= */
+
     let isAudioStarted = false;
     let currentStep = 0;
-    let isApplyingRemoteUpdate = false;
-    
-    // Comment
-    // Default 303 Sound Parameters & Normalized Knob Values (0..1)
-    const knobValues = {
-      cutoff: 0.4,
-      reso: 0.7,
-      envmod: 0.6,
-      decay: 0.3,
-      accent: 0.8,
-      drive: 0.35
-    };
-    
-    const params = {
-      cutoff: 400,     // Hz
-      resonance: 7,    // Q factor
-      envMod: 0.6,     // 0 to 1
-      decay: 0.3,      // seconds
-      accent: 0.8,     // 0 to 1
-      drive: 0.35,     // distortion amount
-      waveform: 'sawtooth'
-    };
-    
-    // TB-303 Synthesizer Engine Definition
-    const tb303 = new Tone.MonoSynth({
-      oscillator: {
-        type: params.waveform
-      },
-      envelope: {
-        attack: 0.003,
-        decay: params.decay,
-        sustain: 0,
-        release: 0.05
-      },
-      filter: {
-        Q: params.resonance,
-        type: 'lowpass',
-        rolloff: -24
-      },
-      filterEnvelope: {
-        attack: 0.003,
-        decay: params.decay,
-        sustain: 0.0,
-        release: 0.1,
-        baseFrequency: params.cutoff,
-        octaves: params.envMod * 5,
-        exponent: 2
-      }
-    });
-    
-    // Saturation / Distortion Unit
-    const distortion = new Tone.Distortion({
-      distortion: params.drive,
-      wet: 0.6
-    });
-    
-    // Ping Pong Delay Unit
-    const delay = new Tone.PingPongDelay({
-      delayTime: "8n.",
-      feedback: 0.3,
-      wet: 0.25
-    });
-    
-    // Audio Visualizer Analyser
-    const waveAnalyser = new Tone.Waveform(128);
-    const visualizer = new Visualizer(waveAnalyser, "visualizer-canvas");
-    
-    // Chain 303 Audio Routing
-    tb303.chain(distortion, delay, waveAnalyser, Tone.Destination);
-    
-    // Synthesized 909-style Drum Voices for Live Jam Pads
-    const kickDrum = new Tone.MembraneSynth({
-      pitchDecay: 0.04,
-      octaves: 6,
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.35, sustain: 0.01, release: 0.2 }
-    }).connect(waveAnalyser);
-    
-    const snareDrum = new Tone.NoiseSynth({
-      noise: { type: 'white' },
-      envelope: { attack: 0.001, decay: 0.18, sustain: 0 }
-    }).connect(waveAnalyser);
-    
-    const hihatDrum = new Tone.MetalSynth({
-      frequency: 320,
-      envelope: { attack: 0.001, decay: 0.07, release: 0.02 },
-      harmonicity: 5.1,
-      modulationIndex: 32,
-      resonance: 4000,
-      octaves: 1.5
-    }).connect(waveAnalyser);
-    hihatDrum.volume.value = -8;
-    
-    const clapDrum = new Tone.NoiseSynth({
-      noise: { type: 'pink' },
-      envelope: { attack: 0.003, decay: 0.14, sustain: 0 }
-    }).connect(delay);
-    
-    /* =========================================================================
-       2. PATTERNS & SEQUENCER STATE
-       ========================================================================= */
-    
-    const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    
-    // Preset Acid Patterns
-    const PRESETS = {
-      phuture: [
-        { note: 'C', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'C', octave: 3, gate: true, accent: false, slide: true },
-        { note: 'C', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'D#', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'C', octave: 2, gate: false, accent: false, slide: false },
-        { note: 'F', octave: 2, gate: true, accent: false, slide: true },
-        { note: 'G', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'A#', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'C', octave: 3, gate: true, accent: true, slide: true },
-        { note: 'C', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'D#', octave: 3, gate: true, accent: true, slide: false },
-        { note: 'C', octave: 2, gate: false, accent: false, slide: false },
-        { note: 'F', octave: 2, gate: true, accent: false, slide: true },
-        { note: 'G', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'A#', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'G#', octave: 2, gate: true, accent: true, slide: false }
-      ],
-      higher: [
-        { note: 'C', octave: 1, gate: true, accent: true, slide: false },
-        { note: 'C', octave: 1, gate: true, accent: false, slide: false },
-        { note: 'C', octave: 2, gate: true, accent: true, slide: true },
-        { note: 'C', octave: 1, gate: true, accent: false, slide: false },
-        { note: 'C', octave: 1, gate: true, accent: true, slide: false },
-        { note: 'D#', octave: 2, gate: true, accent: false, slide: true },
-        { note: 'C', octave: 1, gate: true, accent: false, slide: false },
-        { note: 'G', octave: 1, gate: true, accent: true, slide: false },
-        { note: 'C', octave: 1, gate: true, accent: true, slide: false },
-        { note: 'C', octave: 2, gate: true, accent: false, slide: true },
-        { note: 'A#', octave: 1, gate: true, accent: true, slide: false },
-        { note: 'G#', octave: 1, gate: true, accent: false, slide: false },
-        { note: 'G', octave: 1, gate: true, accent: true, slide: true },
-        { note: 'F', octave: 1, gate: true, accent: false, slide: false },
-        { note: 'D#', octave: 1, gate: true, accent: true, slide: false },
-        { note: 'D', octave: 1, gate: true, accent: false, slide: false }
-      ],
-      dafunk: [
-        { note: 'G', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'G', octave: 2, gate: false, accent: false, slide: false },
-        { note: 'A#', octave: 2, gate: true, accent: false, slide: true },
-        { note: 'C', octave: 3, gate: true, accent: true, slide: false },
-        { note: 'G', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'F', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'G', octave: 2, gate: false, accent: false, slide: false },
-        { note: 'D#', octave: 2, gate: true, accent: false, slide: true },
-        { note: 'F', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'D', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'C', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'A#', octave: 1, gate: true, accent: false, slide: false },
-        { note: 'C', octave: 2, gate: true, accent: true, slide: true },
-        { note: 'D#', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'F', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'G', octave: 2, gate: true, accent: false, slide: false }
-      ],
-      hypnotic: [
-        { note: 'E', octave: 2, gate: true, accent: true, slide: true },
-        { note: 'E', octave: 3, gate: true, accent: false, slide: false },
-        { note: 'E', octave: 2, gate: true, accent: false, slide: true },
-        { note: 'G', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'E', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'A', octave: 2, gate: true, accent: true, slide: true },
-        { note: 'B', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'D', octave: 3, gate: true, accent: true, slide: false },
-        { note: 'E', octave: 2, gate: true, accent: false, slide: true },
-        { note: 'E', octave: 3, gate: true, accent: true, slide: false },
-        { note: 'D', octave: 3, gate: true, accent: false, slide: true },
-        { note: 'B', octave: 2, gate: true, accent: true, slide: false },
-        { note: 'A', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'G', octave: 2, gate: true, accent: true, slide: true },
-        { note: 'F#', octave: 2, gate: true, accent: false, slide: false },
-        { note: 'D', octave: 2, gate: true, accent: false, slide: false }
-      ]
-    };
-    
-    // Current Active Pattern State
-    let pattern = JSON.parse(JSON.stringify(PRESETS.phuture));
-    
-    /* =========================================================================
-       3. RENDER SEQUENCER UI GRID
-       ========================================================================= */
-    
-    const grid = document.getElementById("grid");
-    
-    function drawGrid() {
-      grid.innerHTML = "";
-      for (let i = 0; i < 16; i++) {
-        grid.innerHTML += `<div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
-                            <span class="text-[9px] font-mono text-slate-500 mb-1">${i + 1}</span>
-                            <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>
-                            <div id="step-note-${i}"></div>
-                            <div id="step-oct-${i}"></div>
-                            <div id="step-gate-${i}" class="note-button"></div>
-                            <div id="step-accent-${i}" class="note-button"></div>
-                            <div id="step-slide-${i}" class="note-button"></div>
-                          </div>`;
-      }
-    }
-    
-    drawGrid();
-    
-    function getGateBtnClass(active) {
-      return `w-full h-7 rounded text-[10px] font-bold transition flex items-center justify-center ${active ? 'bg-emerald-600 text-slate-950 shadow-md shadow-emerald-900/50' : 'bg-slate-800 text-slate-500 border border-slate-700'}`;
-    }
-    
-    function getAccentBtnClass(active) {
-      return `w-full h-7 rounded text-[10px] font-bold transition flex items-center justify-center ${active ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-900/50' : 'bg-slate-800 text-slate-500 border border-slate-700'}`;
-    }
-    
-    function getSlideBtnClass(active) {
-      return `w-full h-7 rounded text-[10px] font-bold transition flex items-center justify-center ${active ? 'bg-fuchsia-600 text-slate-100 shadow-md shadow-fuchsia-900/50' : 'bg-slate-800 text-slate-500 border border-slate-700'}`;
-    }
-    
-    function renderGrid() {
-      for (let i = 0; i < 16; i++) {
-        const step = pattern[i];
-        const noteContainer = document.getElementById(`step-note-${i}`);
-        const octContainer = document.getElementById(`step-oct-${i}`);
-        const gateContainer = document.getElementById(`step-gate-${i}`);
-        const accentContainer = document.getElementById(`step-accent-${i}`);
-        const slideContainer = document.getElementById(`step-slide-${i}`);
-    
-        noteContainer.innerHTML = '';
-        octContainer.innerHTML = '';
-        gateContainer.innerHTML = '';
-        accentContainer.innerHTML = '';
-        slideContainer.innerHTML = '';
-    
-        // 1. Note Select Dropdown
-        const noteSelect = document.createElement('select');
-        noteSelect.id = `select-note-${i}`;
-        noteSelect.className = 'w-full bg-slate-950 text-emerald-400 text-[10px] font-mono border border-slate-700 rounded p-0.5 outline-none cursor-pointer focus:border-emerald-500';
-        NOTES.forEach(n => {
-          const opt = document.createElement('option');
-          opt.value = n;
-          opt.textContent = n;
-          if (n === step.note) opt.selected = true;
-          noteSelect.appendChild(opt);
-        });
-        noteSelect.addEventListener('change', (e) => {
-          pattern[i].note = e.target.value;
-          if (!isApplyingRemoteUpdate) {
-            jcClient.connector.sendPatternStepUpdate(i, pattern[i]);
-          }
-        });
-        noteContainer.appendChild(noteSelect);
-    
-        // 2. Octave Select Dropdown
-        const octSelect = document.createElement('select');
-        octSelect.id = `select-oct-${i}`;
-        octSelect.className = 'w-full bg-slate-950 text-sky-400 text-[10px] font-mono border border-slate-700 rounded p-0.5 outline-none cursor-pointer focus:border-sky-500';
-        [1, 2, 3].forEach(o => {
-          const opt = document.createElement('option');
-          opt.value = o;
-          opt.textContent = 'Oct ' + o;
-          if (o === step.octave) opt.selected = true;
-          octSelect.appendChild(opt);
-        });
-        octSelect.addEventListener('change', (e) => {
-          pattern[i].octave = parseInt(e.target.value, 10);
-          if (!isApplyingRemoteUpdate) {
-            jcClient.connector.sendPatternStepUpdate(i, pattern[i]);
-          }
-        });
-        octContainer.appendChild(octSelect);
-    
-        // 3. Gate Toggle Button
-        const gateBtn = document.createElement('button');
-        gateBtn.id = `btn-gate-${i}`;
-        gateBtn.className = getGateBtnClass(step.gate);
-        gateBtn.textContent = step.gate ? 'GATE' : 'OFF';
-        gateBtn.addEventListener('click', () => {
-          step.gate = !step.gate;
-          gateBtn.textContent = step.gate ? 'GATE' : 'OFF';
-          gateBtn.className = getGateBtnClass(step.gate);
-          if (!isApplyingRemoteUpdate) {
-            jcClient.connector.sendPatternStepUpdate(i, pattern[i]);
-          }
-        });
-        gateContainer.appendChild(gateBtn);
-    
-        // 4. Accent Toggle Button
-        const accentBtn = document.createElement('button');
-        accentBtn.id = `btn-accent-${i}`;
-        accentBtn.className = getAccentBtnClass(step.accent);
-        accentBtn.textContent = step.accent ? 'ACC' : '---';
-        accentBtn.addEventListener('click', () => {
-          step.accent = !step.accent;
-          accentBtn.textContent = step.accent ? 'ACC' : '---';
-          accentBtn.className = getAccentBtnClass(step.accent);
-          if (!isApplyingRemoteUpdate) {
-            jcClient.connector.sendPatternStepUpdate(i, pattern[i]);
-          }
-        });
-        accentContainer.appendChild(accentBtn);
-    
-        // 5. Slide Toggle Button
-        const slideBtn = document.createElement('button');
-        slideBtn.id = `btn-slide-${i}`;
-        slideBtn.className = getSlideBtnClass(step.slide);
-        slideBtn.textContent = step.slide ? 'SLD' : '---';
-        slideBtn.addEventListener('click', () => {
-          step.slide = !step.slide;
-          slideBtn.textContent = step.slide ? 'SLD' : '---';
-          slideBtn.className = getSlideBtnClass(step.slide);
-          if (!isApplyingRemoteUpdate) {
-            jcClient.connector.sendPatternStepUpdate(i, pattern[i]);
-          }
-        });
-        slideContainer.appendChild(slideBtn);
-      }
-    }
-    
-    function updateSingleStepUI(i, stepData) {
-      pattern[i] = { ...pattern[i], ...stepData };
-      const step = pattern[i];
-      const noteSelect = document.getElementById(`select-note-${i}`);
-      const octSelect = document.getElementById(`select-oct-${i}`);
-      const gateBtn = document.getElementById(`btn-gate-${i}`);
-      const accentBtn = document.getElementById(`btn-accent-${i}`);
-      const slideBtn = document.getElementById(`btn-slide-${i}`);
-    
-      if (noteSelect) noteSelect.value = step.note;
-      if (octSelect) octSelect.value = step.octave;
-      if (gateBtn) {
-        gateBtn.textContent = step.gate ? 'GATE' : 'OFF';
-        gateBtn.className = getGateBtnClass(step.gate);
-      }
-      if (accentBtn) {
-        accentBtn.textContent = step.accent ? 'ACC' : '---';
-        accentBtn.className = getAccentBtnClass(step.accent);
-      }
-      if (slideBtn) {
-        slideBtn.textContent = step.slide ? 'SLD' : '---';
-        slideBtn.className = getSlideBtnClass(step.slide);
-      }
-    }
-    
-    renderGrid();
     
     /* =========================================================================
        4. AUDIO SEQUENCER LOOP & ACCENT/SLIDE SYNTHESIS LOGIC
@@ -426,71 +87,9 @@ class App {
        5. ROTARY KNOBS INTERACTION LOGIC (WITH NETWORK THROTTLE & REMOTE SYNC)
        ========================================================================= */
     
-    class Knob {
-      constructor(id, paramKey, onChange) {
-        this.id = id;
-        this.paramKey = paramKey;
-        this.knob = document.getElementById(id);
-        this.onChange = onChange;
-        this.isDragging = false;
-        this.startY = 0;
-        this.currentValue = parseFloat(this.knob.dataset.value || 0.5);
-        this._lastSentAt = 0;
-    
-        document.addEventListener('pointerdown', (e) => this.onPointerDown(e));
-        document.addEventListener('pointermove', (e) => this.onPointerMove(e));
-        document.addEventListener('pointerup', (e) => this.onPointerUp(e));
-    
-        this.updateRotation(this.currentValue);
-      }
-    
-      updateRotation(val) {
-        const degrees = -135 + val * 270;
-        this.knob.style.transform = `rotate(${degrees}deg)`;
-      }
-    
-      setValue(val, silentNetwork = false) {
-        this.currentValue = Math.min(1, Math.max(0, val));
-        this.knob.dataset.value = this.currentValue;
-        knobValues[this.paramKey] = this.currentValue;
-        this.updateRotation(this.currentValue);
-        this.onChange(this.currentValue);
-    
-        if (!silentNetwork && !isApplyingRemoteUpdate) {
-          const now = performance.now();
-          if (now - this._lastSentAt > 30) {
-            this._lastSentAt = now;
-            jcClient.connector.sendDeviceParameterChange(this.paramKey, this.currentValue, this.currentValue);
-          }
-        }
-      }
-    
-      onPointerDown(e) {
-        if (e.target.closest(".knob-container") !== this.knob) return;
-        this.isDragging = true;
-        this.startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-      }
-    
-      onPointerMove(e) {
-        if (!this.isDragging) return;
-        const currentY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-        const deltaY = this.startY - currentY;
-        this.startY = currentY;
-        this.setValue(this.currentValue + deltaY * 0.008, false);
-      }
-    
-      onPointerUp() {
-        if (!this.isDragging) return;
-        this.isDragging = false;
-        if (!isApplyingRemoteUpdate) {
-          jcClient.connector.sendDeviceParameterChange(this.paramKey, this.currentValue, this.currentValue);
-        }
-      }
-    }
-    
     const knobsByName = {};
     function setupKnob(id, paramKey, onChange) {
-      knobsByName[paramKey] = new Knob(id, paramKey, onChange);
+      knobsByName[paramKey] = new Knob(id, paramKey, onChange, jcClient.connector);
     }
     
     const cutoffValue = document.getElementById('val-cutoff');
@@ -558,12 +157,11 @@ class App {
     const delayToggle = document.getElementById('delay-toggle');
     const swingSlider = document.getElementById('swing-slider');
     const swingVal = document.getElementById('swing-val');
-    const patternSelect = document.getElementById('pattern-select');
-    const randomizeBtn = document.getElementById('randomize-btn');
-    const clearPatternBtn = document.getElementById('clear-btn');
+
     const jamBadge = document.getElementById('jam-badge');
     
     async function initializeAudio() {
+      console.log("initializeAudio started")
       if (isAudioStarted) return;
       await Tone.start();
       isAudioStarted = true;
@@ -652,6 +250,7 @@ class App {
       jcClient.bpm = parseInt(e.target.value, 10);
       tempoSlider.value = e.target.value;
     });
+    
     function applyWaveform(type, silentNetwork = false) {
       params.waveform = type;
       tb303.oscillator.type = type;
@@ -664,7 +263,7 @@ class App {
         waveSaw.classList.remove('active-led');
         displayWaveform.textContent = 'WAVE: SQUARE';
       }
-      if (!silentNetwork && !isApplyingRemoteUpdate) {
+      if (!silentNetwork && !jcClient.isApplyingRemoteUpdate) {
         jcClient.connector.sendDeviceParameterChange('waveform', type);
       }
     }
@@ -674,7 +273,7 @@ class App {
     
     delayToggle.addEventListener('change', (e) => {
       delay.wet.value = e.target.checked ? 0.25 : 0;
-      if (!isApplyingRemoteUpdate) {
+      if (!jcClient.isApplyingRemoteUpdate) {
         jcClient.connector.sendMasterSettingUpdate('delay', e.target.checked);
       }
     });
@@ -684,47 +283,12 @@ class App {
       Tone.Transport.swing = pct / 100;
       Tone.Transport.swingSubdivision = "16n";
       swingVal.textContent = `${Math.round(pct)}%`;
-      if (!isApplyingRemoteUpdate) {
+      if (!jcClient.isApplyingRemoteUpdate) {
         jcClient.connector.sendMasterSettingUpdate('swing', pct);
       }
     });
     
-    patternSelect.addEventListener('change', (e) => {
-      const val = e.target.value;
-      if (PRESETS[val]) {
-        pattern = JSON.parse(JSON.stringify(PRESETS[val]));
-        patternChanged(pattern, val);
-      }
-    });
-    
-    function randomizePattern() {
-      const acidNotes = ['C', 'D#', 'F', 'F#', 'G', 'A#'];
-      pattern = Array(16).fill(null).map(() => ({
-        note: acidNotes[Math.floor(Math.random() * acidNotes.length)],
-        octave: Math.random() > 0.6 ? 3 : (Math.random() > 0.3 ? 2 : 1),
-        gate: Math.random() > 0.25,
-        accent: Math.random() > 0.65,
-        slide: Math.random() > 0.70
-      }));
-      patternChanged(pattern, "random");
-      patternSelect.value = "";
-    }
-    
-    function clearPattern() {
-      pattern = Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, accent: false, slide: false }));
-      patternChanged(pattern, "clear");
-      patternSelect.value = "";
-    }
-    
-    function patternChanged(pattern, presetOrAction) {
-      drawGrid();
-      renderGrid();
-      if (!isApplyingRemoteUpdate) {
-        jcClient.connector.sendFullPatternUpdate(pattern, presetOrAction);
-      }
-    }
-    randomizeBtn.addEventListener('click', randomizePattern);
-    clearPatternBtn.addEventListener('click', clearPattern);
+
     /* =========================================================================
        7. WEBRTC JAM CALLBACKS, LIVE JAM PADS & WEB MIDI API INTEGRATION
        ========================================================================= */
@@ -742,7 +306,7 @@ class App {
     // Apply full session snapshot received from Host upon joining
     jcClient.connector.applyFullStateSnapshot = (snapshot) => {
       if (!snapshot) return;
-      isApplyingRemoteUpdate = true;
+      jcClient.isApplyingRemoteUpdate = true;
       try {
         if (Array.isArray(snapshot.pattern) && snapshot.pattern.length === 16) {
           pattern = JSON.parse(JSON.stringify(snapshot.pattern));
@@ -776,13 +340,13 @@ class App {
           delay.wet.value = snapshot.delayEnabled ? 0.25 : 0;
         }
       } finally {
-        isApplyingRemoteUpdate = false;
+        jcClient.isApplyingRemoteUpdate = false;
       }
     };
     
     // Receive single-step or full-pattern updates from peers
     jcClient.connector.onPatternUpdated = (newPattern, stepIndex, stepData, presetName) => {
-      isApplyingRemoteUpdate = true;
+      jcClient.isApplyingRemoteUpdate = true;
       try {
         if (Array.isArray(newPattern) && newPattern.length === 16) {
           pattern = JSON.parse(JSON.stringify(newPattern));
@@ -793,13 +357,13 @@ class App {
           updateSingleStepUI(stepIndex, stepData);
         }
       } finally {
-        isApplyingRemoteUpdate = false;
+        jcClient.isApplyingRemoteUpdate = false;
       }
     };
     
     // Receive real-time synth knob or waveform tweaks from peers
     jcClient.connector.onDeviceParameterChanged = (paramName, value, normalizedValue) => {
-      isApplyingRemoteUpdate = true;
+      jcClient.isApplyingRemoteUpdate = true;
       try {
         if (paramName === 'waveform') {
           applyWaveform(value, true);
@@ -808,13 +372,13 @@ class App {
           knobsByName[paramName].setValue(targetVal, true);
         }
       } finally {
-        isApplyingRemoteUpdate = false;
+        jcClient.isApplyingRemoteUpdate = false;
       }
     };
     
     // Receive song setting changes (swing, delay) from peers
     jcClient.connector.onMasterSettingUpdated = (setting, value) => {
-      isApplyingRemoteUpdate = true;
+      jcClient.isApplyingRemoteUpdate = true;
       try {
         if (setting === 'swing') {
           const pct = parseFloat(value);
@@ -827,7 +391,7 @@ class App {
           delay.wet.value = value ? 0.25 : 0;
         }
       } finally {
-        isApplyingRemoteUpdate = false;
+        jcClient.isApplyingRemoteUpdate = false;
       }
     };
     
