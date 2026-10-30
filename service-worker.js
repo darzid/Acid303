@@ -10,6 +10,7 @@ const ASSETS = [
   './images/copy.png',
   './images/share.png',
   
+  './js/flags.js',
   './js/app.js',
   './js/audiograph.js',
   './js/jamconnect.js',
@@ -23,8 +24,7 @@ const ASSETS = [
   './manifest.json',
   './service-worker.js'
 ];
-
-//123456
+//
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))

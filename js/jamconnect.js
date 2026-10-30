@@ -13,6 +13,8 @@ const DEFAULT_ICE_SERVERS = [
 const PEER_PREFIX = 'acid303-jam-';
 const PING_INTERVAL = 500;
 const HEARTBEAT_INTERVAL = 1000;
+const START_DELAY = 0.08;
+const USE_EXPECTED_AUDIO_STARTTIME = flags["ueas"] && flags["ueas"] == 1 ? true : false;
 
 function generateRandomCode(length = 6, alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ') {
   const bytes = new Uint8Array(length);
@@ -700,15 +702,21 @@ class JamConnector {
     }
 
     const transitSec = Math.max(0, (this.rtt || 20) / 2) / 1000;
-
+    
     if (msg.state === 'started' || msg.transportState === 'started') {
       const targetSeconds = (typeof msg.seconds === 'number' ? msg.seconds : 0) + transitSec;
       if (this.Tone.Transport.state !== 'started') {
-        const startOffset = typeof msg.delaySec === 'number'
-          ? Math.max(0, msg.delaySec - transitSec)
-          : 0.02;
         this.Tone.Transport.seconds = targetSeconds;
-        this.Tone.Transport.start(`+${startOffset}`);
+        if (USE_EXPECTED_AUDIO_STARTTIME) {
+          const startOffset = (msg.expectedAudioStartTime - performance.now()) / 1000;
+          this.Tone.Transport.start(`+${startOffset}`);
+        }
+        else {
+          const startOffset = typeof msg.delaySec === 'number'
+            ? Math.max(0, msg.delaySec - transitSec)
+            : 0.02;
+          this.Tone.Transport.start(`+${startOffset}`);
+        }
       } else if (typeof msg.ticks === 'number') {
         this.Tone.Transport.ticks = msg.ticks;
       }
@@ -783,7 +791,7 @@ class JamConnector {
     if (!this.isHost && this.isConnectedToHost && !this.permissions.syncTransport) return;
 
     this.Tone.Transport.bpm.value = bpm;
-    const delaySec = 0.08; // 80ms lookahead for tight simultaneous start
+    const delaySec = START_DELAY; // 80ms lookahead for tight simultaneous start
     const futureStartTime = this.Tone.now() + delaySec;
     this.Tone.Transport.seconds = 0;
     this.Tone.Transport.ticks = 0;
@@ -797,7 +805,8 @@ class JamConnector {
       seconds: 0,
       ticks: 0,
       delaySec,
-      hostAudioTime: futureStartTime
+      hostAudioTime: futureStartTime,
+      expectedAudioStartTime: performance.now() + (delaySec * 1000)
     });
   }
 
@@ -828,7 +837,8 @@ class JamConnector {
       bpm: this.Tone.Transport.bpm.value,
       seconds: this.Tone.Transport.seconds,
       ticks: this.Tone.Transport.ticks,
-      hostAudioTime: this.Tone.now()
+      hostAudioTime: this.Tone.now(),
+      
     });
   }
 
@@ -1540,9 +1550,9 @@ class StartJamTransportAction extends JamAction {
 
   async _executeAction() {
     if (!this.client.userRole) {
-      Tone.Transport.start();
+      Tone.Transport.start("+0.5");
     } else {
-      this.client.connector.startTransport(this.client.bpm);
+      this.client.connector.startTransport(this.client.bpm, "+0.5");
     }
     this.client._isPlaying = true;
   }

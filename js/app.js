@@ -1,6 +1,5 @@
 class App {
   static run() {
-    console.log("app run8")
     let swRegistration = null;
     if (location.origin !== "file://") {
       if ("serviceWorker" in navigator) {
