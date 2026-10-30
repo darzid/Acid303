@@ -1,8 +1,8 @@
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 // Preset Acid Patterns
-const PRESETS = {
-  phuture: [
+const DEFAULT_PRESETS = {
+  "Phuture Acid": [
     { note: 'C', octave: 2, gate: true, accent: true, slide: false },
     { note: 'C', octave: 3, gate: true, accent: false, slide: true },
     { note: 'C', octave: 2, gate: true, accent: false, slide: false },
@@ -20,7 +20,7 @@ const PRESETS = {
     { note: 'A#', octave: 2, gate: true, accent: false, slide: false },
     { note: 'G#', octave: 2, gate: true, accent: true, slide: false }
 	],
-  higher: [
+  "Higher State Drive": [
     { note: 'C', octave: 1, gate: true, accent: true, slide: false },
     { note: 'C', octave: 1, gate: true, accent: false, slide: false },
     { note: 'C', octave: 2, gate: true, accent: true, slide: true },
@@ -38,7 +38,7 @@ const PRESETS = {
     { note: 'D#', octave: 1, gate: true, accent: true, slide: false },
     { note: 'D', octave: 1, gate: true, accent: false, slide: false }
   ],
-  dafunk: [
+  "Da Funk Bounce": [
     { note: 'G', octave: 2, gate: true, accent: true, slide: false },
     { note: 'G', octave: 2, gate: false, accent: false, slide: false },
     { note: 'A#', octave: 2, gate: true, accent: false, slide: true },
@@ -56,7 +56,7 @@ const PRESETS = {
     { note: 'F', octave: 2, gate: true, accent: true, slide: false },
     { note: 'G', octave: 2, gate: true, accent: false, slide: false }
   ],
-  hypnotic: [
+  "Hypnotic Squelch": [
     { note: 'E', octave: 2, gate: true, accent: true, slide: true },
     { note: 'E', octave: 3, gate: true, accent: false, slide: false },
     { note: 'E', octave: 2, gate: true, accent: false, slide: true },
@@ -77,11 +77,18 @@ const PRESETS = {
 };
 
 // Current Active Pattern State
-var pattern = JSON.parse(JSON.stringify(PRESETS.phuture));
+var pattern = JSON.parse(JSON.stringify(DEFAULT_PRESETS["Phuture Acid"]));
     
 class Sequencer {
 	static render(jcClient) {
-
+    var presets = [];
+    Object.keys(DEFAULT_PRESETS).forEach(presetName =>
+      presets[presetName] = DEFAULT_PRESETS[presetName]);
+    var userPresets = loadUserPresets();
+    Object.keys(userPresets).forEach(presetName =>
+      presets[presetName] = userPresets[presetName]);
+    
+    
     const grid = document.getElementById("grid");
     
     function drawGrid() {
@@ -243,11 +250,16 @@ class Sequencer {
     const patternSelect = document.getElementById('pattern-select');
     const randomizeBtn = document.getElementById('randomize-btn');
     const clearPatternBtn = document.getElementById('clear-btn');
+    const savePatternBtn = document.getElementById('save-btn');
+    
+    Object.keys(presets).forEach(presetName => 
+      patternSelect.innerHTML += `<option value="${presetName}">${presetName}</option>`
+    );
     
     patternSelect.addEventListener('change', (e) => {
       const val = e.target.value;
-      if (PRESETS[val]) {
-        pattern = JSON.parse(JSON.stringify(PRESETS[val]));
+      if (presets[val]) {
+        pattern = JSON.parse(JSON.stringify(presets[val]));
         patternChanged(pattern, val);
       }
     });
@@ -271,6 +283,26 @@ class Sequencer {
       patternSelect.value = "";
     }
     
+    function savePattern() {
+      let presetName = window.prompt("Preset name?");
+      if (!presetName) return;
+      
+      let userPresets = loadUserPresets();
+      userPresets[presetName] = pattern;
+      saveUserPresets(userPresets);
+      patternSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
+    }
+    
+    function loadUserPresets() {
+      let userPresets = JSON.parse(localStorage.getItem("UserPresets"));
+      if (!userPresets) userPresets = {};
+      return userPresets;
+    }
+    
+    function saveUserPresets(userPresets) {
+      localStorage.setItem("UserPresets", JSON.stringify(userPresets));
+    }
+    
     function patternChanged(pattern, presetOrAction) {
       drawGrid();
       renderGrid();
@@ -280,5 +312,6 @@ class Sequencer {
     }
     randomizeBtn.addEventListener('click', randomizePattern);
     clearPatternBtn.addEventListener('click', clearPattern);
+    savePatternBtn.addEventListener('click', savePattern);
 	}
 }
