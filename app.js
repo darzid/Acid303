@@ -545,6 +545,7 @@ const swingSlider = document.getElementById('swing-slider');
 const swingVal = document.getElementById('swing-val');
 const patternSelect = document.getElementById('pattern-select');
 const randomizeBtn = document.getElementById('randomize-btn');
+const clearPatternBtn = document.getElementById('clear-btn');
 const jamBadge = document.getElementById('jam-badge');
 
 async function initializeAudio() {
@@ -675,19 +676,9 @@ swingSlider.addEventListener('input', (e) => {
 
 patternSelect.addEventListener('change', (e) => {
   const val = e.target.value;
-  if (val === 'random') {
-    randomizePattern();
-  } else {
-    if (val === 'clear') {
-      pattern = Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, accent: false, slide: false }));
-    } else if (PRESETS[val]) {
-      pattern = JSON.parse(JSON.stringify(PRESETS[val]));
-    }
-    drawGrid();
-    renderGrid();
-    if (!isApplyingRemoteUpdate) {
-      jcClient.connector.sendFullPatternUpdate(pattern, val);
-    }
+  if (PRESETS[val]) {
+    pattern = JSON.parse(JSON.stringify(PRESETS[val]));
+    patternChanged(pattern, val);
   }
 });
 
@@ -700,15 +691,25 @@ function randomizePattern() {
     accent: Math.random() > 0.65,
     slide: Math.random() > 0.70
   }));
+  patternChanged(pattern, "random");
+  patternSelect.value = "";
+}
+
+function clearPattern() {
+  pattern = Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, accent: false, slide: false }));
+  patternChanged(pattern, "clear");
+  patternSelect.value = "";
+}
+
+function patternChanged(pattern, presetOrAction) {
   drawGrid();
   renderGrid();
   if (!isApplyingRemoteUpdate) {
-    jcClient.connector.sendFullPatternUpdate(pattern, 'random');
+    jcClient.connector.sendFullPatternUpdate(pattern, presetOrAction);
   }
 }
-
 randomizeBtn.addEventListener('click', randomizePattern);
-
+clearPatternBtn.addEventListener('click', clearPattern);
 /* =========================================================================
    7. WEBRTC JAM CALLBACKS, LIVE JAM PADS & WEB MIDI API INTEGRATION
    ========================================================================= */
