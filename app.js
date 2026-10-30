@@ -445,7 +445,7 @@ class Knob {
       const now = performance.now();
       if (now - this._lastSentAt > 30) {
         this._lastSentAt = now;
-        jcClient.connector.sendSynthParamUpdate(this.paramKey, this.currentValue, this.currentValue);
+        jcClient.connector.sendDeviceParameterChange(this.paramKey, this.currentValue, this.currentValue);
       }
     }
   }
@@ -468,7 +468,7 @@ class Knob {
     if (!this.isDragging) return;
     this.isDragging = false;
     if (!isApplyingRemoteUpdate) {
-      jcClient.connector.sendSynthParamUpdate(this.paramKey, this.currentValue, this.currentValue);
+      jcClient.connector.sendDeviceParameterChange(this.paramKey, this.currentValue, this.currentValue);
     }
   }
 }
@@ -650,7 +650,7 @@ function applyWaveform(type, silentNetwork = false) {
     displayWaveform.textContent = 'WAVE: SQUARE';
   }
   if (!silentNetwork && !isApplyingRemoteUpdate) {
-    jcClient.connector.sendSynthParamUpdate('waveform', type);
+    jcClient.connector.sendDeviceParameterChange('waveform', type);
   }
 }
 
@@ -660,7 +660,7 @@ waveSqr.addEventListener('click', () => applyWaveform('square', false));
 delayToggle.addEventListener('change', (e) => {
   delay.wet.value = e.target.checked ? 0.25 : 0;
   if (!isApplyingRemoteUpdate) {
-    jcClient.connector.sendSongSettingUpdate('delay', e.target.checked);
+    jcClient.connector.sendMasterSettingUpdate('delay', e.target.checked);
   }
 });
 
@@ -670,7 +670,7 @@ swingSlider.addEventListener('input', (e) => {
   Tone.Transport.swingSubdivision = "16n";
   swingVal.textContent = `${Math.round(pct)}%`;
   if (!isApplyingRemoteUpdate) {
-    jcClient.connector.sendSongSettingUpdate('swing', pct);
+    jcClient.connector.sendMasterSettingUpdate('swing', pct);
   }
 });
 
