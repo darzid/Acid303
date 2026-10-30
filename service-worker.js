@@ -4,6 +4,8 @@ const ASSETS = [
   './app.js',
   './connect.html',
   './favicon.ico',
+  './favicon-192x192.png',
+  './favicon-512x512.png',
   './index.html',
   './jamconnect.js',
   './manifest.json',
