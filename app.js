@@ -783,7 +783,7 @@ jcClient.connector.onPatternUpdated = (newPattern, stepIndex, stepData, presetNa
 };
 
 // Receive real-time synth knob or waveform tweaks from peers
-jcClient.connector.onSynthParamUpdated = (paramName, value, normalizedValue) => {
+jcClient.connector.onDeviceParameterChanged = (paramName, value, normalizedValue) => {
   isApplyingRemoteUpdate = true;
   try {
     if (paramName === 'waveform') {
@@ -798,7 +798,7 @@ jcClient.connector.onSynthParamUpdated = (paramName, value, normalizedValue) => 
 };
 
 // Receive song setting changes (swing, delay) from peers
-jcClient.connector.onSongSettingUpdated = (setting, value) => {
+jcClient.connector.onMasterSettingUpdated = (setting, value) => {
   isApplyingRemoteUpdate = true;
   try {
     if (setting === 'swing') {
