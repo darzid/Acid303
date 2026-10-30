@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p _site
           mkdir -p _site/images
-          cp app.js connect.html favicon.ico index.html jamconnect.js manifest.json service-worker.js server.js styles.css tabcontrol.js visualizer.js _site
+          cp app.js connect.html favicon.ico favicon.png index.html jamconnect.js manifest.json service-worker.js server.js styles.css tabcontrol.js visualizer.js _site
           cp images/copy.png images/share.png _site/images
           
       - name: Upload Pages artifact
