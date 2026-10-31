@@ -1,5 +1,6 @@
 class App {
   static run() {
+    console.log("App3")
     let swRegistration = null;
     if (location.origin !== "file://") {
       if ("serviceWorker" in navigator) {
@@ -144,6 +145,7 @@ class App {
     const displayStep = document.getElementById('display-step');
     const inviteBtn = document.getElementById("invite-btn");
     const joinBtn = document.getElementById('join-btn');
+    const resyncBtn = document.getElementById('resync-btn');
     const playBtn = document.getElementById('play-btn');
     const stopBtn = document.getElementById('stop-btn');
     const playLed = document.getElementById('play-led');
@@ -202,7 +204,7 @@ class App {
       inviteBtn.classList.toggle("active", state.userRole === "Host");
       joinBtn.disabled = !state.canJoin || state.isJoining;
       joinBtn.classList.toggle("active", state.userRole === "Guest");
-    
+      resyncBtn.style.display = state.userRole === "Host" && state.isPlaying ? "block" : "none";
       playBtn.disabled = !state.canStart || state.isPlaying;
       stopBtn.disabled = !state.canStop;
       tempoSlider.disabled = !state.canChangeBpm;
@@ -232,6 +234,11 @@ class App {
     joinBtn.addEventListener('click', async () => {
       await initializeAudio();
       await jcClient.join();
+    });
+    
+    resyncBtn.addEventListener('click', () => {
+      jcClient.connector.resync();
+      console.log("resync sent")
     });
     
     tempoSlider.addEventListener('input', (e) => {
