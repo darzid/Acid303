@@ -88,3 +88,5 @@ main { margin-top: 0pt; }
 #transport-bar span { font-size: small; }
 
 #tempo-val { background: transparent; padding: 0; }
+
+#console-log.active { max-height: 100px; overflow-y: auto; background: rgba(100,100,100,0.5); }

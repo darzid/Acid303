@@ -89,7 +89,7 @@ class App {
     
     const knobsByName = {};
     function setupKnob(id, paramKey, onChange) {
-      knobsByName[paramKey] = new Knob(id, paramKey, onChange, jcClient.connector);
+      knobsByName[paramKey] = new Knob(id, paramKey, onChange, jcClient);
     }
     
     const cutoffValue = document.getElementById('val-cutoff');
@@ -158,9 +158,21 @@ class App {
     const delayToggle = document.getElementById('delay-toggle');
     const swingSlider = document.getElementById('swing-slider');
     const swingVal = document.getElementById('swing-val');
-
+    const consoleLog = document.getElementById('console-log');
     const jamBadge = document.getElementById('jam-badge');
     
+    consoleLog.addEventListener("click", () => {
+      if (consoleLog.innerText != "LOG") return;
+      
+      consoleLog.innerText = "";
+      consoleLog.classList.add("active");
+      var realConsoleLog = console.log;
+      console.log = function() {
+        var message = [].join.call(arguments, " ");
+        consoleLog.innerText += message + "\r\n";
+        realConsoleLog.apply(console, arguments);
+      };
+    });
     async function initializeAudio() {
       console.log("initializeAudio started")
       if (isAudioStarted) return;

@@ -15,7 +15,6 @@ const PING_INTERVAL = 500;
 const HEARTBEAT_INTERVAL = 1000;
 const START_DELAY = 0.08;
 const OLD_SYNC = flags["oldsync"] && parseInt(flags["oldsync"] == 1) ? true : false;
-const USE_EXPECTED_AUDIO_STARTTIME = (!OLD_SYNC || flags["ueas"] && parseInt(flags["ueas"]) == 1) ? true : false;
 const DISABLE_HEARTBEAT = !OLD_SYNC ? true : false;
 
 function generateRandomCode(length = 6, alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ') {
@@ -703,16 +702,10 @@ class JamConnector {
       const targetSeconds = (typeof msg.seconds === 'number' ? msg.seconds : 0) + transitSec;
       if (this.Tone.Transport.state !== 'started') {
         this.Tone.Transport.seconds = targetSeconds;
-        if (USE_EXPECTED_AUDIO_STARTTIME) {
-          const startOffset = (msg.expectedAudioStartTime - performance.now()) / 1000;
-          this.Tone.Transport.start(`+${startOffset}`);
-        }
-        else {
-          const startOffset = typeof msg.delaySec === 'number'
-            ? Math.max(0, msg.delaySec - transitSec)
-            : 0.02;
-          this.Tone.Transport.start(`+${startOffset}`);
-        }
+        const startOffset = typeof msg.delaySec === 'number'
+          ? Math.max(0, msg.delaySec - transitSec)
+          : 0.02;
+        this.Tone.Transport.start(`+${startOffset}`);
       } else if (typeof msg.ticks === 'number') {
         this.Tone.Transport.ticks = msg.ticks;
       }
@@ -801,9 +794,10 @@ class JamConnector {
       seconds: 0,
       ticks: 0,
       delaySec,
-      hostAudioTime: futureStartTime,
-      expectedAudioStartTime: performance.now() + (delaySec * 1000)
+      hostAudioTime: futureStartTime
     });
+    
+    this.resync();
   }
 
   stopTransport() {
@@ -845,8 +839,7 @@ class JamConnector {
       bpm: this.Tone.Transport.bpm.value,
       seconds: this.Tone.Transport.seconds,
       ticks: this.Tone.Transport.ticks,
-      hostAudioTime: this.Tone.now(),
-      expectedAudioStartTime: performance.now() + (delaySec * 1000)
+      hostAudioTime: this.Tone.now()
     });
   }
 

@@ -1,10 +1,11 @@
 class Knob {
-  constructor(id, paramKey, onChange, jamConnector) {
+  constructor(id, paramKey, onChange, jcClient) {
     this.id = id;
     this.paramKey = paramKey;
     this.knob = document.getElementById(id);
     this.onChange = onChange;
-    this.connector = jamConnector;
+    this.jcClient = jcClient;
+    this.connector = jcClient.connector;
     this.isDragging = false;
     this.startY = 0;
     this.currentValue = parseFloat(this.knob.dataset.value || 0.5);
@@ -29,7 +30,7 @@ class Knob {
     this.updateRotation(this.currentValue);
     this.onChange(this.currentValue);
     
-    if (!silentNetwork && !isApplyingRemoteUpdate) {
+    if (!silentNetwork && !this.jcClient.isApplyingRemoteUpdate) {
       const now = performance.now();
       if (now - this._lastSentAt > 30) {
         this._lastSentAt = now;
@@ -55,7 +56,7 @@ class Knob {
   onPointerUp() {
     if (!this.isDragging) return;
     this.isDragging = false;
-    if (!isApplyingRemoteUpdate) {
+    if (!this.jcClient.isApplyingRemoteUpdate) {
       this.connector.sendDeviceParameterChange(this.paramKey, this.currentValue, this.currentValue);
     }
   }
