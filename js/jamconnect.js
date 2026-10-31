@@ -50,7 +50,9 @@ class JamConnector {
     this.isConnectedToHost = false;
     this.timeOffset = 0; // ms difference: hostClock - localClock
     this.rtt = 0;
-
+    this.hostStartTime = null;
+    this.lastBeatTimes = [];
+    
     // Sync permissions / flags
     this.permissions = {
       syncTransport: true,
@@ -111,7 +113,7 @@ class JamConnector {
         if (sessionId && authToken) {
           return { sessionId: sessionId.trim().toUpperCase(), authToken: authToken.trim() };
         }
-      } catch (_) {}
+      } catch (_) { }
     }
 
     // Case 2: JSON payload
@@ -121,7 +123,7 @@ class JamConnector {
         if (obj.sessionId && obj.authToken) {
           return { sessionId: String(obj.sessionId).toUpperCase(), authToken: String(obj.authToken) };
         }
-      } catch (_) {}
+      } catch (_) { }
     }
 
     // Case 3: Compact "SESSION_ID:AUTH_TOKEN" or "SESSION_ID/AUTH_TOKEN"
@@ -202,7 +204,7 @@ class JamConnector {
         if (this.isHost && this.peer && !this.peer.destroyed) {
           try {
             this.peer.reconnect();
-          } catch (_) {}
+          } catch (_) { }
         }
       });
 
@@ -484,17 +486,17 @@ class JamConnector {
     }
 
     for (const peer of this.peers.values()) {
-      try { peer.conn.close(); } catch (_) {}
+      try { peer.conn.close(); } catch (_) { }
     }
     this.peers.clear();
 
     if (this.hostConn) {
-      try { this.hostConn.close(); } catch (_) {}
+      try { this.hostConn.close(); } catch (_) { }
       this.hostConn = null;
     }
 
     if (this.peer) {
-      try { this.peer.destroy(); } catch (_) {}
+      try { this.peer.destroy(); } catch (_) { }
       this.peer = null;
     }
 
@@ -632,6 +634,10 @@ class JamConnector {
         this._applyTransportHeartbeat(msg);
         break;
 
+      case 'TRANSPORT_BEAT':
+        this._applyTransportBeat(msg);
+        break;
+
       case 'PATTERN_STEP_UPDATE':
       case 'PATTERN_FULL_UPDATE':
         if (!this.permissions.syncPattern) return;
@@ -645,7 +651,7 @@ class JamConnector {
 
       case 'DEVICE_PARAMETER_CHANGE':
         if (!this.permissions.syncDeviceParameterChange) return;
-        
+
         if (this.onDeviceParameterChanged) {
           this.onDeviceParameterChanged(msg.param, msg.value, msg.normalizedValue);
         }
@@ -696,19 +702,34 @@ class JamConnector {
       this.Tone.Transport.swing = msg.swing;
     }
 
-    const transitSec = Math.max(0, (this.rtt || 20) / 2) / 1000;
-    
     if (msg.state === 'started' || msg.transportState === 'started') {
-      const targetSeconds = (typeof msg.seconds === 'number' ? msg.seconds : 0) + transitSec;
+      this.hostStartTime = msg.hostStartTime;
+      var localTime = performance.now();
+      var offsetInSeconds = (this.hostStartTime - localTime) / 1000;
       if (this.Tone.Transport.state !== 'started') {
-        this.Tone.Transport.seconds = targetSeconds;
-        const startOffset = typeof msg.delaySec === 'number'
-          ? Math.max(0, msg.delaySec - transitSec)
-          : 0.02;
-        this.Tone.Transport.start(`+${startOffset}`);
+        this.Tone.Transport.position = "0:0:0";
+        if (offsetInSeconds < 0) {
+          this.Tone.Transport.start(`${offsetInSeconds}`);
+        }
+        else {
+          this.Tone.Transport.start(`+${offsetInSeconds}`);
+        }
       } else if (typeof msg.ticks === 'number') {
         this.Tone.Transport.ticks = msg.ticks;
       }
+
+    // const transitSec = Math.max(0, (this.rtt || 20) / 2) / 1000;
+
+      // const targetSeconds = (typeof msg.seconds === 'number' ? msg.seconds : 0) + transitSec;
+      // if (this.Tone.Transport.state !== 'started') {
+      //   this.Tone.Transport.seconds = targetSeconds;
+      //   const startOffset = typeof msg.delaySec === 'number'
+      //     ? Math.max(0, msg.delaySec - transitSec)
+      //     : 0.02;
+      //   this.Tone.Transport.start(`+${startOffset}`);
+      // } else if (typeof msg.ticks === 'number') {
+      //   this.Tone.Transport.ticks = msg.ticks;
+      // }
     } else if (msg.state === 'stopped' || msg.transportState === 'stopped') {
       this.Tone.Transport.stop();
       this.Tone.Transport.seconds = 0;
@@ -731,6 +752,34 @@ class JamConnector {
     // Re-align if phase drift exceeds 25ms
     if (drift > 0.025) {
       this.Tone.Transport.seconds = expectedSeconds;
+    }
+  }
+
+  _applyTransportBeat(msg) {
+    if (typeof msg.bpm === 'number' && Math.abs(this.Tone.Transport.bpm.value - msg.bpm) > 0.5) {
+      this.Tone.Transport.bpm.value = msg.bpm;
+      this.hostStartTime = msg.hostStartTime;
+      this.hostPosition = msg.position;
+    }
+    if (this.Tone.Transport.state !== 'started') {
+      this.Tone.Transport.position = msg.position || 0;
+      this.Tone.Transport.start();
+      return;
+    } else {
+      var lastBeatTime = this.lastBeatTimes[this.lastBeatTimes.length - 1];
+      if (lastBeatTime.position == msg.position) {
+        var deltaInMs = msg.hostTimeOfBeat - lastBeatTime.timestamp;
+        if (Math.abs(deltaInMs) > 5) {
+          if (deltaInMs < 0) {
+            this.Tone.transport.seconds = this.Tone.transport.seconds + (deltaInMs * 1000);
+            console.log(`Guest was behind by ${deltaInMs * 1000} ms`);
+          }
+          else {
+            this.Tone.transport.seconds = this.Tone.transport.seconds - (deltaInMs * 1000);
+            console.log(`Guest was ahead by ${deltaInMs * 1000} ms`);
+          }
+        }
+      }
     }
   }
 
@@ -781,6 +830,7 @@ class JamConnector {
 
     this.Tone.Transport.bpm.value = bpm;
     const delaySec = START_DELAY; // 80ms lookahead for tight simultaneous start
+    this.hostStartTime = performance.now() + (delaySec * 1000);
     const futureStartTime = this.Tone.now() + delaySec;
     this.Tone.Transport.seconds = 0;
     this.Tone.Transport.ticks = 0;
@@ -794,9 +844,10 @@ class JamConnector {
       seconds: 0,
       ticks: 0,
       delaySec,
-      hostAudioTime: futureStartTime
+      hostAudioTime: this.Tone.now(),
+      hostStartTime: this.hostStartTime
     });
-    
+
     this.resync();
   }
 
@@ -829,6 +880,16 @@ class JamConnector {
     });
   }
 
+  broadcastBeat(hostTimeOfBeat) {
+    if (!this.isHost || this.Tone.Transport.state !== 'started') return;
+    this.broadcast({
+      type: 'TRANSPORT_BEAT',
+      bpm: this.Tone.Transport.bpm.value,
+      position: this.Tone.Transport.position,
+      hostTimeOfBeat: hostTimeOfBeat
+    });
+  }
+
   updateBpm(bpm) {
     if (!this.isHost && this.isConnectedToHost && !this.permissions.syncMasterSettings) return;
 
@@ -839,7 +900,9 @@ class JamConnector {
       bpm: this.Tone.Transport.bpm.value,
       seconds: this.Tone.Transport.seconds,
       ticks: this.Tone.Transport.ticks,
-      hostAudioTime: this.Tone.now()
+      hostAudioTime: this.Tone.now(),
+      position: this.Tone.Transport.position.toBarsBeatsSixteenths(),
+      hostTimeOfBeat: hostTimeOfBeat
     });
   }
 
@@ -949,7 +1012,7 @@ class JamConnectClient {
     this._scanner = null;
     this._isScannerRunning = false;
     this.isApplyingRemoteUpdate = false;
-    
+
     this._renderJamUI();
     this._bindInternalEvents();
 
@@ -1157,7 +1220,7 @@ class JamConnectClient {
               text: `Jam with me on Acid303! Session: ${this.connector.sessionId}`,
               url
             });
-          } catch (_) {}
+          } catch (_) { }
         } else if (copyBtn) {
           copyBtn.click();
         }
@@ -1398,7 +1461,7 @@ class JamConnectClient {
             await qrCodeScannedCallback(inviteMessage);
           }
         },
-        () => {}
+        () => { }
       );
     } catch (err) {
       this._isScannerRunning = false;
@@ -1416,7 +1479,7 @@ class JamConnectClient {
       try {
         await this._scanner.stop();
         await this._scanner.clear();
-      } catch (_) {}
+      } catch (_) { }
     }
     this._scanner = null;
     this._isScannerRunning = false;
@@ -1489,7 +1552,7 @@ class JamAction {
     }
   }
 
-  _getStartPreventionReason() {}
+  _getStartPreventionReason() { }
 }
 
 class InviteJamGuestAction extends JamAction {

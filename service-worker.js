@@ -24,7 +24,7 @@ const ASSETS = [
   './manifest.json',
   './service-worker.js'
 ];
-//12345678901234567890123
+//1234567890123456789012345
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
