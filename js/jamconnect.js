@@ -14,7 +14,9 @@ const PEER_PREFIX = 'acid303-jam-';
 const PING_INTERVAL = 500;
 const HEARTBEAT_INTERVAL = 1000;
 const START_DELAY = 0.08;
-const USE_EXPECTED_AUDIO_STARTTIME = flags["ueas"] && flags["ueas"] == 1 ? true : false;
+const OLD_SYNC = flags["oldsync"] && parseInt(flags["oldsync"] == 1) ? true : false;
+const USE_EXPECTED_AUDIO_STARTTIME = (!OLD_SYNC || flags["ueas"] && parseInt(flags["ueas"]) == 1) ? true : false;
+const DISABLE_HEARTBEAT = !OLD_SYNC ? true : false;
 
 function generateRandomCode(length = 6, alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ') {
   const bytes = new Uint8Array(length);
@@ -533,18 +535,12 @@ class JamConnector {
       }
     }, PING_INTERVAL);
 
-    // Send Transport phase/ticks heartbeat every 2 seconds while playing
-    this._heartbeatInterval = setInterval(() => {
-      if (!this.isHost || this.Tone.Transport.state !== 'started') return;
-      this.broadcast({
-        type: 'TRANSPORT_HEARTBEAT',
-        bpm: this.Tone.Transport.bpm.value,
-        swing: this.Tone.Transport.swing,
-        ticks: this.Tone.Transport.ticks,
-        seconds: this.Tone.Transport.seconds,
-        hostTime: performance.now()
-      });
-    }, HEARTBEAT_INTERVAL);
+    if (!DISABLE_HEARTBEAT) {
+      // Send Transport phase/ticks heartbeat every 2 seconds while playing
+      this._heartbeatInterval = setInterval(() => {
+        this.resync();
+      }, HEARTBEAT_INTERVAL);
+    }
   }
 
   _measureClockOffset(conn) {
@@ -827,6 +823,18 @@ class JamConnector {
     });
   }
 
+  resync() {
+    if (!this.isHost || this.Tone.Transport.state !== 'started') return;
+    this.broadcast({
+      type: 'TRANSPORT_HEARTBEAT',
+      bpm: this.Tone.Transport.bpm.value,
+      swing: this.Tone.Transport.swing,
+      ticks: this.Tone.Transport.ticks,
+      seconds: this.Tone.Transport.seconds,
+      hostTime: performance.now()
+    });
+  }
+
   updateBpm(bpm) {
     if (!this.isHost && this.isConnectedToHost && !this.permissions.syncMasterSettings) return;
 
@@ -838,7 +846,7 @@ class JamConnector {
       seconds: this.Tone.Transport.seconds,
       ticks: this.Tone.Transport.ticks,
       hostAudioTime: this.Tone.now(),
-      
+      expectedAudioStartTime: performance.now() + (delaySec * 1000)
     });
   }
 
