@@ -204,7 +204,7 @@ class App {
       inviteBtn.classList.toggle("active", state.userRole === "Host");
       joinBtn.disabled = !state.canJoin || state.isJoining;
       joinBtn.classList.toggle("active", state.userRole === "Guest");
-      resyncBtn.style.display = state.userRole === "Host" && state.isPlaying ? "block" : "none";
+      resyncBtn.style.display = state.userRole === "Host" && state.isPlaying ? "flex" : "none";
       playBtn.disabled = !state.canStart || state.isPlaying;
       stopBtn.disabled = !state.canStop;
       tempoSlider.disabled = !state.canChangeBpm;
