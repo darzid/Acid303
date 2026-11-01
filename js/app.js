@@ -49,7 +49,6 @@ class App {
       tb303.triggerAttackRelease(noteFreq, duration, time);
     }
     
-    
     // Tone.js Repeat Loop — locked to Transport ticks for multi-peer beat alignment
     Tone.Transport.scheduleRepeat((time) => {
       const sixteenthTicks = Tone.Time("16n").toTicks();
@@ -69,6 +68,15 @@ class App {
         
         displayStep.textContent = `STEP: ${String(stepIdx + 1).padStart(2, '0')}/16`;
         displayStep.classList.toggle("highlight", stepIdx == 0);
+        var timestamp = performance.now();
+        if (stepIdx % 4 == 0) {
+          if (jcClient.connector.lastBeatTimes.length > 4) {
+            jcClient.connector.lastBeatTimes = jcClient.connector.lastBeatTimes.splice(0, 1);
+          }
+          jcClient.connector.lastBeatTimes.push({ position: Tone.Transport.position, timestamp: timestamp });
+          if (jcClient.userRole === JamConnectUserRoles.Host)
+            jcClient.connector.broadcastBeat(timestamp);
+        }
       }, time);
     
       if (stepData && stepData.gate) {
