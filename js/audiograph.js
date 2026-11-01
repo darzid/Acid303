@@ -85,7 +85,7 @@ const hihatDrum = new Tone.MetalSynth({
   resonance: 4000,
   octaves: 1.5
 }).connect(waveAnalyser);
-hihatDrum.volume.value = -8;
+//hihatDrum.volume.value = -8;
 
 const clapDrum = new Tone.NoiseSynth({
   noise: { type: 'pink' },
