@@ -94,12 +94,6 @@ export class App extends JamConnectApp {
   }
   
   applyAppSpecificDataUpdatesFromJamConnectSnapshot(appName, snapshot) {
-    /*
-    if (snapshot.waveform) {
-      this.applyWaveform(snapshot.waveform, true);
-    }
-    */
-    
     if (typeof snapshot.delayEnabled === 'boolean') {
       this.delayToggle.checked = snapshot.delayEnabled;
       this.audioGraph.delay.wet.value = snapshot.delayEnabled ? 0.25 : 0;
@@ -113,15 +107,7 @@ export class App extends JamConnectApp {
     }
   }
   
-  /*
-  applyDeviceParameterChange(appName, paramName, value, normalizedValue) {
-    if (paramName == "waveform") {
-      this.applyWaveform(value);
-    }
-  }
-  */
   playNote(note, stepData, duration, time) {
-    //console.log("playNote", note, stepData, duration, time)
     this.audioGraph.play303StepNote(note, stepData.accent, stepData.slide, duration, time);
   }
   
@@ -134,29 +120,6 @@ export class App extends JamConnectApp {
     TabControl.render();
     Sequencer.render(this.jcClient);
     
-    /*
-    function applyWaveform(type, silentNetwork = false) {
-      this.audioGraph.params.waveform = type;
-      this.audioGraph.tb303.oscillator.type = type;
-      if (type === 'sawtooth') {
-        this.waveSaw.classList.add('active-led');
-        this.waveSqr.classList.remove('active-led');
-        this.displayWaveform.textContent = 'WAVE: SAWTOOTH';
-      } else {
-        this.waveSqr.classList.add('active-led');
-        this.waveSaw.classList.remove('active-led');
-        this.displayWaveform.textContent = 'WAVE: SQUARE';
-      }
-      if (!silentNetwork && !this.jcClient.isApplyingRemoteUpdate) {
-        this.jcClient.connector.sendDeviceParameterChange('waveform', type);
-      }
-    }
-    
-    
-    this.waveSaw.addEventListener('click', () => applyWaveform('sawtooth', false));
-    this.waveSqr.addEventListener('click', () => applyWaveform('square', false));
-    */ 
-    
     this.delayToggle.addEventListener('change', (e) => {
       this.audioGraph.delay.wet.value = e.target.checked ? 0.25 : 0;
       if (!this.jcClient.isApplyingRemoteUpdate) {
@@ -164,17 +127,6 @@ export class App extends JamConnectApp {
       }
     });
     
-    // Handle Live Pad & Quantized Note Triggers (Local & Remote)
-    this.jcClient.connector.onPadTriggered = (appName, instrument, note, velocity = 0.85, scheduledTime = Tone.now(), extra = {}) => {
-  /*    const playAt = Math.max(Tone.now(), scheduledTime || Tone.now());
-      console.log("onPadTriggered", instrument, note)
-      switch (instrument) {
-        case 'tb303':
-          this.audioGraph.play303StepNote(note || 'C0', { accent: extra.accent, slide: extra.slide, duration: '16n'}, time: playAt);
-          break;
-      }*/
-    };
-      
     // Receive single-step or full-pattern updates from peers
     this.jcClient.connector.onPatternUpdated = (aopName, newPattern, stepIndex, stepData, presetName) => {
       this.jcClient.isApplyingRemoteUpdate = true;
