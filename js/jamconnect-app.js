@@ -319,6 +319,7 @@ export class JamConnectApp {
     this.isAudioStarted = true;
       
     if (this.placeholder) this.placeholder.style.display = 'none';
+    this.visualizer.isActive = true;
   }
   
   //// ------------------------

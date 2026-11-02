@@ -6,14 +6,15 @@ class Visualizer {
 		this.resizeCanvas();
 		window.addEventListener('resize', () => this.resizeCanvas());
 		
-		this._isPlaying = true;
-		/*Tone.Transport.on("start", () => {
-		  this._isPlaying = true;
-		});
-    Tone.Transport.on("stop", () => {
-    	this._isPlaying = false;
-    });*/
-    this.drawVisualizer();
+		this._isActive = false;
+	}
+	
+	get isActive() { return this._isActive; }
+	set isActive(value) { 
+		this._isActive = value;
+		if (this._isActive) {
+			this.drawVisualizer();
+		}
 	}
 	
 	get isPlaying() { return this._isPlaying; }
@@ -29,7 +30,7 @@ class Visualizer {
 		this.ctx.fillStyle = '#091209';
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 		
-		if (!this.isPlaying) return;
+		if (!this.isActive) return;
 		
 		const values = this.waveAnalyser.getValue();
 		this.ctx.lineWidth = 2;
