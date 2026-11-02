@@ -46,6 +46,9 @@ jobs:
           mkdir -p _site/js
           cp ./js/*.js _site/js
           
+          mkdir -p _site/js/devices
+          cp ./js/devices/*.js _site/js/devices
+          
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

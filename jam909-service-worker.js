@@ -6,11 +6,12 @@ const ASSETS = [
   './css/jam909.css',
   
   './images/favicon.ico',
-  './images/favicon-192x192.png',
-  './images/favicon-512x512.png',
+  './images/jam909-192x192.png',
+  './images/jam909-512x512.png',
   './images/copy.png',
   './images/share.png',
   
+  './js/devices/TR909Toms.js',
   './js/flags.js',
   './js/jam909-app.js',
   './js/jam909-audiograph.js',
