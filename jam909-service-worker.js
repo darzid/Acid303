@@ -15,6 +15,7 @@ const ASSETS = [
   './js/jam909-app.js',
   './js/jam909-audiograph.js',
   './js/jam909-sequencer.js',
+  './js/jamconnect-audiograph.js',
   './js/jamconnect-app.js',
   './js/knob.js',
   './js/tabcontrol.js',
@@ -26,7 +27,7 @@ const ASSETS = [
   './jam909-service-worker.js'
 ];
 
-//g
+//gggfffgf
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))

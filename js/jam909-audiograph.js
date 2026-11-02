@@ -1,47 +1,43 @@
 import * as DAWSome from "https://darzid.github.io/ToneJS/DAWSome/DAWSome.js";
 import { TR909Toms } from "./devices/TR909Toms-02.js";
+import { AudioGraphBase } from "./jamconnect-audiograph.js";
 
-export class AudioGraph {
-  constructor() {
-    this.params = {
-      kickTone: 6,     
-      kickPitchDecay: 0.04,
-      kickDecay: 0.35,
-      kickLevel: 1,
-      snareTone: 0,
-      snareDecay: 0.35,
-      snareLevel: 1,
-      
-      clapDecay: 0.14,
-      clapLevel: 1,
-      
-      lowtomTune: 0.35,
-      lowtomDecay: 0.70,
-      lowtomLevel: 0.60,
-      
-      midtomTune: 0.50,
-      midtomDecay: 0.45,
-      midtomLevel: 0.50,
-      
-      hightomTune: 0.65,
-      hightomDecay: 0.30,
-      hightomLevel: 0.55,
-      
-      closedhihatTune: 0,
-      closedhihatDecay: 0.05,
-      closedhihatLevel: 1,
-      
-      openhihatTune: 0,
-      openhihatDecay: 0.715,
-      openhihatLevel: 1
-    };
+const params = {
+  kickTone: 6,
+  kickPitchDecay: 0.04,
+  kickDecay: 0.35,
+  kickLevel: 1,
+  snareTone: 0,
+  snareDecay: 0.35,
+  snareLevel: 1,
   
-    // Audio Visualizer Analyser
-    this.waveAnalyser = new Tone.Waveform(128);
-    
-    this.drumBus = new Tone.Channel();
-    this.drumBus.connect(this.waveAnalyser);
-    this.waveAnalyser.toDestination();
+  clapDecay: 0.14,
+  clapLevel: 1,
+  
+  lowtomTune: 0.35,
+  lowtomDecay: 0.70,
+  lowtomLevel: 0.60,
+  
+  midtomTune: 0.50,
+  midtomDecay: 0.45,
+  midtomLevel: 0.50,
+  
+  hightomTune: 0.65,
+  hightomDecay: 0.30,
+  hightomLevel: 0.55,
+  
+  closedhihatTune: 0,
+  closedhihatDecay: 0.05,
+  closedhihatLevel: 1,
+  
+  openhihatTune: 0,
+  openhihatDecay: 0.715,
+  openhihatLevel: 1
+}
+
+export class AudioGraph extends AudioGraphBase {
+  constructor() {
+    super(params)
     
     // Synthesized 909-style Drum Voices for Live Jam Pads
     this.kick = new Tone.MembraneSynth({
@@ -51,10 +47,10 @@ export class AudioGraph {
       oscillator: { type: 'sine' },
       envelope: { attack: 0.001, decay: this.params.kickDecay, sustain: 0.001, release: 0.001 },
     });
-    createDeviceGain(this.drumBus, this.kick, this.params.kickLevel);
+    this.createDeviceGain(this.groupBus, this.kick, this.params.kickLevel);
     
     this.snare = new DAWSome.TR909Snare();
-    createDeviceGain(this.drumBus, this.snare, this.params.snareLevel);
+    this.createDeviceGain(this.groupBus, this.snare, this.params.snareLevel);
     this.snare.bodySynth.detune.value = this.params.snareTone;
     this.snare.bodySynth.envelope.decay = this.params.snareDecay;
     
@@ -62,7 +58,7 @@ export class AudioGraph {
       noise: { type: 'pink' },
       envelope: { attack: 0.003, decay: this.params.clapDecay, sustain: 0 },
     });
-    createDeviceGain(this.drumBus, this.clap, this.params.clapLevel);
+    this.createDeviceGain(this.groupBus, this.clap, this.params.clapLevel);
     
     this.toms = new TR909Toms({
       low: { 
@@ -98,9 +94,9 @@ export class AudioGraph {
     this.toms.hi.level = this.params.hightomLevel;
     */
     
-    this.toms.low.connect(this.drumBus);
-    this.toms.mid.connect(this.drumBus);
-    this.toms.hi.connect(this.drumBus);
+    this.toms.low.connect(this.groupBus);
+    this.toms.mid.connect(this.groupBus);
+    this.toms.hi.connect(this.groupBus);
     
     this.closedhihat = new Tone.MetalSynth({
       detune: this.params.closedhihatTune,
@@ -120,7 +116,7 @@ export class AudioGraph {
       octaves: 1.5,
       volume: 1.5
     });
-    createDeviceGain(this.drumBus, this.closedhihat, this.params.closedhihatLevel);
+    this.createDeviceGain(this.groupBus, this.closedhihat, this.params.closedhihatLevel);
     
     this.openhihat = new Tone.MetalSynth({
       detune: this.params.openhihatTune,
@@ -140,68 +136,12 @@ export class AudioGraph {
       octaves: 1.5,
       volume: 1.5
     });
-    createDeviceGain(this.drumBus, this.openhihat, this.params.openhihatLevel);
-    
-    function createDeviceGain(drumBus, device, level) {
-      let deviceGain = new Tone.Gain(level);
-      device.connect(deviceGain);
-      deviceGain.connect(drumBus);
-      Object.defineProperty(device, "level", {
-        get:()=>{return deviceGain.gain.value; },
-        set:(val)=>{deviceGain.gain.value = val; }
-      });
-    }
+    this.createDeviceGain(this.groupBus, this.openhihat, this.params.openhihatLevel);
   }
   
   get lowtom() { return this.toms.low; }
   get midtom() { return this.toms.mid; }
   get hightom() { return this.toms.hi; }
-  
-  getDeviceParameter(device, parameterPath) {
-    let parts = parameterPath.split(".");
-    let name = parts[parts.length - 1];
-    
-    let parameterContext = device;
-    for (let partIndex = 0; partIndex < parts.length - 1; partIndex++) {
-      parameterContext = parameterContext[parts[partIndex]];
-    }
-    let parameter = parameterContext[name];
-    return parameter;
-  }
-  
-  getDeviceParameterValue(device, parameterPath) {
-    let parts = parameterPath.split(".");
-    let parameterName = parts[parts.length - 1];
-    
-    try {
-      let parameterParent = this.getDeviceParameterParent(device, parameterPath);
-      return parameterParent[parameterName];
-    }
-    catch (error) {
-      console.error("Error " + error, error.stack, device)
-    }
-    
-  }
-    
-  getDeviceParameterParent(device, parameterPath) {
-    let parts = parameterPath.split(".");
-    let name = parts[parts.length - 1];
-        
-    let parameterContext = device;
-    for (let partIndex = 0; partIndex < parts.length - 1; partIndex++) {
-      parameterContext = parameterContext[parts[partIndex]];
-    }
-    return parameterContext;
-  }
-    
-  updateDeviceParameter(device, parameterPath, value) {
-    let parts = parameterPath.split(".");
-    let parameterName = parts[parts.length - 1];
-
-    let parameterParent = this.getDeviceParameterParent(device, parameterPath);
-   // console.log("Updating " + parameterPath + " to " + value, parameterParent)
-    parameterParent[parameterName] = value;
-  }
 }
 
 const knobValues = {
