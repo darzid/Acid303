@@ -7,7 +7,7 @@ export class JamConnectApp {
   knobsByName = {};
   switchesByName = {};
   
-  constructor(appName, audioGraph) {
+  constructor(appName, audioGraph, visualizerStrokeColor = "#22c55e", visualizerBackgroundColor = "#091209") {
     this.appName = appName;
     this.audioGraph = audioGraph;
     
@@ -35,7 +35,7 @@ export class JamConnectApp {
     this.midiDot = document.getElementById('midi-dot');
     
     this.activeMidiInput = null;
-    this.visualizer = new Visualizer(this.audioGraph.waveAnalyser, "visualizer-canvas");
+    this.visualizer = new Visualizer(this.audioGraph.waveAnalyser, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
     
     this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"));
     this.jcClient.connector.getFullStateSnapshot = () => this.getFullStateJamConnectSnapshot();

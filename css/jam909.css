@@ -35,3 +35,5 @@
 
 .device-knobs { height: stretch; }
 .device-knobs-title { display: block; width: stretch; margin: 0; text-shadow: 0.03em 0.02em 0.05em black; }
+
+#display-tempo { color: rgb(252,211,77); text-shadow: 0 0 8px rgba(252, 212, 74, 0.7); }

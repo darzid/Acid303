@@ -1,6 +1,8 @@
 class Visualizer {
-	constructor(waveAnalyser, canvasElementId) {
+	constructor(waveAnalyser, canvasElementId, strokeColor = "#22c55e", bgColor = "#091209") {
 		this.waveAnalyser = waveAnalyser;
+		this.strokeColor = strokeColor;
+		this.bgColor = bgColor;
 		this.canvas = document.getElementById(canvasElementId);
 		this.ctx = this.canvas.getContext('2d');
 		this.resizeCanvas();
@@ -27,16 +29,16 @@ class Visualizer {
 	drawVisualizer() {
 		requestAnimationFrame(() => this.drawVisualizer());
 		
-		this.ctx.fillStyle = '#091209';
+		this.ctx.fillStyle = this.bgColor;
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 		
 		if (!this.isActive) return;
 		
 		const values = this.waveAnalyser.getValue();
 		this.ctx.lineWidth = 2;
-		this.ctx.strokeStyle = '#22c55e';
+		this.ctx.strokeStyle = this.strokeColor;
 		this.ctx.shadowBlur = 8;
-		this.ctx.shadowColor = '#22c55e';
+		this.ctx.shadowColor = this.strokeColor;
 		this.ctx.beginPath();
 		
 		const sliceWidth = this.canvas.width / values.length;

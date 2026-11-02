@@ -3,7 +3,7 @@ import { JamConnectApp } from "./jamconnect-app.js";
 
 export class App extends JamConnectApp {
   constructor() {
-    super("jam303", new AudioGraph());
+    super("jam303", new AudioGraph(), "#22c55e");
     
     let swRegistration = null;
     if (location.origin !== "file://") {
