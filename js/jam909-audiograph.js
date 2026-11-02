@@ -102,7 +102,7 @@ export class AudioGraph extends AudioGraphBase {
       detune: this.params.closedhihatTune,
       envelope: 
       { 
-        attack: 0.01, 
+        attack: 0.05, 
         attackCurve: "linear",
         decay: this.params.closedhihatDecay, 
         decayCurve: "exponential",
@@ -114,7 +114,7 @@ export class AudioGraph extends AudioGraphBase {
       harmonicity: 0.65,
       modulationIndex: 1,
       octaves: 1.5,
-      volume: 1.5
+      volume: 1
     });
     this.createDeviceGain(this.groupBus, this.closedhihat, this.params.closedhihatLevel);
     
@@ -134,7 +134,7 @@ export class AudioGraph extends AudioGraphBase {
       harmonicity: 0.65,
       modulationIndex: 1,
       octaves: 1.5,
-      volume: 1.5
+      volume: 1
     });
     this.createDeviceGain(this.groupBus, this.openhihat, this.params.openhihatLevel);
   }
