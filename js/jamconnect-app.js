@@ -7,10 +7,11 @@ export class JamConnectApp {
   knobsByName = {};
   switchesByName = {};
   
-  constructor(appName, audioGraph, visualizerStrokeColor = "#22c55e", visualizerBackgroundColor = "#091209") {
+  constructor(appName, audioGraph, visualizerStrokeColor = "#22c55e", visualizerBackgroundColor = "#091209", themeColorName = "emerald") {
     this.appName = appName;
     this.audioGraph = audioGraph;
     
+    this.themeColorName = themeColorName;
     this.displayTempo = document.getElementById('display-tempo');
     this.playLed = document.getElementById('play-led');
     
@@ -269,7 +270,7 @@ export class JamConnectApp {
     if (isPlaying) {
       this.stopBtn.style.display = "flex";
       this.playBtn.style.display = "none";
-      this.playLed.className = 'w-3 h-3 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/80 animate-pulse';
+      this.playLed.className = `w-3 h-3 rounded-full bg-${this.themeColorName}-500 shadow-md shadow-${this.themeColorName}-500/80 animate-pulse`;
     } else {
       this.currentStep = 0;
       this.stopBtn.style.display = "none";
@@ -339,7 +340,7 @@ export class JamConnectApp {
           : inputs.map(inp => `<option value="${inp.id}">${inp.name || 'MIDI Input'}</option>`).join('');
     
         if (inputs.length > 0) {
-          if (this.midiDot) this.midiDot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400';
+          if (this.midiDot) this.midiDot.className = `w-2 h-2 rounded-full bg-${this.themeColorName}-400 shadow-sm shadow-${this.themeColorName}-400`;
           if (!this.activeMidiInput) {
             this.activeMidiInput = inputs[0];
             this.activeMidiInput.onmidimessage = (event) => this.handleHardwareMidiMessage(event);
@@ -464,7 +465,7 @@ export class JamConnectApp {
       Tone.Draw.schedule(() => {
         document.querySelectorAll('[id^="step-led-"]').forEach((led, idx) => {
           if (idx === stepIdx) {
-            led.className = 'w-3 h-3 rounded-full bg-emerald-400 border border-emerald-300 shadow-md shadow-emerald-400/80 scale-125';
+            led.className = `w-3 h-3 rounded-full bg-${this.themeColorName}-400 border border-${this.themeColorName}-300 shadow-md shadow-${this.themeColorName}-400/80 scale-125`;
           } else {
             led.className = 'w-3 h-3 rounded-full bg-slate-950 border border-slate-800';
           }

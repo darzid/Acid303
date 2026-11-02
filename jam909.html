@@ -86,7 +86,7 @@
         
         <div id="delay" class="flex items-center gap-1">
           <label class="text-xs font-bold text-slate-800">DELAY:</label>
-          <input type="checkbox" id="delay-toggle" checked class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
+          <input type="checkbox" id="delay-toggle" checked class="w-4 h-4 accent-amber-600 rounded cursor-pointer">
         </div>
       </div>
     </div>
@@ -416,7 +416,7 @@
             <div id="preset-selector" class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <div class="flex flex-col">
                 <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
-                <select id="pattern-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
+                <select id="pattern-select" class="bg-slate-900 text-amber-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-amber-500">
                 </select>
               </div>
             </div>
@@ -451,14 +451,14 @@
           <div class="flex flex-col w-full gap-2">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex flex-wrap items-center gap-2">
-                <button id="invite-btn" class="px-4 py-2 synth-btn text-emerald-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
-                  <i data-lucide="radio" class="w-4 h-4 fill-emerald-700"></i> INVITE
+                <button id="invite-btn" class="px-4 py-2 synth-btn text-amber-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+                  <i data-lucide="radio" class="w-4 h-4 fill-amber-700"></i> INVITE
                 </button>
-                <button id="join-btn" class="px-4 py-2 synth-btn text-emerald-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
-                  <i data-lucide="plug-zap" class="w-4 h-4 fill-emerald-700"></i> JOIN
+                <button id="join-btn" class="px-4 py-2 synth-btn text-amber-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+                  <i data-lucide="plug-zap" class="w-4 h-4 fill-amber-700"></i> JOIN
                 </button>
-                <button id="resync-btn" class="px-4 py-2 synth-btn text-emerald-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
-                  <i data-lucide="cloud-sync" class="w-4 h-4 fill-emerald-700"></i> RESYNC
+                <button id="resync-btn" class="px-4 py-2 synth-btn text-amber-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+                  <i data-lucide="cloud-sync" class="w-4 h-4 fill-amber-700"></i> RESYNC
                 </button>
               </div>
 
@@ -466,7 +466,7 @@
               <div class="flex items-center gap-2 bg-slate-900 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700">
                 <span id="midi-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
                 <span class="text-[10px] font-mono uppercase text-slate-400">MIDI:</span>
-                <select id="midi-input-select" class="bg-slate-950 text-emerald-400 font-mono text-xs px-2 py-0.5 rounded border border-slate-700 outline-none">
+                <select id="midi-input-select" class="bg-slate-950 text-amber-400 font-mono text-xs px-2 py-0.5 rounded border border-slate-700 outline-none">
                   <option value="">No MIDI Device</option>
                 </select>
               </div>
@@ -478,10 +478,10 @@
             <!-- Live Quantized Jam Pads & Note Triggers (Synced over WebRTC) -->
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 mt-1 text-slate-100">
               <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
-                <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">LIVE JAM PADS &amp; MIDI TRIGGERS (QUANTIZED SYNC)</span>
+                <span class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">LIVE JAM PADS &amp; MIDI TRIGGERS (QUANTIZED SYNC)</span>
                 <div class="flex items-center gap-2 text-xs font-mono">
                   <label class="text-slate-400">QUANTIZE SNAP:</label>
-                  <select id="jam-snap-select" class="bg-slate-950 text-emerald-400 border border-slate-700 rounded px-2 py-0.5 text-xs">
+                  <select id="jam-snap-select" class="bg-slate-950 text-amber-400 border border-slate-700 rounded px-2 py-0.5 text-xs">
                     <option value="0.75">1/16 Tight (75%)</option>
                     <option value="0.5" selected>1/16 Groove (50%)</option>
                     <option value="0">Free / Immediate (0%)</option>

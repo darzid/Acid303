@@ -19,7 +19,7 @@
 }
 
 .tab-strip .synth-btn.active-led {
-	border-top: 3px solid #228ee5;
+	border-top: 3px solid rgb(252,211,77);
   background: linear-gradient(180deg, #424850 0%, #041328 100%);
 }
 

@@ -4,7 +4,7 @@ import { JamConnectApp } from "./jamconnect-app.js";
 
 export class App extends JamConnectApp {
   constructor() {
-    super("jam909", new AudioGraph(), "#de9e09", "#100B09");
+    super("jam909", new AudioGraph(), "#de9e09", "#100B09", "amber");
     
     let swRegistration = null;
     if (location.origin !== "file://") {
