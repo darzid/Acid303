@@ -6,7 +6,7 @@
   
   <title>JAM303 Acid Synthesizer & Sequencer</title>
   
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="./jam303-manifest.json">
   <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
   <link rel="stylesheet" href="css/styles.css">
   
@@ -18,12 +18,18 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <script src="js/flags.js"></script>
-  <script src="js/app.js"></script>
+
   <script src="js/knob.js"></script>
-  <script src="js/sequencer.js"></script>
+  <script src="js/jam303-sequencer.js"></script>
   <script src="js/tabcontrol.js"></script>
   <script src="js/visualizer.js"></script>
-  <script src="js/audiograph.js"></script>
+  
+    <script>
+    window.onerror = function(message, url, lineNumber) {  
+    console.error(`Error: ${message}, at: ${url}, line: ${lineNumber}`);
+    return true;
+  };  
+  </script>
 </head>
 
 <body class="flex flex-col justify-between items-center bg-slate-950">
@@ -110,67 +116,67 @@
             <!-- Knob 1: Cutoff -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">CUTOFF</span>
-              <div class="knob-container" id="knob-cutoff" data-value="0.4">
+              <div class="knob-container" id="knob-tb303-cutoff" data-value="0.4">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-cutoff">400 Hz</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-cutoff">400 Hz</span>
             </div>
     
             <!-- Knob 2: Resonance -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">RESONANCE</span>
-              <div class="knob-container" id="knob-reso" data-value="0.7">
+              <div class="knob-container" id="knob-tb303-reso" data-value="0.7">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-reso">7.0</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-reso">7.0</span>
             </div>
     
             <!-- Knob 3: Env Mod -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">ENV MOD</span>
-              <div class="knob-container" id="knob-envmod" data-value="0.6">
+              <div class="knob-container" id="knob-tb303-envmod" data-value="0.6">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-envmod">60%</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-envmod">60%</span>
             </div>
     
             <!-- Knob 4: Decay -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
-              <div class="knob-container" id="knob-decay" data-value="0.3">
+              <div class="knob-container" id="knob-tb303-decay" data-value="0.3">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-decay">300ms</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-decay">300ms</span>
             </div>
     
             <!-- Knob 5: Accent -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">ACCENT</span>
-              <div class="knob-container" id="knob-accent" data-value="0.8">
+              <div class="knob-container" id="knob-tb303-accent" data-value="0.8">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-accent">80%</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-accent">80%</span>
             </div>
     
             <!-- Knob 6: Distortion -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DRIVE</span>
-              <div class="knob-container" id="knob-drive" data-value="0.35">
+              <div class="knob-container" id="knob-tb303-drive" data-value="0.35">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-drive">35%</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-drive">35%</span>
             </div>
             
           </div>
@@ -262,42 +268,6 @@
                   </select>
                 </div>
               </div>
-
-              <!-- Drum + Acid Stabs Row -->
-              <div class="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                <button type="button" data-pad-inst="kick" data-pad-note="C1" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-amber-600/30 active:bg-amber-500 active:text-slate-950 border border-amber-500/50 text-amber-300 font-mono font-bold text-xs transition flex flex-col items-center">
-                  <span>KICK</span>
-                  <span class="text-[9px] text-slate-400">909 BD</span>
-                </button>
-                <button type="button" data-pad-inst="snare" data-pad-note="D1" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-rose-600/30 active:bg-rose-500 active:text-slate-950 border border-rose-500/50 text-rose-300 font-mono font-bold text-xs transition flex flex-col items-center">
-                  <span>SNARE</span>
-                  <span class="text-[9px] text-slate-400">909 SD</span>
-                </button>
-                <button type="button" data-pad-inst="hihat" data-pad-note="F#1" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-sky-600/30 active:bg-sky-400 active:text-slate-950 border border-sky-500/50 text-sky-300 font-mono font-bold text-xs transition flex flex-col items-center">
-                  <span>HI-HAT</span>
-                  <span class="text-[9px] text-slate-400">909 CH</span>
-                </button>
-                <button type="button" data-pad-inst="clap" data-pad-note="E1" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-fuchsia-600/30 active:bg-fuchsia-500 active:text-slate-950 border border-fuchsia-500/50 text-fuchsia-300 font-mono font-bold text-xs transition flex flex-col items-center">
-                  <span>CLAP</span>
-                  <span class="text-[9px] text-slate-400">909 CP</span>
-                </button>
-                <button type="button" data-pad-inst="303" data-pad-note="C2" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-emerald-600/30 active:bg-emerald-400 active:text-slate-950 border border-emerald-500/50 text-emerald-300 font-mono font-bold text-xs transition flex flex-col items-center">
-                  <span>303 C2</span>
-                  <span class="text-[9px] text-slate-400">BASS</span>
-                </button>
-                <button type="button" data-pad-inst="303" data-pad-note="D#2" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-emerald-600/30 active:bg-emerald-400 active:text-slate-950 border border-emerald-500/50 text-emerald-300 font-mono font-bold text-xs transition flex flex-col items-center">
-                  <span>303 D#2</span>
-                  <span class="text-[9px] text-slate-400">MINOR 3RD</span>
-                </button>
-                <button type="button" data-pad-inst="303" data-pad-note="G2" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-emerald-600/30 active:bg-emerald-400 active:text-slate-950 border border-emerald-500/50 text-emerald-300 font-mono font-bold text-xs transition flex flex-col items-center">
-                  <span>303 G2</span>
-                  <span class="text-[9px] text-slate-400">FIFTH</span>
-                </button>
-                <button type="button" data-pad-inst="303-accent" data-pad-note="C3" class="jam-pad py-3 rounded-lg bg-slate-800 hover:bg-emerald-600/30 active:bg-emerald-400 active:text-slate-950 border border-emerald-500/50 text-emerald-300 font-mono font-bold text-xs transition flex flex-col items-center">
-                  <span>303 C3!</span>
-                  <span class="text-[9px] text-amber-400">ACCENT</span>
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -310,8 +280,11 @@
     TB-303 Web Synthesizer Simulator &bull; Built with Tone.js, PeerJS WebRTC &amp; Web MIDI API
     <div id="console-log">LOG</div>
   </footer>
+
   <script src="https://darzid.github.io/JamConnect/jamconnect.js"></script>
+  <script src="js/jam303-app.js" type="module"></script>
   <script>
-    App.run()</script>
+    //App.run();
+    console.log("app started")</script>
 </body>
 </html>

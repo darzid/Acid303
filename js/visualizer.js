@@ -6,13 +6,13 @@ class Visualizer {
 		this.resizeCanvas();
 		window.addEventListener('resize', () => this.resizeCanvas());
 		
-		this._isPlaying = false;
-		Tone.Transport.on("start", () => {
+		this._isPlaying = true;
+		/*Tone.Transport.on("start", () => {
 		  this._isPlaying = true;
 		});
     Tone.Transport.on("stop", () => {
     	this._isPlaying = false;
-    });
+    });*/
     this.drawVisualizer();
 	}
 	

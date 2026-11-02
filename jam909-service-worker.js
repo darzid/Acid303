@@ -1,9 +1,10 @@
-const CACHE_NAME = 'Jam303-v1.0.0';
+const CACHE_NAME = 'Jam909-v1.0.1';
 const ASSETS = [
   './',
   
   './css/styles.css',
-    
+  './css/jam909.css',
+  
   './images/favicon.ico',
   './images/favicon-192x192.png',
   './images/favicon-512x512.png',
@@ -11,19 +12,20 @@ const ASSETS = [
   './images/share.png',
   
   './js/flags.js',
-  './js/app.js',
-  './js/audiograph.js',
+  './js/jam909-app.js',
+  './js/jam909-audiograph.js',
+  './js/jam909-sequencer.js',
+  './js/jamconnect-app.js',
   './js/knob.js',
-  './js/sequencer.js',
   './js/tabcontrol.js',
   './js/qrcodemanager.js',
   './js/visualizer.js',
   
-  './index.html',
-  './manifest.json',
-  './service-worker.js'
+  './jam909.html',
+  './jam909-manifest.json',
+  './jam909-service-worker.js'
 ];
-///
+/////////////////
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
@@ -54,7 +56,7 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         return response;
       }).catch(() => {
-        return caches.match('./index.html');
+        return caches.match('./jam909.html');
       });
     })
   );
