@@ -2,33 +2,14 @@ export class JamConnectApp {
   ccMap = {};
   isAudioStarted = false;
   currentStep = 0;
-  knobsByName = {};
   parameterKnobs = {};
+  parameterSwitches = {};
+  knobsByName = {};
+  switchesByName = {};
   
   constructor(appName, audioGraph) {
     this.appName = appName;
-    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"));
-    
-    this.jcClient.connector.getFullStateSnapshot = () => this.getSnapshot();
-    this.jcClient.connector.applyFullStateSnapshot = (appName, snapshot) => this.applySnapshot(appName, snapshot);
-    this.jcClient.connector.onMasterSettingUpdated = (appName, setting, value) => this.applyMasterSettingUpdate(appName, setting, value);
-    this.jcClient.connector.onDeviceParameterChanged = (appName, paramName, value, normalizedValue) => {
-      this.jcClient.isApplyingRemoteUpdate = true;
-      try {
-        if (this.knobsByName[paramName]) {
-          const targetVal = typeof normalizedValue === 'number' ? normalizedValue : value;
-          this.knobsByName[paramName].setValue(targetVal, true);
-        }
-        else {
-          this.applyDeviceParameterChange(appName, paramName, value, normalizedValue);
-        }
-      } finally {
-        this.jcClient.isApplyingRemoteUpdate = false;
-      }
-    };
-    
     this.audioGraph = audioGraph;
-    this.visualizer = new Visualizer(this.audioGraph.waveAnalyser, "visualizer-canvas");
     
     this.displayTempo = document.getElementById('display-tempo');
     this.playLed = document.getElementById('play-led');
@@ -52,24 +33,239 @@ export class JamConnectApp {
     
     this.midiSelect = document.getElementById('midi-input-select');
     this.midiDot = document.getElementById('midi-dot');
-    this.activeMidiInput = null;
     
+    this.activeMidiInput = null;
+    this.visualizer = new Visualizer(this.audioGraph.waveAnalyser, "visualizer-canvas");
+    
+    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"));
+    this.jcClient.connector.getFullStateSnapshot = () => this.getFullStateJamConnectSnapshot();
+    this.jcClient.connector.applyFullStateSnapshot = (appName, snapshot) => this.applyFullStateJamConnectSnapshot(appName, snapshot);
+    this.jcClient.connector.onMasterSettingUpdated = (appName, setting, value) => this.applyJamConnectMasterSettingUpdate(appName, setting, value);
+    this.jcClient.connector.onDeviceParameterChanged = (appName, paramName, value, normalizedValue) => this.applyJamConnectDeviceParameterChange(appName, paramName, value, normalizedValue);
     this.jcClient.onStateChanged = (state) => this.onStateChanged(state);
+  }
+  
+  //// ------------------------
+  //// UI SETUP METHODS
+  //// ------------------------
+  setupParameterControls() {
+    this.setupParameterKnobs();
+    this.setupParameterSwitches();
+  }
+  
+  setupParameterKnobs() {
+    Object.keys(this.parameterKnobs).forEach(deviceName => {
+      let device = this.audioGraph[deviceName];
+      Object.keys(this.parameterKnobs[deviceName]).forEach(parameterName => {
+        let parameterControlMapping = this.parameterKnobs[deviceName][parameterName];
+        
+        let paramKey = `${deviceName.toLowerCase()}-${parameterName.toLowerCase()}`;
+        
+        let offset = parameterControlMapping.offset ? parameterControlMapping.offset : 0;
+        let paramValue = this.audioGraph.getDeviceParameterValue(device, parameterControlMapping.deviceParameter) - offset;
+        
+        let min = parameterControlMapping.min ? parameterControlMapping.min : 0;
+        let max = parameterControlMapping.max ? parameterControlMapping.max : 1;
+        let displayValueMultiplier = parameterControlMapping.displayValueMultiplier ? parameterControlMapping.displayValueMultiplier : 1;
+        let displayValueUnit = parameterControlMapping.displayValueUnit ? " " + parameterControlMapping.displayValueUnit : "";
+        
+        parameterControlMapping.lastSentAt = performance.now();
+        
+        this.setupKnob(`knob-${paramKey}`, paramKey, (knobValue) => {
+          const parameterValue = offset + knobValue;
+          const parameterDisplayValue = `${(knobValue * displayValueMultiplier).toFixed(2)}${displayValueUnit}`;
+          
+          this.onParameterChange(device, deviceName, parameterName, paramKey, parameterControlMapping, parameterValue, parameterDisplayValue);
+          
+        }, paramValue, min, max);
+      });
+    });
   }
   
   setupKnob(id, paramKey, onChange, value, min = 0, max = 1) {
     this.knobsByName[paramKey] = new Knob(id, paramKey, onChange, value, min, max);
   }
-  
-  async initializeAudio() {
-    if (this.isAudioStarted) return;
-    await Tone.start();
-    this.isAudioStarted = true;
-      
-    if (this.placeholder) this.placeholder.style.display = 'none';
+
+  setupParameterSwitches() {
+    Object.keys(this.parameterSwitches).forEach(deviceName => {
+      let device = this.audioGraph[deviceName];
+      Object.keys(this.parameterSwitches[deviceName]).forEach(parameterName => {
+        let parameterControlMapping = this.parameterSwitches[deviceName][parameterName];
+        
+        let paramKey = `${deviceName.toLowerCase()}-${parameterName.toLowerCase()}`;
+        let paramValue = this.audioGraph.getDeviceParameterValue(device, parameterControlMapping.deviceParameter);
+        let displayValuePrefix = parameterControlMapping.displayValuePrefix ? parameterControlMapping.displayValuePrefix : "";
+        parameterControlMapping.lastSentAt = performance.now();
+        
+        this.setupSwitch(paramKey, (parameterValue) => {
+          const parameterDisplayValue = `${displayValuePrefix}${parameterValue}`;
+          
+          this.onParameterChange(device, deviceName, parameterName, paramKey, parameterControlMapping, parameterValue, parameterDisplayValue);
+        }, paramValue);
+      });
+    });
   }
   
-  syncTransportUI(isPlaying) {
+  setupSwitch(paramKey, onChange, value) {
+    this.switchesByName[paramKey] = new Switch(paramKey, onChange, value);
+  }
+  
+  onParameterChange(device, deviceName, parameterName, paramKey, parameterControlMapping, parameterValue, parameterDisplayValue = null) {
+    this.audioGraph.params[`${deviceName}${parameterName}`] = parameterValue;
+    this.audioGraph.updateDeviceParameter(device, parameterControlMapping.deviceParameter, parameterValue);
+    if (!this.jcClient.isApplyingRemoteUpdate) {
+      const now = performance.now();
+      if (now - parameterControlMapping.lastSentAt > 30) {
+        parameterControlMapping.lastSentAt = now;
+        this.jcClient.connector.sendDeviceParameterChange(paramKey, parameterValue, parameterValue);
+      }
+    }
+    const valueDisplayElement = document.getElementById(`val-${paramKey}`);
+    if (valueDisplayElement) {
+      if (parameterDisplayValue == null)
+        parameterDisplayValue = parameterValue;
+      valueDisplayElement.textContent = parameterDisplayValue;
+    }
+  }
+  
+  //// ------------------------
+  //// JAM CONNECT SYNC METHODS 
+  //// ------------------------
+  
+  // Builds and returns a snapshot containing all relevent 
+  // parameters, settings and pattern data for other JamConnect clients.
+  getFullStateJamConnectSnapshot() {
+    let snapshot = {};
+    this.addAppSpecificDataToJamConnectSnapshot(snapshot);
+    this.addCommonDataToJamConnectSnapshot(snapshot);
+    return snapshot;
+  }
+  
+  // Adds all common data (data used in each JamConnect app) 
+  // to the snapshot dictionary.
+  addCommonDataToJamConnectSnapshot(snapshot) {
+    snapshot.pattern = pattern;
+    snapshot.knobValues = { ...knobValues };
+    snapshot.switchValues = { ...switchValues };
+    snapshot.bpm = Math.round(Tone.Transport.bpm.value);
+    snapshot.swingPct = Math.round((Tone.Transport.swing || 0) * 100);
+    return snapshot;
+  }
+  
+  // Method to be implemented by each specific JamConnect app,
+  // to add all app specific data to the snapshot dictionary.
+  addAppSpecificDataToJamConnectSnapshot(snapshot) {}
+  
+  applyFullStateJamConnectSnapshot(appName, snapshot) {
+    if (!snapshot) return;
+    
+    this.jcClient.isApplyingRemoteUpdate = true;
+    try {
+      this.applyCommonDataUpdatesFromJamConnectSnapshot(appName, snapshot);
+      this.applyAppSpecificDataUpdatesFromJamConnectSnapshot(appName, snapshot);
+    } finally {
+      this.jcClient.isApplyingRemoteUpdate = false;
+    }
+  }
+
+  applyCommonDataUpdatesFromJamConnectSnapshot(appName, snapshot) {
+    this.applyPatternUpdateFromJamConnectSnapshot(appName, snapshot.pattern);
+    this.applyDeviceParameterChangesFromJamConnectSnapshot(appName, snapshot.parameterValues);
+    this.applyTransportUpdatesFromJamConnectSnapshot(appName, snapshot.bpm, snapshot.swingPct);
+  }
+  
+  applyPatternUpdateFromJamConnectSnapshot(appName, snapshotPattern) {
+    if (Array.isArray(snapshotPattern) && snapshotPattern.length === 16) {
+      pattern = JSON.parse(JSON.stringify(snapshotPattern));
+      drawGrid();
+      renderGrid();
+    }
+  }
+  
+  applyDeviceParameterChangesFromJamConnectSnapshot(appName, snapshotParamValues) {
+    if (snapshotParamValues) {
+      Object.entries(snapshotParamValues).forEach(([parameterName, value]) => {
+        this.applyDeviceParameterChange(parameterName, value);
+      });
+    }
+  }
+  
+  applyDeviceParameterChange(appName, parameterName, value) {
+    if (this.knobsByName[parameterName] && typeof value === 'number') {
+      this.knobsByName[parameterName].value = value;
+    } else if (this.switchesByName[parameterName]) {
+      this.switchesByName[parameterName].value = value;
+    }
+  }
+  
+  applyTransportUpdatesFromJamConnectSnapshot(appName, snapshotBpm, snapshotSwingPct) {
+    if (typeof snapshotBpm === 'number')
+      this.updateBpm(snapshotBpm);
+    if (typeof snapshotSwingPct === 'number')
+      this.updateSwing(snapshotSwingPct);
+  }
+  
+  // Method to be implemented by each specific JamConnect app,
+  // to apply all app specific data updates from the snapshot dictionary.
+  applyAppSpecificDataUpdatesFromJamConnectSnapshot(appName, snapshot) {}
+  
+  applyJamConnectMasterSettingUpdate(appName, setting, value) {
+    this.jcClient.isApplyingRemoteUpdate = true;
+    try {
+      if (setting === 'swing') {
+        const pct = parseFloat(value);
+        this.updateSwing(pct / 100);
+      } 
+      else {
+        this.applyAppSpecificJamConnectMasterSettingUpdate(appName, setting, value);
+      }
+    } finally {
+      this.jcClient.isApplyingRemoteUpdate = false;
+    }
+  }
+  
+  // Method to be implemented by each specific JamConnect app,
+  // to apply all app specific data updates from the snapshot dictionary.
+  applyAppSpecificJamConnectMasterSettingUpdate(appName, setting, value) {}
+  
+  applyJamConnectDeviceParameterChange(appName, paramName, value, normalizedValue) {
+    this.jcClient.isApplyingRemoteUpdate = true;
+    try {
+      const targetVal = typeof normalizedValue === 'number' ? normalizedValue : value;
+      this.applyDeviceParameterChange(appName, paramName, targetVal);
+    } 
+    finally {
+      this.jcClient.isApplyingRemoteUpdate = false;
+    }
+  }
+  
+  //// ------------------------
+  //// COMMOM UI UPDATE METHODS
+  //// ------------------------
+  updateBpm(bpm) {
+    if (bpm == Tone.Transport.bpm.value) return;
+    
+    if (!this.jcClient.isApplyingRemoteUpdate) {
+      this.jcClient.bpm = bpm;
+      this.tempoSlider.value = bpm;
+      this.tempoVal.value = bpm;
+      this.displayTempo.textContent = `${bpm} BPM`;
+    }
+  }
+  
+  updateSwing(swingPercentage) {
+    if (swingPercentage == this.swingSlider.value) return;
+    
+    Tone.Transport.swing = swingPercentage / 100;
+    Tone.Transport.swingSubdivision = "16n";
+    this.swingSlider.value = swingPercentage;
+    this.swingVal.textContent = `${swingPercentage}%`;
+    
+    if (!this.jcClient.isApplyingRemoteUpdate)
+      this.jcClient.connector.sendMasterSettingUpdate(this.jcClient.connector.appName, 'swing', swingPercentage);
+  }
+  
+  updateTransportUI(isPlaying) {
     if (isPlaying) {
       this.stopBtn.style.display = "flex";
       this.playBtn.style.display = "none";
@@ -86,7 +282,7 @@ export class JamConnectApp {
       this.displayStep.classList.remove("highlight");
     }
   }
-    
+  
   onStateChanged(state) {
     //console.log("onStateChanged", this.inviteBtn)
     this.inviteBtn.disabled = !state.canInvite || state.isInviting;
@@ -98,12 +294,9 @@ export class JamConnectApp {
     this.stopBtn.disabled = !state.canStop;
     this.tempoSlider.disabled = !state.canChangeBpm;
     this.tempoVal.disabled = !state.canChangeBpm;
-    this.syncTransportUI(state.isPlaying);
     
-    const roundedBpm = Math.round(state.bpm);
-    this.tempoVal.value = roundedBpm;
-    this.tempoSlider.value = roundedBpm;
-    this.displayTempo.textContent = `${roundedBpm} BPM`;
+    this.updateTransportUI(state.isPlaying);
+    this.updateBpm(state.bpm);
     
     if (this.jamBadge) {
       if (state.userRole) {
@@ -115,6 +308,63 @@ export class JamConnectApp {
     }
   }
   
+
+  
+  //// ------------------------
+  //// AUDIO METHODS
+  //// ------------------------
+  async initializeAudio() {
+    if (this.isAudioStarted) return;
+    await Tone.start();
+    this.isAudioStarted = true;
+      
+    if (this.placeholder) this.placeholder.style.display = 'none';
+  }
+  
+  //// ------------------------
+  //// MIDI METHODS
+  //// ------------------------
+  async initWebMidi() {
+    if (!navigator.requestMIDIAccess) return;
+    
+    try {
+      const midiAccess = await navigator.requestMIDIAccess();
+      const updateDevices = () => {
+        if (!this.midiSelect) return;
+
+        const inputs = Array.from(midiAccess.inputs.values());
+        this.midiSelect.innerHTML = inputs.length === 0
+          ? '<option value="">No MIDI Device</option>'
+          : inputs.map(inp => `<option value="${inp.id}">${inp.name || 'MIDI Input'}</option>`).join('');
+    
+        if (inputs.length > 0) {
+          if (this.midiDot) this.midiDot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400';
+          if (!this.activeMidiInput) {
+            this.activeMidiInput = inputs[0];
+            this.activeMidiInput.onmidimessage = (event) => this.handleHardwareMidiMessage(event);
+          }
+        } else {
+          if (this.midiDot) this.midiDot.className = 'w-2 h-2 rounded-full bg-slate-500';
+          this.activeMidiInput = null;
+        }
+      };
+    
+      if (this.midiSelect) {
+        this.midiSelect.addEventListener('change', () => {
+          if (this.activeMidiInput) this.activeMidiInput.onmidimessage = null;
+          
+          this.activeMidiInput = midiAccess.inputs.get(this.midiSelect.value) || null;
+          if (this.activeMidiInput) this.activeMidiInput.onmidimessage = (event) => this.handleHardwareMidiMessage(event);
+        });
+      }
+    
+      midiAccess.onstatechange = updateDevices;
+      updateDevices();
+    } catch (err) {
+      console.warn('Web MIDI not enabled:', err);
+    }
+  }
+    
   handleHardwareMidiMessage(event) {
     const [status, data1, data2] = event.data;
     const command = status & 0xf0;
@@ -132,21 +382,9 @@ export class JamConnectApp {
     // Control Change (0xB0) -> Map common MIDI CCs to 303 Knobs
     else if (command === 0xb0) {
       const norm = data2 / 127;
-     /* const ccMap = {
-        1: 'cutoff',   // Mod wheel -> Cutoff
-        74: 'cutoff',  // Filter Cutoff
-        71: 'reso',    // Resonance
-        73: 'envmod',  // Env Mod
-        16: 'envmod',
-        75: 'decay',   // Decay
-        72: 'decay',
-        76: 'accent',  // Accent
-        77: 'drive'    // Drive
-      };*/
-      const targetKnob = this.ccMap[data1];
-      if (targetKnob && this.knobsByName[targetKnob]) {
-        this.knobsByName[targetKnob].value = norm;
-      }
+      const paramName = this.ccMap[data1];
+      if (paramName)
+        this.applyDeviceParameterChange("midi", paramName, norm);
     }
   }
     
@@ -156,77 +394,15 @@ export class JamConnectApp {
     return `${noteName}${Math.max(1, Math.min(4, octave))}`;
   }
   
-  getSnapshot() {
-    let snapshot = this.getAppSpecificSnapshot();
-    snapshot.pattern = pattern;
-    snapshot.knobValues = { ...knobValues };
-    snapshot.bpm = Math.round(Tone.Transport.bpm.value);
-    snapshot.swingPct = Math.round((Tone.Transport.swing || 0) * 100);
-    return snapshot;
-  }
-  
-  getAppSpecificSnapshot() {}
-  
-  applySnapshot(appName, snapshot) {
-    if (!snapshot) return;
-    this.jcClient.isApplyingRemoteUpdate = true;
-    try {
-      if (Array.isArray(snapshot.pattern) && snapshot.pattern.length === 16) {
-        pattern = JSON.parse(JSON.stringify(snapshot.pattern));
-        drawGrid();
-        renderGrid();
-      }
-      if (snapshot.knobValues) {
-        Object.entries(snapshot.knobValues).forEach(([k, v]) => {
-          if (this.knobsByName[k] && typeof v === 'number') {
-            this.knobsByName[k].setValue(v, true);
-          }
-        });
-      }
-      
-      if (typeof snapshot.bpm === 'number') {
-        Tone.Transport.bpm.value = snapshot.bpm;
-        this.tempoSlider.value = snapshot.bpm;
-        this.tempoVal.value = snapshot.bpm;
-        this.displayTempo.textContent = `${snapshot.bpm} BPM`;
-      }
-      if (typeof snapshot.swingPct === 'number') {
-        Tone.Transport.swing = snapshot.swingPct / 100;
-        Tone.Transport.swingSubdivision = "16n";
-        this.swingSlider.value = snapshot.swingPct;
-        this.swingVal.textContent = `${snapshot.swingPct}%`;
-      }
-
-    } finally {
-      this.jcClient.isApplyingRemoteUpdate = false;
-    }
-  }
-
-  applyMasterSettingUpdate(appName, setting, value) {
-    this.jcClient.isApplyingRemoteUpdate = true;
-    try {
-      if (setting === 'swing') {
-        const pct = parseFloat(value);
-        Tone.Transport.swing = pct / 100;
-        Tone.Transport.swingSubdivision = "16n";
-        this.swingSlider.value = pct;
-        this.swingVal.textContent = `${Math.round(pct)}%`;
-      } 
-      else {
-        this.applyAppSpecificMasterSettingUpdate(appName, setting, value);
-      }
-    } finally {
-      this.jcClient.isApplyingRemoteUpdate = false;
-    }
-  }
-  
-  applyAppSpecificMasterSettingUpdate(appName, setting, value) {}
-  
-  applyDeviceParameterChange(appName, paramName, value, normalizedValue) {}
-  
   playNote(note, stepData, duration, time) {}
   
-	run() {
+  
+  //// ------------------------
+  //// MAIN APP RUN METHOD
+  //// ------------------------
+	async run() {
+	  await this.initWebMidi();
+	  
 	  this.playBtn.addEventListener('click', async () => {
       await this.initializeAudio();
       await this.jcClient.startTransport();
@@ -271,15 +447,12 @@ export class JamConnectApp {
   
     this.swingSlider.addEventListener('input', (e) => {
       const pct = parseFloat(e.target.value);
-      Tone.Transport.swing = pct / 100;
-      Tone.Transport.swingSubdivision = "16n";
-      this.swingVal.textContent = `${Math.round(pct)}%`;
-      if (!this.jcClient.isApplyingRemoteUpdate) {
-        this.jcClient.connector.sendMasterSettingUpdate(this.jcClient.connector.appName, 'swing', pct);
-      }
+      this.updateSwing(pct);
     });
+  
+    this.setupParameterControls();
     
-        // Tone.js Repeat Loop — locked to Transport ticks for multi-peer beat alignment
+    // Tone.js Repeat Loop — locked to Transport ticks for multi-peer beat alignment
     Tone.Transport.scheduleRepeat((time) => {
       const sixteenthTicks = Tone.Time("16n").toTicks();
       const tickStep = Math.floor(Math.max(0, Tone.Transport.ticks) / sixteenthTicks) % 16;
@@ -317,46 +490,6 @@ export class JamConnectApp {
     
       this.currentStep = (stepIdx + 1) % 16;
     }, "16n");
-    
-	  async function initWebMidi() {
-      if (!navigator.requestMIDIAccess) return;
-      try {
-        const midiAccess = await navigator.requestMIDIAccess();
-        const updateDevices = () => {
-          if (!this.midiSelect) return;
-          const inputs = Array.from(midiAccess.inputs.values());
-          this.midiSelect.innerHTML = inputs.length === 0
-            ? '<option value="">No MIDI Device</option>'
-            : inputs.map(inp => `<option value="${inp.id}">${inp.name || 'MIDI Input'}</option>`).join('');
-    
-          if (inputs.length > 0) {
-            if (this.midiDot) this.midiDot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400';
-            if (!this.activeMidiInput) {
-              this.activeMidiInput = inputs[0];
-              this.activeMidiInput.onmidimessage = (event) => this.handleHardwareMidiMessage(event);
-            }
-          } else {
-            if (this.midiDot) this.midiDot.className = 'w-2 h-2 rounded-full bg-slate-500';
-            this.activeMidiInput = null;
-          }
-        };
-    
-        if (this.midiSelect) {
-          this.midiSelect.addEventListener('change', () => {
-            if (this.activeMidiInput) this.activeMidiInput.onmidimessage = null;
-            this.activeMidiInput = midiAccess.inputs.get(this.midiSelect.value) || null;
-            if (this.activeMidiInput) this.activeMidiInput.onmidimessage = (event) => this.handleHardwareMidiMessage(event);
-          });
-        }
-    
-        midiAccess.onstatechange = updateDevices;
-        updateDevices();
-      } catch (err) {
-        console.warn('Web MIDI not enabled:', err);
-      }
-    }
-    
-    initWebMidi();
     
 	    // Auto-Join Jam Session when opening a shared Invite URL (?session=303-XXXX&token=YYYY)
     window.addEventListener('DOMContentLoaded', () => {

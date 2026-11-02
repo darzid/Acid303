@@ -20,7 +20,6 @@ export class App extends JamConnectApp {
     this.waveSaw = document.getElementById('wave-saw');
     this.waveSqr = document.getElementById('wave-sqr');
     
-    
     this.ccMap = {
           1: 'cutoff',   // Mod wheel -> Cutoff
           74: 'cutoff',  // Filter Cutoff
@@ -43,7 +42,7 @@ export class App extends JamConnectApp {
         },
         Reso: {
           min: 1,
-          max: 19,
+          max: 20,
           deviceParameter: "filter.Q.value"
         },
         EnvMod: {
@@ -76,6 +75,15 @@ export class App extends JamConnectApp {
         },
       }
     }
+    
+    this.parameterSwitches = {
+      tb303: {
+        Waveform: {
+          deviceParameter: "oscillator.type",
+          displayValuePrefix: "WAVE: "
+        }
+      }
+    }
   }
   
   getAppSpecificSnapshot() {
@@ -85,11 +93,12 @@ export class App extends JamConnectApp {
     }
   }
   
-  applySnapshot(appName, snapshot) {
-    super.applySnapshot(appName, snapshot);
+  applyAppSpecificDataUpdatesFromJamConnectSnapshot(appName, snapshot) {
+    /*
     if (snapshot.waveform) {
       this.applyWaveform(snapshot.waveform, true);
     }
+    */
     
     if (typeof snapshot.delayEnabled === 'boolean') {
       this.delayToggle.checked = snapshot.delayEnabled;
@@ -104,13 +113,15 @@ export class App extends JamConnectApp {
     }
   }
   
+  /*
   applyDeviceParameterChange(appName, paramName, value, normalizedValue) {
     if (paramName == "waveform") {
       this.applyWaveform(value);
     }
   }
-  
+  */
   playNote(note, stepData, duration, time) {
+    //console.log("playNote", note, stepData, duration, time)
     this.audioGraph.play303StepNote(note, stepData.accent, stepData.slide, duration, time);
   }
   
@@ -123,38 +134,7 @@ export class App extends JamConnectApp {
     TabControl.render();
     Sequencer.render(this.jcClient);
     
-    Object.keys(this.parameterKnobs).forEach(deviceName => {
-      let device = this.audioGraph[deviceName];
-      Object.keys(this.parameterKnobs[deviceName]).forEach(parameterName => {
-        let parameterKnob = this.parameterKnobs[deviceName][parameterName];
-        let offset = parameterKnob.offset ? parameterKnob.offset : 0;
-        let min = parameterKnob.min ? parameterKnob.min : 0;
-        let max = parameterKnob.max ? parameterKnob.max : 1;
-        let displayValueMultiplier = parameterKnob.displayValueMultiplier ? parameterKnob.displayValueMultiplier : 1;
-        let displayValueUnit = parameterKnob.displayValueUnit ? " " + parameterKnob.displayValueUnit : "";
-        parameterKnob.lastSentAt = performance.now();
-        let paramKey = `${deviceName.toLowerCase()}-${parameterName.toLowerCase()}`;
-        let paramValue = this.audioGraph.getDeviceParameterValue(device, parameterKnob.deviceParameter) - offset;
-        
-        this.setupKnob(`knob-${paramKey}`, paramKey, (knobValue) => {
-          
-          const parameterValue = offset + knobValue;
-          this.audioGraph.params[`${deviceName}${parameterName}`] = parameterValue;
-          this.audioGraph.updateDeviceParameter(device, parameterKnob.deviceParameter, parameterValue);
-          
-          if (!this.jcClient.isApplyingRemoteUpdate) {
-            const now = performance.now();
-            if (now - parameterKnob.lastSentAt > 30) {
-              parameterKnob.lastSentAt = now;
-              this.jcClient.connector.sendDeviceParameterChange(paramKey, parameterValue, parameterValue);
-            }
-          }
-          const valueDisplayElement = document.getElementById(`val-${paramKey}`);
-          valueDisplayElement.textContent = `${(knobValue * displayValueMultiplier).toFixed(2)}${displayValueUnit}`;
-        }, paramValue, min, max);
-      });
-    });
-    
+    /*
     function applyWaveform(type, silentNetwork = false) {
       this.audioGraph.params.waveform = type;
       this.audioGraph.tb303.oscillator.type = type;
@@ -172,8 +152,10 @@ export class App extends JamConnectApp {
       }
     }
     
+    
     this.waveSaw.addEventListener('click', () => applyWaveform('sawtooth', false));
     this.waveSqr.addEventListener('click', () => applyWaveform('square', false));
+    */ 
     
     this.delayToggle.addEventListener('change', (e) => {
       this.audioGraph.delay.wet.value = e.target.checked ? 0.25 : 0;

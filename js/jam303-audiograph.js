@@ -1,13 +1,13 @@
 export class AudioGraph {
   constructor() {
     this.params = {
-      cutoff: 400,     // Hz
-      resonance: 7,    // Q factor
-      envMod: 0.6,     // 0 to 1
-      decay: 0.3,      // seconds
-      accent: 0.8,     // 0 to 1
-      drive: 0.35,     // distortion amount
-      waveform: 'sawtooth'
+      tb303Cutoff: 400,     // Hz
+      tb303Resonance: 7,    // Q factor
+      tb303Envmod: 0.6,     // 0 to 1
+      tb303Decay: 0.3,      // seconds
+      tb303Accent: 0.8,     // 0 to 1
+      tb303Drive: 0.35,     // distortion amount
+      tb303Waveform: 'sawtooth'
     };
   
     // Audio Visualizer Analyser
@@ -15,30 +15,30 @@ export class AudioGraph {
     
     this.tb303 = new Tone.MonoSynth({
       oscillator: {
-        type: this.params.waveform
+        type: this.params.tb303Waveform
       },
       envelope: {
         attack: 0.003,
-        decay: this.params.decay,
+        decay: this.params.tb303Decay,
         sustain: 0,
         release: 0.05
       },
       filter: {
-        Q: this.params.resonance,
+        Q: this.params.tb303Resonance,
         type: 'lowpass',
         rolloff: -24
       },
       filterEnvelope: {
         attack: 0.003,
-        decay: this.params.decay,
+        decay: this.params.tb303Decay,
         sustain: 0.0,
         release: 0.1,
-        baseFrequency: this.params.cutoff,
-        octaves: this.params.envMod * 5,
+        baseFrequency: this.params.tb303Cutoff,
+        octaves: this.params.tb303Envmod * 5,
         exponent: 2
       }
     });
-    this.tb303._accent = this.params.accent;
+    this.tb303._accent = this.params.tb303Accent;
     
     Object.defineProperty(this.tb303, "decay", {
       get:()=>{return this.tb303.envelope.decay; },
@@ -54,14 +54,17 @@ export class AudioGraph {
     });
     
     Object.defineProperty(this.tb303, "drive", {
-      get:()=>{return this.distortion.distortion},
-      set:(val)=>{this.distortion.distortion = val}
+      get:()=>{return this.distortion.distortion;},
+      set:(val)=>{
+        this.distortion.distortion = val;
+        console.log("drive", this.distortion.distortion)
+        }
     });
     
     
     // Saturation / Distortion Unit
     this.distortion = new Tone.Distortion({
-      distortion: this.params.drive,
+      distortion: this.params.tb303Drive,
       wet: 0.6
     });
         
@@ -123,21 +126,27 @@ export class AudioGraph {
     parameterParent[parameterName] = value;
   }
   
-  play303StepNote(noteFreq, accent = false, slide = false, duration = "16n", time = Tone.now()) 
+  play303StepNote(noteFreq, accent, slide, duration, time) 
   {
+    //console.log("play303StepNote", noteFreq, accent, slide, duration, time)
+    try {
       if (accent) {
         this.tb303.volume.setValueAtTime(4, time);
-        this.tb303.filterEnvelope.octaves = this.params.envMod * 7.5 * this.params.accent;
-        this.tb303.envelope.decay = this.params.decay * 0.7;
+        this.tb303.filterEnvelope.octaves = this.params.tb303Envmod * 7.5 * this.params.tb303Accent;
+        this.tb303.envelope.decay = this.params.tb303Decay * 0.7;
       } else {
         this.tb303.volume.setValueAtTime(0, time);
-        this.tb303.filterEnvelope.octaves = this.params.envMod * 4.5;
-        this.tb303.envelope.decay = this.params.decay;
+        this.tb303.filterEnvelope.octaves = this.params.tb303Envmod * 4.5;
+        this.tb303.envelope.decay = this.params.tb303Decay;
       }
       
       this.tb303.portamento = slide ? 0.08 : 0;
       this.tb303.triggerAttackRelease(noteFreq, duration, time);
     }
+    catch (err) {
+      console.error("error", err, err.stack)
+    }
+  }
 }
 
 const knobValues = {

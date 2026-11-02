@@ -92,3 +92,6 @@ main { margin-top: 0pt; }
 #console-log.active { max-height: 100px; overflow-y: auto; background: rgba(100,100,100,0.5); }
 
 
+.uppercase { 
+  text-transform: uppercase;
+}

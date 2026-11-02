@@ -7,21 +7,33 @@ export class AudioGraph {
       kickTone: 6,     
       kickPitchDecay: 0.04,
       kickDecay: 0.35,
-      kickLevel: 0,
+      kickLevel: 1,
       snareTone: 0,
       snareDecay: 0.35,
-      snareLevel: 0,
+      snareLevel: 1,
+      
       clapDecay: 0.14,
-      clapLevel: 0,
+      clapLevel: 1,
+      
       lowtomTune: 0.35,
       lowtomDecay: 0.70,
-      lowtomLevel: 0.90,
+      lowtomLevel: 0.60,
+      
       midtomTune: 0.50,
       midtomDecay: 0.45,
-      midtomLevel: 0.80,
+      midtomLevel: 0.50,
+      
       hightomTune: 0.65,
       hightomDecay: 0.30,
-      hightomLevel: 0.85,
+      hightomLevel: 0.55,
+      
+      closedhihatTune: 0,
+      closedhihatDecay: 0.05,
+      closedhihatLevel: 1,
+      
+      openhihatTune: 0,
+      openhihatDecay: 0.715,
+      openhihatLevel: 1
     };
   
     // Audio Visualizer Analyser
@@ -33,27 +45,70 @@ export class AudioGraph {
     
     // Synthesized 909-style Drum Voices for Live Jam Pads
     this.kick = new Tone.MembraneSynth({
-      pitchDecay: 0.04,
+      pitchDecay: this.params.kickPitchDecay,
       octaves: 6,
+      detune: this.params.kickTone,
       oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.35, sustain: 0.001, release: 0.001 },
-      volume: 0
-    }).connect(this.drumBus);
+      envelope: { attack: 0.001, decay: this.params.kickDecay, sustain: 0.001, release: 0.001 },
+    });
+    createDeviceGain(this.drumBus, this.kick, this.params.kickLevel);
     
-    this.snare = new DAWSome.TR909Snare()
-    .connect(this.drumBus);
+    this.snare = new DAWSome.TR909Snare();
+    createDeviceGain(this.drumBus, this.snare, this.params.snareLevel);
+    this.snare.bodySynth.detune.value = this.params.snareTone;
+    this.snare.bodySynth.envelope.decay = this.params.snareDecay;
     
     this.clap = new Tone.NoiseSynth({
       noise: { type: 'pink' },
-      envelope: { attack: 0.003, decay: 0.14, sustain: 0 }
-    }).connect(this.drumBus);
+      envelope: { attack: 0.003, decay: this.params.clapDecay, sustain: 0 },
+    });
+    createDeviceGain(this.drumBus, this.clap, this.params.clapLevel);
+    
+    this.toms = new TR909Toms({
+      low: { 
+        tune: this.params.lowtomTune,
+        decay: this.params.lowtomDecay,
+        level: this.params.lowtomLevel 
+      },
+      mid: {
+        tune: this.params.midtomTune,
+        decay: this.params.midtomDecay,
+        level: this.params.midtomLevel 
+      },
+      hi: {
+        tune: this.params.hightomTune,
+        decay: this.params.hightomDecay,
+        level: this.params.hightomLevel 
+      }
+    });
+    
+    /*
+
+    // 2. Pas de TR-909 parameters per tom aan (waarden tussen 0.0 en 1.0)
+    this.toms.low.tune = this.params.lowtomTune;   // Lage, zware tom (~75 Hz)
+    this.toms.low.decay = this.params.lowtomDecay;  // Lange uitloop (techno rumble/tail)
+    this.toms.low.level = this.params.lowtomLevel;
+    
+    this.toms.mid.tune = this.params.midtomTune;   // Standaard mid tom (~125 Hz)
+    this.toms.mid.decay = this.params.midtomDecay;
+    this.toms.mid.level = this.params.midtomLevel;
+    
+    this.toms.hi.tune = this.params.hightomTune;    // Strakke, gepunteerde hoge tom (~200 Hz)
+    this.toms.hi.decay = this.params.hightomDecay;   // Korte decay voor snelle fills
+    this.toms.hi.level = this.params.hightomLevel;
+    */
+    
+    this.toms.low.connect(this.drumBus);
+    this.toms.mid.connect(this.drumBus);
+    this.toms.hi.connect(this.drumBus);
     
     this.closedhihat = new Tone.MetalSynth({
+      detune: this.params.closedhihatTune,
       envelope: 
       { 
         attack: 0.01, 
         attackCurve: "linear",
-        decay: 0.05, 
+        decay: this.params.closedhihatDecay, 
         decayCurve: "exponential",
         sustain: 0.05, 
         release: 0.05,
@@ -62,15 +117,18 @@ export class AudioGraph {
       portamento: 0,
       harmonicity: 0.65,
       modulationIndex: 1,
-      octaves: 1.5
-    }).connect(this.drumBus);
+      octaves: 1.5,
+      volume: 1.5
+    });
+    createDeviceGain(this.drumBus, this.closedhihat, this.params.closedhihatLevel);
     
     this.openhihat = new Tone.MetalSynth({
+      detune: this.params.openhihatTune,
       envelope: 
       { 
         attack: 0.01, 
         attackCurve: "linear",
-        decay: 0.715, 
+        decay: this.params.openhihatDecay, 
         decayCurve: "exponential",
         sustain: 0.05, 
         release: 0.3,
@@ -79,27 +137,20 @@ export class AudioGraph {
       portamento: 0,
       harmonicity: 0.65,
       modulationIndex: 1,
-      octaves: 1.5
-    }).connect(this.drumBus);
+      octaves: 1.5,
+      volume: 1.5
+    });
+    createDeviceGain(this.drumBus, this.openhihat, this.params.openhihatLevel);
     
-    this.toms = new TR909Toms();
-
-    // 2. Pas de TR-909 parameters per tom aan (waarden tussen 0.0 en 1.0)
-    this.toms.low.tune = 0.35;   // Lage, zware tom (~75 Hz)
-    this.toms.low.decay = 0.70;  // Lange uitloop (techno rumble/tail)
-    this.toms.low.level = 0.90;
-    
-    this.toms.mid.tune = 0.50;   // Standaard mid tom (~125 Hz)
-    this.toms.mid.decay = 0.45;
-    this.toms.mid.level = 0.80;
-    
-    this.toms.hi.tune = 0.65;    // Strakke, gepunteerde hoge tom (~200 Hz)
-    this.toms.hi.decay = 0.30;   // Korte decay voor snelle fills
-    this.toms.hi.level = 0.85;
-    
-    this.toms.low.connect(this.drumBus);
-    this.toms.mid.connect(this.drumBus);
-    this.toms.hi.connect(this.drumBus);
+    function createDeviceGain(drumBus, device, level) {
+      let deviceGain = new Tone.Gain(level);
+      device.connect(deviceGain);
+      deviceGain.connect(drumBus);
+      Object.defineProperty(device, "level", {
+        get:()=>{return deviceGain.gain.value; },
+        set:(val)=>{deviceGain.gain.value = val; }
+      });
+    }
   }
   
   get lowtom() { return this.toms.low; }

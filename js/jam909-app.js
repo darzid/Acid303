@@ -22,7 +22,8 @@ export class App extends JamConnectApp {
         Tone: {
           min: -2400,
           max: 1200,
-          deviceParameter: "detune.value"
+          deviceParameter: "detune.value",
+          displayValueUnit: "ct"
         },
         PitchDecay: {
           min: 0.01,
@@ -38,16 +39,17 @@ export class App extends JamConnectApp {
         },
         Level: {
           min: 0,
-          max: 100,
-          offset: -100,
-          deviceParameter: "volume.value",
+          max: 1,
+          displayValueMultiplier: 100,
+          deviceParameter: "level",
         }
       },
       snare: {
         Tone: {
           min: -2400,
           max: 1200,
-          deviceParameter: "bodySynth.detune.value"
+          deviceParameter: "bodySynth.detune.value",
+          displayValueUnit: "ct"
         },
         Decay: {
           deviceParameter: "bodySynth.envelope.decay",
@@ -58,9 +60,9 @@ export class App extends JamConnectApp {
         },
         Level: {
           min: 0,
-          max: 100,
-          offset: -100,
-          deviceParameter: "volume.value",
+          max: 1,
+          displayValueMultiplier: 100,
+          deviceParameter: "level",
         }
       },
       clap: {
@@ -73,9 +75,9 @@ export class App extends JamConnectApp {
         },
         Level: {
           min: 0,
-          max: 100,
-          offset: -100,
-          deviceParameter: "volume.value",
+          max: 1,
+          displayValueMultiplier: 100,
+          deviceParameter: "level",
         }
       },
       lowtom: {
@@ -94,6 +96,7 @@ export class App extends JamConnectApp {
         Level: {
           min: 0,
           max: 1,
+          displayValueMultiplier: 100,
           deviceParameter: "level",
         }
       },
@@ -113,6 +116,7 @@ export class App extends JamConnectApp {
         Level: {
           min: 0,
           max: 1,
+          displayValueMultiplier: 100,
           deviceParameter: "level",
         }
       },
@@ -132,6 +136,7 @@ export class App extends JamConnectApp {
         Level: {
           min: 0,
           max: 1,
+          displayValueMultiplier: 100,
           deviceParameter: "level",
         }
       },
@@ -139,7 +144,8 @@ export class App extends JamConnectApp {
         Tune: {
           deviceParameter: "detune.value",
           min: -1200,
-          max: 1200
+          max: 1200,
+          displayValueUnit: "ct"
         },
         Decay: {
           deviceParameter: "envelope.decay",
@@ -150,16 +156,17 @@ export class App extends JamConnectApp {
         },
         Level: {
           min: 0,
-          max: 100,
-          offset: -100,
-          deviceParameter: "volume.value",
+          max: 1,
+          displayValueMultiplier: 100,
+          deviceParameter: "level",
         }
       },
       openhihat: {
         Tune: {
           deviceParameter: "detune.value",
           min: -1200,
-          max: 1200
+          max: 1200,
+          displayValueUnit: "ct"
         },
         Decay: {
           deviceParameter: "envelope.decay",
@@ -170,9 +177,9 @@ export class App extends JamConnectApp {
         },
         Level: {
           min: 0,
-          max: 100,
-          offset: -100,
-          deviceParameter: "volume.value",
+          max: 1,
+          displayValueMultiplier: 100,
+          deviceParameter: "level",
         }
       }
     }
@@ -203,15 +210,7 @@ export class App extends JamConnectApp {
     }
   }
   
-  run() {
-    super.run();
-    
-    // Initialize Lucide Icons
-    lucide.createIcons();
-    
-    TabControl.render();
-    Sequencer.render(this.jcClient);
-    
+  configureParameterKnobs() {
     Object.keys(this.parameterKnobs).forEach(deviceName => {
       let device = this.audioGraph[deviceName];
       Object.keys(this.parameterKnobs[deviceName]).forEach(parameterName => {
@@ -231,8 +230,6 @@ export class App extends JamConnectApp {
           this.audioGraph.params[`${deviceName}${parameterName}`] = parameterValue;
           this.audioGraph.updateDeviceParameter(device, parameterKnob.deviceParameter, parameterValue);
           
-          console.log(`knob-${deviceName}-${parameterName.toLowerCase()} changed`, device)
-          
           if (!this.jcClient.isApplyingRemoteUpdate) {
             const now = performance.now();
             if (now - parameterKnob.lastSentAt > 30) {
@@ -245,6 +242,18 @@ export class App extends JamConnectApp {
         }, paramValue, min, max);
       });
     });
+  }
+  
+  run() {
+    super.run();
+    
+    // Initialize Lucide Icons
+    lucide.createIcons();
+    
+    TabControl.render();
+    Sequencer.render(this.jcClient);
+    
+    this.configureParameterKnobs();
     
     // Handle Live Pad & Quantized Note Triggers (Local & Remote)
     this.jcClient.connector.onPadTriggered = (appName, instrument, note, velocity = 0.85, scheduledTime = Tone.now(), extra = {}) => {

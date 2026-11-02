@@ -20,15 +20,16 @@
   <script src="js/flags.js"></script>
 
   <script src="js/knob.js"></script>
+  <script src="js/switch.js"></script>
   <script src="js/jam303-sequencer.js"></script>
   <script src="js/tabcontrol.js"></script>
   <script src="js/visualizer.js"></script>
   
     <script>
     window.onerror = function(message, url, lineNumber) {  
-    console.error(`Error: ${message}, at: ${url}, line: ${lineNumber}`);
-    return true;
-  };  
+      console.error(`Error: ${message}, at: ${url}, line: ${lineNumber}`);
+      return true;
+    };  
   </script>
 </head>
 
@@ -59,7 +60,7 @@
         </div>
 
         <div class="flex justify-between items-center text-[10px] text-emerald-600 font-mono">
-          <span id="display-waveform">WAVE: SAWTOOTH</span>
+          <span id="val-tb303-waveform" class="">WAVE: SAWTOOTH</span>
           <span id="display-step">STEP: 01/16</span>
         </div>
       </div>
@@ -107,8 +108,8 @@
         <div title="SOUND" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
           
           <div id="waveform-selection" class="items-center gap-1 p-1 text-center">
-            <button id="wave-saw" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">SAWTOOTH</button>
-            <button id="wave-sqr" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">SQUARE</button>
+            <button id="wave-saw" data-parameter="tb303-waveform" data-value="sawtooth" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">SAWTOOTH</button>
+            <button id="wave-sqr" data-parameter="tb303-waveform" data-value="square" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">SQUARE</button>
           </div>
           
           <div id="rotary-knobs" class="lg:col-span-8 grid grid-cols-3 sm:grid-cols-6 gap-2 items-center text-center">
@@ -255,20 +256,6 @@
             <!-- WebRTC Signaling Session & QR / Link Container -->
             <div id="jamconnect" class="w-full"></div>
 
-            <!-- Live Quantized Jam Pads & Note Triggers (Synced over WebRTC) -->
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 mt-1 text-slate-100">
-              <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
-                <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">LIVE JAM PADS &amp; MIDI TRIGGERS (QUANTIZED SYNC)</span>
-                <div class="flex items-center gap-2 text-xs font-mono">
-                  <label class="text-slate-400">QUANTIZE SNAP:</label>
-                  <select id="jam-snap-select" class="bg-slate-950 text-emerald-400 border border-slate-700 rounded px-2 py-0.5 text-xs">
-                    <option value="0.75">1/16 Tight (75%)</option>
-                    <option value="0.5" selected>1/16 Groove (50%)</option>
-                    <option value="0">Free / Immediate (0%)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -278,13 +265,9 @@
 
   <footer class="mt-4 text-xs text-slate-600 text-center">
     TB-303 Web Synthesizer Simulator &bull; Built with Tone.js, PeerJS WebRTC &amp; Web MIDI API
-    <div id="console-log">LOG</div>
   </footer>
 
   <script src="https://darzid.github.io/JamConnect/jamconnect.js"></script>
   <script src="js/jam303-app.js" type="module"></script>
-  <script>
-    //App.run();
-    console.log("app started")</script>
 </body>
 </html>
