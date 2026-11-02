@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <title>JAM909 Acid Synthesizer & Sequencer</title>
+  
+  <link rel="manifest" href="./jam909-manifest.json">
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/jam909.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  
+  <script src="js/flags.js"></script>
+
+  <script src="js/knob.js"></script>
+  <script src="js/jam909-sequencer.js"></script>
+  <script src="js/tabcontrol.js"></script>
+  <script src="js/visualizer.js"></script>
+</head>
+
+<body class="flex flex-col justify-between items-center bg-stone-950">
+
+  <!-- Top Title Banner -->
+  <header id="header" class="w-full max-w-6xl flex flex-col sm:flex-row justify-between items-center mb-4">
+    
+    <div id="led-display" class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+      
+      <!-- LED Display & Visualizer (4 cols) -->
+      <div class="lg:col-span-4 flex flex-col justify-between bg-stone-950 rounded-xl p-1 border-2 border-stone-900 led-display min-h-[160px]">
+        <div class="flex justify-between items-center border-b border-amber-950 pb-2">
+          <div class="flex items-center gap-2">
+            <div id="play-led" class="w-3 h-3 rounded-full bg-slate-800 border border-slate-700"></div>
+            <span class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">SEQ STATUS</span>
+            <span id="jam-badge" class="hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-700">LIVE JAM</span>
+          </div>
+          <span id="display-tempo" class="led-text text-xl font-bold font-mono">124 BPM</span>
+        </div>
+
+        <!-- Oscilloscope / Visualizer Canvas -->
+        <div class="relative w-full h-16 my-2 bg-stone-950 rounded overflow-hidden flex items-center justify-center">
+          <canvas id="visualizer-canvas" class="w-full h-full block"></canvas>
+          <div id="vis-placeholder" class="absolute inset-0 flex items-center justify-center text-xs text-amber-900 font-mono pointer-events-none">
+            [AUDIO ENGINE INACTIVE]
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center text-[10px] text-amber-600 font-mono">
+          <span id="display-step">STEP: 01/16</span>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Main Synthesizer Box -->
+  <main class="redbox w-full max-w-6xl brushed-metal rounded-2xl p-2 sm:p-8 border-2 border-stone-700 text-slate-900 shadow-2xl relative my-auto">
+    <div id="transport-bar" class="flex flex-wrap items-center justify-between gap-1 bg-stone-400/40 p-1 rounded-xl border border-stone-700/80 mb-2">
+      
+      <button id="play-btn" class="px-5 py-2.5 synth-btn text-amber-200 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
+        <i data-lucide="play" class="w-4 h-4 fill-amber-400"></i> PLAY
+      </button>
+        
+      <button id="stop-btn" class="px-5 py-2.5 synth-btn text-rose-800 font-bold rounded-lg text-sm flex items-center gap-2 hover:bg-white">
+        <i data-lucide="square" class="w-4 h-4 fill-rose-700"></i> STOP
+      </button>
+      
+      <div>
+        <div id="tempo" class="flex items-center gap-1">
+          <label class="text-xs font-bold text-slate-800">TEMPO:</label>
+          <input type="range" id="tempo-slider" min="60" max="180" value="124" class="w-24 accent-slate-800 cursor-pointer">
+          <!--<span id="tempo-val" class="font-mono text-xs font-bold text-slate-900 w-8">124</span>-->
+          <input type="number" id="tempo-val" readonly="true" class="font-mono text-xs font-bold text-slate-900" min="60" max="180" value="124">
+        </div>
+        
+        <div id="swing" class="flex items-center gap-1">
+          <label class="text-xs font-bold text-slate-800">SWING:</label>
+          <input type="range" id="swing-slider" min="0" max="50" value="0" class="w-24 accent-slate-800 cursor-pointer">
+          <span id="swing-val" class="font-mono text-xs font-bold text-slate-900">0%</span>
+        </div>
+        
+        <div id="delay" class="flex items-center gap-1">
+          <label class="text-xs font-bold text-slate-800">DELAY:</label>
+          <input type="checkbox" id="delay-toggle" checked class="w-4 h-4 accent-amber-600 rounded cursor-pointer">
+        </div>
+      </div>
+    </div>
+    
+    <div id="tab-control">
+      <div class="tab-strip flex items-center gap-1 p-1">
+      </div>
+      
+      <div class="tab-container">
+        <div title="PADS" class="tab bg-stone-400/60 rounded-xl p-2 border border-stone-700/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
+                      <!-- Drum + Acid Stabs Row -->
+              <div class="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                <button type="button" data-pad-inst="kick" data-pad-note="C2" class="jam-pad px-4 py-6 rounded-lg bg-stone-900 hover:bg-amber-600/30 active:bg-amber-500 active:text-slate-950 border border-amber-500/50 text-amber-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>KICK</span>
+                </button>
+                <button type="button" data-pad-inst="snare" data-pad-note="C2" class="jam-pad px-4 py-6 rounded-lg bg-stone-900 hover:bg-rose-600/30 active:bg-rose-500 active:text-slate-950 border border-rose-500/50 text-rose-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>SNARE</span>
+                </button>
+                <button type="button" data-pad-inst="clap" class="jam-pad px-4 py-6 rounded-lg bg-stone-900 hover:bg-fuchsia-600/30 active:bg-fuchsia-500 active:text-slate-950 border border-fuchsia-500/50 text-fuchsia-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>CLAP</span>
+                </button>
+                <button type="button" data-pad-inst="lowtom" class="jam-pad px-4 py-4 rounded-lg bg-stone-900 hover:bg-amber-400/30 active:bg-amber-200 active:text-slate-950 border border-amber-300/50 text-amber-100 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>LOW TOM</span>
+                </button>
+                <button type="button" data-pad-inst="midtom" class="jam-pad px-4 py-4 rounded-lg bg-stone-900 hover:bg-amber-500/30 active:bg-amber-300 active:text-slate-950 border border-amber-400/50 text-amber-200 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>MID TOM</span>
+                </button>
+                <button type="button" data-pad-inst="hightom" class="jam-pad px-4 py-4 rounded-lg bg-stone-900 hover:bg-amber-600/30 active:bg-amber-400 active:text-slate-950 border border-amber-500/50 text-amber-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>HIGH TOM</span>
+                </button>
+                <button type="button" data-pad-inst="closedhihat" data-pad-note="C2" class="jam-pad px-4 py-4 rounded-lg bg-stone-900 hover:bg-sky-600/30 active:bg-sky-400 active:text-slate-950 border border-sky-500/50 text-sky-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>CLOSED HAT</span>
+                </button>
+                <button type="button" data-pad-inst="openhihat" data-pad-note="C2" class="jam-pad px-4 py-4 rounded-lg bg-stone-900 hover:bg-cyan-600/30 active:bg-cyan-400 active:text-slate-950 border border-cyan-500/50 text-cyan-300 font-mono font-bold text-xs transition flex flex-col items-center">
+                  <span>OPEN HAT</span>
+                </button>
+
+              </div>
+        </div>
+
+        <div title="SOUND" class="tab bg-stone-400/60 rounded-xl p-2 border border-stone-700/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
+          
+          <div id="rotary-knobs" class="lg:col-span-8 grid grid-cols-3 sm:grid-cols-6 gap-2 items-start text-center">
+            
+            <div class="device-knobs flex flex-col items-center bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="kick" data-pad-note="C2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-amber-300">KICK</button>
+    
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">LEVEL</span>
+                <div class="knob-container" id="knob-kick-level" data-value="1">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-kick-level">100</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
+                <div class="knob-container" id="knob-kick-decay" data-value="0.35">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-kick-decay">350 ms</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">TONE</span>
+                <div class="knob-container" id="knob-kick-tone" data-value="0.5">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-kick-tone">0</span>
+              </div>
+            
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">PITCH</span>
+                <div class="knob-container" id="knob-kick-pitchdecay" data-value="0.04">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-kick-pitchdecay">0.04</span>
+              </div>
+            </div>
+
+            <div class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="snare" data-pad-note="C2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-rose-300">SNARE</button>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">LEVEL</span>
+                <div class="knob-container" id="knob-snare-level" data-value="1">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-snare-level">100</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
+                <div class="knob-container" id="knob-snare-decay" data-value="0.35">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-snare-decay">350 ms</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">TONE</span>
+                <div class="knob-container" id="knob-snare-tone" data-value="0.5">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-snare-tone">0</span>
+              </div>
+            
+            </div>
+  
+            <div class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="clap" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-fuchsia-300">CLAP</button>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">LEVEL</span>
+                <div class="knob-container" id="knob-clap-level" data-value="1">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-clap-level">100</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
+                <div class="knob-container" id="knob-clap-decay" data-value="0.14">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-clap-decay">140 ms</span>
+              </div>
+            </div>
+            
+            <div class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="lowtom" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-amber-100">LOW TOM</button>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">LEVEL</span>
+                <div class="knob-container" id="knob-lowtom-level" data-value="1">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-lowtom-level">100</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
+                <div class="knob-container" id="knob-lowtom-decay" data-value="0.35">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-lowtom-decay">350 ms</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">TUNE</span>
+                <div class="knob-container" id="knob-lowtom-tune" data-value="0.5">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-lowtom-tune">0</span>
+              </div>
+            
+            </div>
+            
+            <div class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="midtom" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-amber-200">MID TOM</button>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">LEVEL</span>
+                <div class="knob-container" id="knob-midtom-level" data-value="1">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-midtom-level">100</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
+                <div class="knob-container" id="knob-midtom-decay" data-value="0.35">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-midtom-decay">350 ms</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">TUNE</span>
+                <div class="knob-container" id="knob-midtom-tune" data-value="0.5">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-midtom-tune">0</span>
+              </div>
+            
+            </div>
+            
+            <div class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="hightom" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-amber-300">HIGH TOM</button>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">LEVEL</span>
+                <div class="knob-container" id="knob-hightom-level" data-value="1">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-hightom-level">100</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
+                <div class="knob-container" id="knob-hightom-decay" data-value="0.35">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-hightom-decay">350 ms</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">TUNE</span>
+                <div class="knob-container" id="knob-hightom-tune" data-value="0.5">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-hightom-tune">0</span>
+              </div>
+              
+            </div>
+            
+            <div class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="closedhihat" data-pad-note="C2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-sky-300">CLOSED HAT</button>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">LEVEL</span>
+                <div class="knob-container" id="knob-closedhihat-level" data-value="1">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-closedhihat-level">100</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
+                <div class="knob-container" id="knob-closedhihat-decay" data-value="0.35">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-closedhihat-decay">350 ms</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">TUNE</span>
+                <div class="knob-container" id="knob-closedhihat-tune" data-value="0.5">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-closedhihat-tune">0</span>
+              </div>
+            
+            </div>
+            
+            <div class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="openhihat" data-pad-note="C2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-cyan-300">OPEN HAT</button>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">LEVEL</span>
+                <div class="knob-container" id="knob-openhihat-level" data-value="1">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-openhihat-level">100</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
+                <div class="knob-container" id="knob-openhihat-decay" data-value="0.35">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-openhihat-decay">350 ms</span>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">TUNE</span>
+                <div class="knob-container" id="knob-openhihat-tune" data-value="0.5">
+                  <div class="knob-body"></div>
+                  <div class="knob-cap"></div>
+                  <div class="knob-indicator"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-600 mt-1 mb-2" id="val-openhihat-tune">0</span>
+              </div>
+            
+            </div>
+          </div>
+          
+        <div title="SEQUENCER" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
+      
+            <div id="preset-selector" class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <div class="flex flex-col">
+                <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
+                <select id="pattern-select" class="bg-slate-900 text-amber-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-amber-500">
+                </select>
+              </div>
+            </div>
+          
+          </div>
+
+          <div id="sequencer-grid" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
+            <div class="min-w-[700px]">
+              <!-- Step Indicators (LEDs) -->
+              <div id="grid" class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
+              </div>
+            </div>
+          </div>
+      
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4 mt-4">
+            <div  class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+     
+              <button id="randomize-btn" title="Randomize Sequence" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="dices" class="w-4 h-4"></i> Random
+              </button>
+              <button id="clear-btn" title="Clear Sequence" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="trash" class="w-4 h-4"></i> Clear
+              </button>
+              <button id="save-btn" title="Save Preset" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="save" class="w-4 h-4"></i> Save
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div title="JAM" class="tab bg-slate-300/60 rounded-xl p-3 border border-slate-400/80 shadow-inner flex flex-col gap-3 mb-2">
+          <div class="flex flex-col w-full gap-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <button id="invite-btn" class="px-4 py-2 synth-btn text-amber-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+                  <i data-lucide="radio" class="w-4 h-4 fill-amber-700"></i> INVITE
+                </button>
+                <button id="join-btn" class="px-4 py-2 synth-btn text-amber-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+                  <i data-lucide="plug-zap" class="w-4 h-4 fill-amber-700"></i> JOIN
+                </button>
+                <button id="resync-btn" class="px-4 py-2 synth-btn text-amber-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+                  <i data-lucide="cloud-sync" class="w-4 h-4 fill-amber-700"></i> RESYNC
+                </button>
+              </div>
+
+              <!-- Web MIDI Status & Selector -->
+              <div class="flex items-center gap-2 bg-slate-900 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700">
+                <span id="midi-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span class="text-[10px] font-mono uppercase text-slate-400">MIDI:</span>
+                <select id="midi-input-select" class="bg-slate-950 text-amber-400 font-mono text-xs px-2 py-0.5 rounded border border-slate-700 outline-none">
+                  <option value="">No MIDI Device</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- WebRTC Signaling Session & QR / Link Container -->
+            <div id="jamconnect" class="w-full"></div>
+
+            <!-- Live Quantized Jam Pads & Note Triggers (Synced over WebRTC) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 mt-1 text-slate-100">
+              <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+                <span class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">LIVE JAM PADS &amp; MIDI TRIGGERS (QUANTIZED SYNC)</span>
+                <div class="flex items-center gap-2 text-xs font-mono">
+                  <label class="text-slate-400">QUANTIZE SNAP:</label>
+                  <select id="jam-snap-select" class="bg-slate-950 text-amber-400 border border-slate-700 rounded px-2 py-0.5 text-xs">
+                    <option value="0.75">1/16 Tight (75%)</option>
+                    <option value="0.5" selected>1/16 Groove (50%)</option>
+                    <option value="0">Free / Immediate (0%)</option>
+                  </select>
+                </div>
+              </div>
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="mt-4 text-xs text-zinc-50 text-center">
+    TR-909 Web Drum Simulator &bull; Built with Tone.js, PeerJS WebRTC &amp; Web MIDI API
+    <div id="console-log">LOG</div>
+  </footer>
+  <script src="https://darzid.github.io/JamConnect/jamconnect.js"></script>
+  <script>
+    window.onerror = function(message, url, lineNumber) {  
+    console.error(`Error: ${message}, at: ${url}, line: ${lineNumber}`);
+    return true;
+  };  
+
+  </script>
+    <script src="js/jam909-app.js" type="module"></script>
+  <script>
+    //App.run();
+    console.log("app started")</script>
+</body>
+</html>

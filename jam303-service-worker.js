@@ -11,19 +11,23 @@ const ASSETS = [
   './images/share.png',
   
   './js/flags.js',
-  './js/app.js',
-  './js/audiograph.js',
+  './js/jam303-app.js',
+  './js/jam303-audiograph.js',
+  './js/jam303-sequencer.js',
+  './js/jamconnect-audiograph.js',
+  './js/jamconnect-app.js',
   './js/knob.js',
-  './js/sequencer.js',
+  './js/switch.js',
+  './js/server.js',
   './js/tabcontrol.js',
   './js/qrcodemanager.js',
   './js/visualizer.js',
   
-  './index.html',
-  './manifest.json',
-  './service-worker.js'
+  './jam303.html',
+  './jam303-manifest.json',
+  './jam303-service-worker.js'
 ];
-///
+//////////ggggggggggggggg
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
@@ -54,7 +58,7 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         return response;
       }).catch(() => {
-        return caches.match('./index.html');
+        return caches.match('./jam303.html');
       });
     })
   );

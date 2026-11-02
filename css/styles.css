@@ -17,7 +17,7 @@ body { font-family: 'Share Tech Mono', monospace; }
 .led-text { color: #22c55e; text-shadow: 0 0 8px rgba(34, 197, 94, 0.7); }
 
 /* Rotary Knobs Style */
-.knob-container { position: relative; width: 56px; height: 56px; cursor: ns-resize; touch-action: none; }
+.knob-container { position: relative; width: 56px; height: 56px; cursor: ns-resize; touch-action: none; user-select: none;}
 .knob-body { width: 100%; height: 100%; border-radius: 50%;
   background: conic-gradient(from 180deg, #475569, #94a3b8, #334155, #cbd5e1, #475569);
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4), inset 0 2px 3px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.6);
@@ -90,3 +90,8 @@ main { margin-top: 0pt; }
 #tempo-val { background: transparent; padding: 0; }
 
 #console-log.active { max-height: 100px; overflow-y: auto; background: rgba(100,100,100,0.5); }
+
+
+.uppercase { 
+  text-transform: uppercase;
+}
