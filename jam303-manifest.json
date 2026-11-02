@@ -2,7 +2,7 @@
   "name": "Jam303",
   "short_name": "Jam303 by Darzid",
   "description": "JamConnect 303",
-  "start_url": "./",
+  "start_url": "./jam303.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1c1c1c",

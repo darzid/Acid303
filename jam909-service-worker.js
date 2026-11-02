@@ -19,6 +19,8 @@ const ASSETS = [
   './js/jamconnect-audiograph.js',
   './js/jamconnect-app.js',
   './js/knob.js',
+  './js/switch.js',
+  './js/server.js',
   './js/tabcontrol.js',
   './js/qrcodemanager.js',
   './js/visualizer.js',
