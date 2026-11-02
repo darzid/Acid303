@@ -1,5 +1,5 @@
 import * as DAWSome from "https://darzid.github.io/ToneJS/DAWSome/DAWSome.js";
-import { TR909Toms } from "./devices/TR909Toms-02.js";
+import { TR909Toms } from "./devices/TR909Toms.js";
 import { AudioGraphBase } from "./jamconnect-audiograph.js";
 
 const params = {
