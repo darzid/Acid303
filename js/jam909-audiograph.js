@@ -128,7 +128,7 @@ export class AudioGraph extends AudioGraphBase {
       portamento: 0,
       harmonicity: 0.65,
       modulationIndex: 1,
-      octaves: 1.5
+    //  octaves: 1.5
     });
     this.createDeviceGain(this.groupBus, this.devices.instruments.closedhihat, this.params.closedhihatLevel, this.devices.effects.reverb, this.params.closedhihatReverb);
     this.devices.instruments.closedhihat.note = "F#2";
@@ -146,10 +146,10 @@ export class AudioGraph extends AudioGraphBase {
       portamento: 0,
       harmonicity: 0.65,
       modulationIndex: 1,
-      octaves: 1.5
+      //octaves: 1.5
     });
     this.createDeviceGain(this.groupBus, this.devices.instruments.openhihat, this.params.openhihatLevel, this.devices.effects.reverb, this.params.openhihatReverb);
-    this.devices.instruments.openhihat.note = "F#2";
+    this.devices.instruments.openhihat.note = "C2";
     this.devices.instruments.openhihat.duration = "16n";
     
   }

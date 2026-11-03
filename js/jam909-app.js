@@ -203,8 +203,8 @@ export class App extends JamConnectApp {
         },
         Decay: {
           deviceParameter: "envelope.decay",
-          min: 0.01,
-          max: 3,
+          min: 0.1,
+          max: 1.5,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
@@ -241,10 +241,15 @@ export class App extends JamConnectApp {
   }
 
   playNote(note, stepData, duration, time) {
+    this.playDrum(stepData.instrument, time, stepData.accent);
     
-    let instrument = this.audioGraph.devices.instruments[stepData.instrument];
-    let velocity = stepData.accent ? 1 : 0.7;
-    console.log("playNote " + instrument.note, velocity)
+   // this.audioGraph.devices.instruments[stepData.instrument].
+   // this.audioGraph.play303StepNote(note, stepData.accent, stepData.slide, duration, time);
+  }
+  
+  playDrum(instrumentName, time, accent) {
+    let instrument = this.audioGraph.devices.instruments[instrumentName];
+    let velocity = accent ? 1 : 0.5;
     if (instrument.duration) {
       if (instrument.note)
         instrument.triggerAttackRelease(instrument.note, instrument.duration, time, velocity);
@@ -253,8 +258,6 @@ export class App extends JamConnectApp {
     }
     else
       instrument.triggerAttack(time, velocity);
-   // this.audioGraph.devices.instruments[stepData.instrument].
-   // this.audioGraph.play303StepNote(note, stepData.accent, stepData.slide, duration, time);
   }
   
   run() {
@@ -270,34 +273,7 @@ export class App extends JamConnectApp {
     // Handle Live Pad & Quantized Note Triggers (Local & Remote)
     this.jcClient.connector.onPadTriggered = (appName, instrument, note, velocity = 0.85, scheduledTime = Tone.now(), extra = {}) => {
       const playAt = Math.max(Tone.now(), scheduledTime || Tone.now());
-      console.log("onPadTriggered", appName, instrument, note, velocity, extra)
-      switch (instrument) {
-        case 'kick':
-          this.audioGraph.devices.instruments.kick.triggerAttackRelease(note || 'C0', '8n', playAt, velocity);
-          console.log("kick", this.audioGraph.devices.instruments.kick, velocity)
-          break;
-        case 'snare':
-          this.audioGraph.devices.instruments.snare.triggerAttackRelease(note || 'C2', '16n', playAt, velocity);
-          break;
-        case 'clap':
-          this.audioGraph.devices.instruments.clap.triggerAttackRelease('16n', playAt, velocity);
-          break;
-        case 'lowtom':
-          this.audioGraph.devices.instruments.lowtom.triggerAttack(playAt, velocity);
-          break;
-        case 'midtom':
-          this.audioGraph.devices.instruments.midtom.triggerAttack(playAt, velocity);
-          break;
-        case 'hightom':
-          this.audioGraph.devices.instruments.hightom.triggerAttack(playAt, velocity);
-          break;
-        case 'closedhihat':
-          this.audioGraph.devices.instruments.closedhihat.triggerAttackRelease(note || 'F#2', '16n', playAt, velocity);
-          break;
-        case 'openhihat':
-          this.audioGraph.devices.instruments.openhihat.triggerAttackRelease(note || 'F#2', '16n', playAt, velocity);
-          break;
-      }
+      this.playDrum(instrument, playAt, velocity = 1);
     };
 
     // Receive single-step or full-pattern updates from peers
