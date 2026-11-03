@@ -96,14 +96,14 @@ export class App extends JamConnectApp {
   applyAppSpecificDataUpdatesFromJamConnectSnapshot(appName, snapshot) {
     if (typeof snapshot.delayEnabled === 'boolean') {
       this.delayToggle.checked = snapshot.delayEnabled;
-      this.audioGraph.delay.wet.value = snapshot.delayEnabled ? 0.25 : 0;
+      this.audioGraph.devices.effects.delay.wet.value = snapshot.delayEnabled ? 0.25 : 0;
     }
   }
   
   applyAppSpecificMasterSettingUpdate(appName, setting, value) {
     if (setting === 'delay') {
       this.delayToggle.checked = !!value;
-      this.audioGraph.delay.wet.value = value ? 0.25 : 0;
+      this.audioGraph.devices.effects.delay.wet.value = value ? 0.25 : 0;
     }
   }
   
@@ -121,7 +121,7 @@ export class App extends JamConnectApp {
     Sequencer.render(this.jcClient);
     
     this.delayToggle.addEventListener('change', (e) => {
-      this.audioGraph.delay.wet.value = e.target.checked ? 0.25 : 0;
+      this.audioGraph.devices.effects.delay.wet.value = e.target.checked ? 0.25 : 0;
       if (!this.jcClient.isApplyingRemoteUpdate) {
         this.jcClient.connector.sendMasterSettingUpdate(this.jcClient.connector.appName, 'delay', e.target.checked);
       }

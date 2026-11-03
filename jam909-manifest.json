@@ -2,7 +2,7 @@
   "name": "Jam909",
   "short_name": "Jam909 by Darzid",
   "description": "JamConnect 909",
-  "start_url": "./jam909.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1c1c1c",
