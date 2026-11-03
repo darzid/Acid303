@@ -15,7 +15,22 @@ export class AudioGraph extends AudioGraphBase {
   {
     super(params);
   
-    this.tb303 = new Tone.MonoSynth({
+    // Ping Pong Delay Unit
+    this.devices.effects.delay = new Tone.PingPongDelay({
+      delayTime: "8n.",
+      feedback: 0.3,
+      wet: 0.25
+    });
+    
+    // Saturation / Distortion Unit
+    this.devices.effects.distortion = new Tone.Distortion({
+      distortion: this.params.tb303Drive,
+      wet: 0.6
+    });
+    
+    
+    
+    this.devices.instruments.tb303 = new Tone.MonoSynth({
       oscillator: {
         type: this.params.tb303Waveform
       },
@@ -40,62 +55,52 @@ export class AudioGraph extends AudioGraphBase {
         exponent: 2
       }
     });
-    this.tb303._accent = this.params.tb303Accent;
+    this.devices.instruments.tb303._accent = this.params.tb303Accent;
     
-    Object.defineProperty(this.tb303, "decay", {
-      get:()=>{return this.tb303.envelope.decay; },
+    Object.defineProperty(this.devices.instruments.tb303, "decay", {
+      get:()=>{return this.devices.instruments.tb303.envelope.decay; },
       set:(val)=>{
-        this.tb303.envelope.decay = val;
-        this.tb303.filterEnvelope.decay = val;
+        this.devices.instruments.tb303.envelope.decay = val;
+        this.devices.instruments.tb303.filterEnvelope.decay = val;
       }
     });
     
-    Object.defineProperty(this.tb303, "accent", {
-      get:()=>{return this.tb303._accent},
-      set:(val)=>{this.tb303._accent = val;}
+    Object.defineProperty(this.devices.instruments.tb303, "accent", {
+      get:()=>{return this.devices.instruments.tb303._accent},
+      set:(val)=>{this.devices.instruments.tb303._accent = val;}
     });
     
-    Object.defineProperty(this.tb303, "drive", {
-      get:()=>{return this.distortion.distortion;},
+    Object.defineProperty(this.devices.instruments.tb303, "drive", {
+      get:()=>{return this.devices.effects.distortion.distortion;},
       set:(val)=>{
-        this.distortion.distortion = val;
+        this.devices.effects.distortion.distortion = val;
         }
     });
     
     
-    // Saturation / Distortion Unit
-    this.distortion = new Tone.Distortion({
-      distortion: this.params.tb303Drive,
-      wet: 0.6
-    });
+
         
-    // Ping Pong Delay Unit
-    this.delay = new Tone.PingPongDelay({
-      delayTime: "8n.",
-      feedback: 0.3,
-      wet: 0.25
-    });
-    
+
     // Chain 303 Audio Routing
-    this.tb303.chain(this.distortion, this.delay, this.groupBus);
+    this.devices.instruments.tb303.chain(this.devices.effects.distortion, this.devices.effects.delay, this.groupBus);
   }
   
   play303StepNote(noteFreq, accent, slide, duration, time) 
   {
-    //console.log("play303StepNote", noteFreq, accent, slide, duration, time)
+    //console.log("play3030Note", noteFreq, accent, slide, duration, time)
     try {
       if (accent) {
-        this.tb303.volume.setValueAtTime(4, time);
-        this.tb303.filterEnvelope.octaves = this.params.tb303Envmod * 7.5 * this.params.tb303Accent;
-        this.tb303.envelope.decay = this.params.tb303Decay * 0.7;
+        this.devices.instruments.tb303.volume.setValueAtTime(4, time);
+        this.devices.instruments.tb303.filterEnvelope.octaves = this.params.tb303Envmod * 7.5 * this.params.tb303Accent;
+        this.devices.instruments.tb303.envelope.decay = this.params.tb303Decay * 0.7;
       } else {
-        this.tb303.volume.setValueAtTime(0, time);
-        this.tb303.filterEnvelope.octaves = this.params.tb303Envmod * 4.5;
-        this.tb303.envelope.decay = this.params.tb303Decay;
+        this.devices.instruments.tb303.volume.setValueAtTime(0, time);
+        this.devices.instruments.tb303.filterEnvelope.octaves = this.params.tb303Envmod * 4.5;
+        this.devices.instruments.tb303.envelope.decay = this.params.tb303Decay;
       }
       
-      this.tb303.portamento = slide ? 0.08 : 0;
-      this.tb303.triggerAttackRelease(noteFreq, duration, time);
+      this.devices.instruments.tb303.portamento = slide ? 0.08 : 0;
+      this.devices.instruments.tb303.triggerAttackRelease(noteFreq, duration, time);
     }
     catch (err) {
       console.error("error", err, err.stack)

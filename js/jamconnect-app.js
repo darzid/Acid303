@@ -56,7 +56,8 @@ export class JamConnectApp {
   
   setupParameterKnobs() {
     Object.keys(this.parameterKnobs).forEach(deviceName => {
-      let device = this.audioGraph[deviceName];
+      let device = this.audioGraph.getDeviceByName(deviceName);
+      //console.log("device", device)
       Object.keys(this.parameterKnobs[deviceName]).forEach(parameterName => {
         let parameterControlMapping = this.parameterKnobs[deviceName][parameterName];
         
@@ -89,7 +90,7 @@ export class JamConnectApp {
 
   setupParameterSwitches() {
     Object.keys(this.parameterSwitches).forEach(deviceName => {
-      let device = this.audioGraph[deviceName];
+      let device = this.audioGraph.getDeviceByName(deviceName);
       Object.keys(this.parameterSwitches[deviceName]).forEach(parameterName => {
         let parameterControlMapping = this.parameterSwitches[deviceName][parameterName];
         
@@ -459,8 +460,8 @@ export class JamConnectApp {
       const sixteenthTicks = Tone.Time("16n").toTicks();
       const tickStep = Math.floor(Math.max(0, Tone.Transport.ticks) / sixteenthTicks) % 16;
       const stepIdx = Number.isFinite(tickStep) ? tickStep : (currentStep % 16);
-      const stepData = pattern[stepIdx];
-    
+      
+      
       // Update Step UI Highlights
       Tone.Draw.schedule(() => {
         document.querySelectorAll('[id^="step-led-"]').forEach((led, idx) => {
@@ -485,11 +486,15 @@ export class JamConnectApp {
         }
       }, time);
     
-      if (stepData && stepData.gate) {
-        const noteFreq = `${stepData.note}${stepData.octave}`;
-        this.playNote(noteFreq, stepData, "16n", time);
-      }
-    
+      Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
+        const stepData = instrumentPatterns[instrumentName][stepIdx];
+        stepData.instrument = instrumentName;
+        if (stepData && stepData.gate) {
+         // console.log("step", stepData)
+          const noteFreq = `${stepData.note}${stepData.octave}`;
+          this.playNote(noteFreq, stepData, "16n", time);
+        }
+      });
       this.currentStep = (stepIdx + 1) % 16;
     }, "16n");
     
