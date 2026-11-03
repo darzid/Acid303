@@ -72,6 +72,8 @@ export class AudioGraph extends AudioGraphBase {
     this.devices.instruments.kick.note = "C1";
     this.devices.instruments.kick.duration = "8n";
     
+    
+    
     this.devices.instruments.snare = new DAWSome.TR909Snare();
     this.devices.instruments.snare.bodySynth.detune.value = this.params.snareTone;
     this.devices.instruments.snare.bodySynth.envelope.decay = this.params.snareDecay;
@@ -86,6 +88,8 @@ export class AudioGraph extends AudioGraphBase {
     this.createDeviceGain(this.groupBus, this.devices.instruments.clap, this.params.clapLevel, this.devices.effects.reverb, this.params.clapReverb);
     this.devices.instruments.clap.note = "";
     this.devices.instruments.clap.duration = "16n";
+    
+    
     
     this.toms = new TR909Toms({
       low: { 
@@ -116,6 +120,8 @@ export class AudioGraph extends AudioGraphBase {
     this.devices.instruments.hightom = this.toms.hi;
     this.devices.instruments.hightom.note = "";
     
+    
+    
     this.devices.instruments.closedhihat = new Tone.MetalSynth({
       detune: this.params.closedhihatTune,
       envelope: 
@@ -133,6 +139,8 @@ export class AudioGraph extends AudioGraphBase {
     this.createDeviceGain(this.groupBus, this.devices.instruments.closedhihat, this.params.closedhihatLevel, this.devices.effects.reverb, this.params.closedhihatReverb);
     this.devices.instruments.closedhihat.note = "F#2";
     this.devices.instruments.closedhihat.duration = "16n";
+    
+    
     
     this.devices.instruments.openhihat = new Tone.MetalSynth({
       detune: this.params.openhihatTune,
@@ -153,10 +161,6 @@ export class AudioGraph extends AudioGraphBase {
     this.devices.instruments.openhihat.duration = "16n";
     
   }
-  
-  get lowtom() { return this.toms.low; }
-  get midtom() { return this.toms.mid; }
-  get hightom() { return this.toms.hi; }
 }
 
 const knobValues = {

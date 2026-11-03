@@ -41,7 +41,7 @@ export class App extends JamConnectApp {
         },
         Decay: {
           deviceParameter: "envelope.decay",
-          min: 0.001,
+          min: 0.01,
           max: 0.5,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
@@ -68,7 +68,7 @@ export class App extends JamConnectApp {
         },
         Decay: {
           deviceParameter: "bodySynth.envelope.decay",
-          min: 0.001,
+          min: 0.01,
           max: 0.5,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
@@ -89,7 +89,7 @@ export class App extends JamConnectApp {
       clap: {
         Decay: {
           deviceParameter: "envelope.decay",
-          min: 0.001,
+          min: 0.01,
           max: 0.5,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
@@ -176,7 +176,7 @@ export class App extends JamConnectApp {
         },
         Decay: {
           deviceParameter: "envelope.decay",
-          min: 0.001,
+          min: 0.01,
           max: 1,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
@@ -204,7 +204,7 @@ export class App extends JamConnectApp {
         Decay: {
           deviceParameter: "envelope.decay",
           min: 0.1,
-          max: 1.5,
+          max: 1,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
@@ -225,14 +225,14 @@ export class App extends JamConnectApp {
         Predelay: {
           deviceParameter: "preDelay",
           min: 0,
-          max: 0.5,
+          max: 0.25,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
         Decay: {
           deviceParameter: "decay",
           min: 0.001,
-          max: 2,
+          max: 1.5,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
