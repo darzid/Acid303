@@ -77,8 +77,10 @@ const DEFAULT_PRESETS = {
 };
 
 // Current Active Pattern State
-var pattern = JSON.parse(JSON.stringify(DEFAULT_PRESETS["Phuture Acid"]));
-    
+var instrumentPatterns = { 
+  tb303: JSON.parse(JSON.stringify(DEFAULT_PRESETS["Phuture Acid"]))
+}
+
 class Sequencer {
 	static render(jcClient) {
     var presets = [];
@@ -121,6 +123,7 @@ class Sequencer {
     }
     
     function renderGrid() {
+      let pattern = instrumentPatterns.tb303;
       for (let i = 0; i < 16; i++) {
         const step = pattern[i];
         const noteContainer = document.getElementById(`step-note-${i}`);
@@ -221,6 +224,7 @@ class Sequencer {
     }
     
     function updateSingleStepUI(i, stepData) {
+      let pattern = instrumentPatterns.tb303;
       pattern[i] = { ...pattern[i], ...stepData };
       const step = pattern[i];
       const noteSelect = document.getElementById(`select-note-${i}`);
@@ -259,27 +263,27 @@ class Sequencer {
     patternSelect.addEventListener('change', (e) => {
       const val = e.target.value;
       if (presets[val]) {
-        pattern = JSON.parse(JSON.stringify(presets[val]));
-        patternChanged(pattern, val);
+        instrumentPatterns.tb303 = JSON.parse(JSON.stringify(presets[val]));
+        patternChanged(instrumentPatterns.tb303, val);
       }
     });
     
     function randomizePattern() {
       const acidNotes = ['C', 'D#', 'F', 'F#', 'G', 'A#'];
-      pattern = Array(16).fill(null).map(() => ({
+      instrumentPatterns.tb303 = Array(16).fill(null).map(() => ({
         note: acidNotes[Math.floor(Math.random() * acidNotes.length)],
         octave: Math.random() > 0.6 ? 3 : (Math.random() > 0.3 ? 2 : 1),
         gate: Math.random() > 0.25,
         accent: Math.random() > 0.65,
         slide: Math.random() > 0.70
       }));
-      patternChanged(pattern, "random");
+      patternChanged(instrumentPatterns.tb303, "random");
       patternSelect.value = "";
     }
     
     function clearPattern() {
-      pattern = Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, accent: false, slide: false }));
-      patternChanged(pattern, "clear");
+      instrumentPatterns.tb303 = Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, accent: false, slide: false }));
+      patternChanged(instrumentPatterns.tb303, "clear");
       patternSelect.value = "";
     }
     
@@ -288,7 +292,7 @@ class Sequencer {
       if (!presetName) return;
       
       let userPresets = loadUserPresets();
-      userPresets[presetName] = pattern;
+      userPresets[presetName] = instrumentPatterns.tb303;
       saveUserPresets(userPresets);
       patternSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
     }

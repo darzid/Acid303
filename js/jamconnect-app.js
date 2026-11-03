@@ -57,7 +57,7 @@ export class JamConnectApp {
   setupParameterKnobs() {
     Object.keys(this.parameterKnobs).forEach(deviceName => {
       let device = this.audioGraph.getDeviceByName(deviceName);
-      console.log("device", device)
+      //console.log("device", device)
       Object.keys(this.parameterKnobs[deviceName]).forEach(parameterName => {
         let parameterControlMapping = this.parameterKnobs[deviceName][parameterName];
         
@@ -490,7 +490,7 @@ export class JamConnectApp {
         const stepData = instrumentPatterns[instrumentName][stepIdx];
         stepData.instrument = instrumentName;
         if (stepData && stepData.gate) {
-          console.log("step", stepData)
+         // console.log("step", stepData)
           const noteFreq = `${stepData.note}${stepData.octave}`;
           this.playNote(noteFreq, stepData, "16n", time);
         }

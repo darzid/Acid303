@@ -5,7 +5,7 @@ class Switch {
 		this.onChange = onChange;
 		
 		this.switchButtons.forEach(switchButton => {
-			console.log("bitton", switchButton)
+		//	console.log("bitton", switchButton)
 			switchButton.addEventListener("click", () => { this.value = switchButton.dataset.value });
 		})
 

@@ -87,7 +87,7 @@ export class AudioGraph extends AudioGraphBase {
   
   play303StepNote(noteFreq, accent, slide, duration, time) 
   {
-    //console.log("play303StepNote", noteFreq, accent, slide, duration, time)
+    //console.log("play3030Note", noteFreq, accent, slide, duration, time)
     try {
       if (accent) {
         this.devices.instruments.tb303.volume.setValueAtTime(4, time);
