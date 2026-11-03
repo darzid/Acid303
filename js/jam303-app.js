@@ -34,39 +34,39 @@ export class App extends JamConnectApp {
         
     this.parameterKnobs = {
       tb303: {
-        Cutoff: {
+        cutoff: {
           min: 100,
           max: 8000,
           deviceParameter: "filterEnvelope.baseFrequency",
           displayValueUnit: "Hz"
         },
-        Reso: {
+        reso: {
           min: 1,
           max: 20,
           deviceParameter: "filter.Q.value"
         },
-        EnvMod: {
+        envMod: {
           deviceParameter: "filterEnvelope.octaves",
           min: 0,
           max: 5,
           displayValueMultiplier: 20,
           displayValueUnit: "%"
         },
-        Decay: {
+        decay: {
           deviceParameter: "decay",
           min: 0.1,
           max: 1.2,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
-        Accent: {
+        accent: {
           deviceParameter: "accent",
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           displayValueUnit: "%"
         },
-        Drive: {
+        drive: {
           deviceParameter: "drive",
           min: 0,
           max: 1,
@@ -78,7 +78,7 @@ export class App extends JamConnectApp {
     
     this.parameterSwitches = {
       tb303: {
-        Waveform: {
+        waveform: {
           deviceParameter: "oscillator.type",
           displayValuePrefix: "WAVE: "
         }

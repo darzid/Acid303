@@ -17,15 +17,13 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
-  <script src="js/flags.js"></script>
-
   <script src="js/knob.js"></script>
   <script src="js/switch.js"></script>
   <script src="js/jam303-sequencer.js"></script>
   <script src="js/tabcontrol.js"></script>
   <script src="js/visualizer.js"></script>
   
-    <script>
+  <script>
     window.onerror = function(message, url, lineNumber) {  
       console.error(`Error: ${message}, at: ${url}, line: ${lineNumber}`);
       return true;
@@ -60,7 +58,7 @@
         </div>
 
         <div class="flex justify-between items-center text-[10px] text-emerald-600 font-mono">
-          <span id="val-tb303-waveform" class="uppercase">WAVE: SAWTOOTH</span>
+          <span data-parameter="tb303.waveform" class="uppercase">WAVE: SAWTOOTH</span>
           <span id="display-step">STEP: 01/16</span>
         </div>
       </div>
@@ -107,9 +105,9 @@
       <div class="tab-container">
         <div title="SOUND" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
           
-          <div id="waveform-selection" class="items-center gap-1 p-1 text-center">
-            <button id="wave-saw" data-parameter="tb303-waveform" data-value="sawtooth" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">SAWTOOTH</button>
-            <button id="wave-sqr" data-parameter="tb303-waveform" data-value="square" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">SQUARE</button>
+          <div id="tb303-waveform" class="items-center gap-1 p-1 text-center">
+            <button id="wave-saw" data-parameter="tb303.waveform" data-value="sawtooth" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">SAWTOOTH</button>
+            <button id="wave-sqr" data-parameter="tb303.waveform" data-value="square" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">SQUARE</button>
           </div>
           
           <div id="rotary-knobs" class="lg:col-span-8 grid grid-cols-3 sm:grid-cols-6 gap-2 items-center text-center">
@@ -117,67 +115,67 @@
             <!-- Knob 1: Cutoff -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">CUTOFF</span>
-              <div class="knob-container" id="knob-tb303-cutoff" data-value="0.4">
+              <div class="knob-container" id="tb303.cutoff" data-value="0.4">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-cutoff">400 Hz</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" data-parameter="tb303.cutoff">400 Hz</span>
             </div>
     
             <!-- Knob 2: Resonance -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">RESONANCE</span>
-              <div class="knob-container" id="knob-tb303-reso" data-value="0.7">
+              <div class="knob-container" id="tb303.reso" data-value="0.7">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-reso">7.0</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" data-parameter="tb303.reso">7.0</span>
             </div>
     
             <!-- Knob 3: Env Mod -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">ENV MOD</span>
-              <div class="knob-container" id="knob-tb303-envmod" data-value="0.6">
+              <div class="knob-container" id="tb303.envMod" data-value="0.6">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-envmod">60%</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" data-parameter="tb303.envMod">60%</span>
             </div>
     
             <!-- Knob 4: Decay -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DECAY</span>
-              <div class="knob-container" id="knob-tb303-decay" data-value="0.3">
+              <div class="knob-container" id="tb303.decay" data-value="0.3">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-decay">300ms</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" data-parameter="tb303.decay">300ms</span>
             </div>
     
             <!-- Knob 5: Accent -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">ACCENT</span>
-              <div class="knob-container" id="knob-tb303-accent" data-value="0.8">
+              <div class="knob-container" id="tb303.accent" data-value="0.8">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-accent">80%</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" data-parameter="tb303.accent">80%</span>
             </div>
     
             <!-- Knob 6: Distortion -->
             <div class="flex flex-col items-center">
               <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">DRIVE</span>
-              <div class="knob-container" id="knob-tb303-drive" data-value="0.35">
+              <div class="knob-container" id="tb303.drive" data-value="0.35">
                 <div class="knob-body"></div>
                 <div class="knob-cap"></div>
                 <div class="knob-indicator"></div>
               </div>
-              <span class="text-[10px] font-mono text-slate-600 mt-1" id="val-tb303-drive">35%</span>
+              <span class="text-[10px] font-mono text-slate-600 mt-1" data-parameter="tb303.drive">35%</span>
             </div>
             
           </div>

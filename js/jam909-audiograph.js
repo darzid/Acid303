@@ -1,111 +1,118 @@
-import * as DAWSome from "https://darzid.github.io/ToneJS/DAWSome/DAWSome.js";
-import { TR909Toms } from "./devices/TR909Toms.js";
 import { AudioGraphBase } from "./jamconnect-audiograph.js";
+import * as DAWSome from "https://darzid.github.io/tuneJS/DAWSome/DAWSome.js";
+import { TR909Toms } from "./devices/TR909Toms.js";
 
 const params = {
-	reverbPredelay: 0.001,
-	reverbDecay: 1.5,
-	reverbLevel: 1,
-  
-  kickTone: 6,
-  kickPitchDecay: 0.04,
-  kickDecay: 0.35,
-  kickLevel: 0.5,
-  kickReverb: 0,
-  
-  snareTone: 0,
-  snareDecay: 0.35,
-  snareLevel: 1,
-  snareReverb: 0.5,
-  
-  clapDecay: 0.14,
-  clapLevel: 1,
-  clapReverb: 0.5,
-  
-  lowtomTune: 0.35,
-  lowtomDecay: 0.70,
-  lowtomLevel: 0.60,
-//  lowtomReverb: 0,
-  
-  midtomTune: 0.50,
-  midtomDecay: 0.45,
-  midtomLevel: 0.50,
-//  midtomReverb: 0,
-  
-  hightomTune: 0.65,
-  hightomDecay: 0.30,
-  hightomLevel: 0.55,
-//  hightomReverb: 0,
-  
-  closedhihatTune: 0.1,
-  closedhihatDecay: 0.05,
-  closedhihatLevel: 1,
-  closedhihatReverb: 1,
-  
-  openhihatTune: 0,
-  openhihatDecay: 1.5,
-  openhihatLevel: 1,
-  openhihatReverb: 2
+  reverb: {
+    preDelay: 0.001,
+	  decay: 1.5,
+	  level: 1,
+  },
+  BD: {
+    tune: 6,
+    pitchDecay: 0.04,
+    decay: 0.35,
+    level: 0.5,
+    reverb: 0,
+  },
+  SD: {
+    tune: 0,
+    decay: 0.35,
+    level: 1,
+    reverb: 0.5,
+  },
+  CP: {
+    decay: 0.14,
+    level: 1,
+    reverb: 0.5,
+  },
+  LT: {
+    tune: 0.35,
+    decay: 0.70,
+    level: 0.60,
+  },
+  MT: {
+    tune: 0.50,
+    decay: 0.45,
+    level: 0.50,
+  },
+  HT: {
+    tune: 0.65,
+    decay: 0.30,
+    level: 0.55,
+  },
+  CH: {
+    tune: 0.1,
+    decay: 0.05,
+    level: 1,
+    reverb: 1,
+  },
+  OH: {
+    tune: 0,
+    decay: 1.5,
+    level: 1,
+    reverb: 2
+  }
 }
 
 export class AudioGraph extends AudioGraphBase {
   constructor() {
     super(params)
+    console.log("loading")
     
     this.devices.effects.reverb = new Tone.Reverb(
     {
-    	preDelay: this.params.reverbPredelay,
-  		decay: this.params.reverbDecay,
+    	preDelay: this.params.reverb.preDelay,
+  		decay: this.params.reverb.decay,
       wet: 1,
     }).connect(this.groupBus);
       
     
-    // Synthesized 909-style Drum Voices for Live Jam Pads
-    this.devices.instruments.kick = new Tone.MembraneSynth({
-      pitchDecay: this.params.kickPitchDecay,
+    this.devices.instruments.BD = new Tone.MembraneSynth({
+      pitchDecay: this.params.BD.pitchDecay,
       octaves: 6,
-      detune: this.params.kickTone,
+      detune: this.params.BD.tune,
       oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: this.params.kickDecay, sustain: 0.001, release: 0.001 },
+      envelope: { attack: 0.001, decay: this.params.BD.decay, sustain: 0.001, release: 0.001 },
     });
-    this.createDeviceGain(this.groupBus, this.devices.instruments.kick, this.params.kickLevel, this.devices.effects.reverb, this.params.kickReverb);
-    this.devices.instruments.kick.note = "C1";
-    this.devices.instruments.kick.duration = "8n";
+    this.createDeviceGain(this.groupBus, this.devices.instruments.BD, this.params.BD.level, this.devices.effects.reverb, this.params.BD.reverb);
+    this.devices.instruments.BD.note = "C1";
+    this.devices.instruments.BD.duration = "8n";
     
     
     
-    this.devices.instruments.snare = new DAWSome.TR909Snare();
-    this.devices.instruments.snare.bodySynth.detune.value = this.params.snareTone;
-    this.devices.instruments.snare.bodySynth.envelope.decay = this.params.snareDecay;
-    this.createDeviceGain(this.groupBus, this.devices.instruments.snare, this.params.snareLevel, this.devices.effects.reverb, this.params.snareReverb);
-    this.devices.instruments.snare.note = "C2";
-    this.devices.instruments.snare.duration = "16n";
+    this.devices.instruments.SD = new DAWSome.TR909Snare();
+    this.devices.instruments.SD.bodySynth.detune.value = this.params.SD.tune;
+    this.devices.instruments.SD.bodySynth.envelope.decay = this.params.SD.decay;
+    this.createDeviceGain(this.groupBus, this.devices.instruments.SD, this.params.SD.level, this.devices.effects.reverb, this.params.SD.reverb);
+    this.devices.instruments.SD.note = "C2";
+    this.devices.instruments.SD.duration = "16n";
     
-    this.devices.instruments.clap = new Tone.NoiseSynth({
+    this.devices.instruments.CP = new Tone.NoiseSynth({
       noise: { type: 'pink' },
-      envelope: { attack: 0.003, decay: this.params.clapDecay, sustain: 0 },
+      envelope: { attack: 0.003, decay: this.params.CP.decay, sustain: 0 },
     });
-    this.createDeviceGain(this.groupBus, this.devices.instruments.clap, this.params.clapLevel, this.devices.effects.reverb, this.params.clapReverb);
-    this.devices.instruments.clap.note = "";
-    this.devices.instruments.clap.duration = "16n";
+    this.createDeviceGain(this.groupBus, this.devices.instruments.CP, this.params.CP.level, this.devices.effects.reverb, this.params.CP.reverb);
+    this.devices.instruments.CP.note = "";
+    this.devices.instruments.CP.duration = "16n";
     
     
     
     this.toms = new TR909Toms({
       low: { 
-        tune: this.params.lowtomTune,
-        decay: this.params.lowtomDecay,
-        level: this.params.lowtomLevel 
+        tune: this.params.LT.tune,
+        decay: this.params.LT.decay,
+        level: this.params.LT.level 
       },
       mid: {
-        tune: this.params.midtomTune,
-        decay: this.params.midtomDecay,
-        level: this.params.midtomLevel 
+        tune: this.params.MT.tune,
+        decay: this.params.MT.decay,
+        level: this.params.MT.level 
       },
       hi: {
-        tune: this.params.hightomTune,
-        decay: this.params.hightomDecay,
-        level: this.params.hightomLevel 
+        tune: this.params.HT.tune,
+        decay: this.params.HT.decay,
+        level: this.params.HT.level 
       }
     });
   
@@ -113,21 +120,21 @@ export class AudioGraph extends AudioGraphBase {
     this.toms.mid.connect(this.groupBus);
     this.toms.hi.connect(this.groupBus);
     
-    this.devices.instruments.lowtom = this.toms.low;
-    this.devices.instruments.lowtom.note = "";
-    this.devices.instruments.midtom = this.toms.mid;
-    this.devices.instruments.midtom.note = "";
-    this.devices.instruments.hightom = this.toms.hi;
-    this.devices.instruments.hightom.note = "";
+    this.devices.instruments.LT = this.toms.low;
+    this.devices.instruments.LT.note = "";
+    this.devices.instruments.MT = this.toms.mid;
+    this.devices.instruments.MT.note = "";
+    this.devices.instruments.HT = this.toms.hi;
+    this.devices.instruments.HT.note = "";
     
     
     
-    this.devices.instruments.closedhihat = new Tone.MetalSynth({
-      detune: this.params.closedhihatTune,
+    this.devices.instruments.CH = new Tone.MetalSynth({
+      detune: this.params.CH.tune,
       envelope: 
       { 
         attack: 0.001, 
-        decay: this.params.closedhihatDecay, 
+        decay: this.params.CH.decay, 
         sustain: 0,
         release: 0
       },
@@ -136,18 +143,18 @@ export class AudioGraph extends AudioGraphBase {
       modulationIndex: 1,
     //  octaves: 1.5
     });
-    this.createDeviceGain(this.groupBus, this.devices.instruments.closedhihat, this.params.closedhihatLevel, this.devices.effects.reverb, this.params.closedhihatReverb);
-    this.devices.instruments.closedhihat.note = "F#2";
-    this.devices.instruments.closedhihat.duration = "16n";
+    this.createDeviceGain(this.groupBus, this.devices.instruments.CH, this.params.CH.level, this.devices.effects.reverb, this.params.CH.reverb);
+    this.devices.instruments.CH.note = "F#2";
+    this.devices.instruments.CH.duration = "16n";
     
     
     
-    this.devices.instruments.openhihat = new Tone.MetalSynth({
-      detune: this.params.openhihatTune,
+    this.devices.instruments.OH = new Tone.MetalSynth({
+      detune: this.params.OH.tune,
       envelope: 
       { 
         attack: 0.001, 
-        decay: this.params.openhihatDecay, 
+        decay: this.params.OH.decay, 
         sustain: 0,
         release: 0
       },
@@ -156,21 +163,9 @@ export class AudioGraph extends AudioGraphBase {
       modulationIndex: 1,
       //octaves: 1.5
     });
-    this.createDeviceGain(this.groupBus, this.devices.instruments.openhihat, this.params.openhihatLevel, this.devices.effects.reverb, this.params.openhihatReverb);
-    this.devices.instruments.openhihat.note = "C2";
-    this.devices.instruments.openhihat.duration = "16n";
+    this.createDeviceGain(this.groupBus, this.devices.instruments.OH, this.params.OH.level, this.devices.effects.reverb, this.params.OH.reverb);
+    this.devices.instruments.OH.note = "C2";
+    this.devices.instruments.OH.duration = "16n";
     
   }
 }
-
-const knobValues = {
-  kickTone: 6,
-  kickPitchDecay: 0.04,
-  kickDecay: 0.35,
-  kickLevel: 0,
-  snareTone: 0,
-  snareDecay: 0.35,
-  snareLevel: 0,
-  clapDecay: 0.14,
-  clapLevel: 0
-};

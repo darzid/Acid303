@@ -2,6 +2,7 @@ export class AudioGraphBase {
 	constructor(params) {
 		this.params = params;
 		
+		console.log("agbase")
 		this.devices = {
 			instruments: {},
 			effects: {}

@@ -3,6 +3,7 @@ class Knob {
     this.id = id;
     this.paramKey = paramKey;
     this.knob = document.getElementById(id);
+    console.log("knob " + id, this.knob)
     this.onChange = onChange;
     this.min = min;
     this.max = max;

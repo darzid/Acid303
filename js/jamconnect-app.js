@@ -61,7 +61,7 @@ export class JamConnectApp {
       Object.keys(this.parameterKnobs[deviceName]).forEach(parameterName => {
         let parameterControlMapping = this.parameterKnobs[deviceName][parameterName];
         
-        let paramKey = `${deviceName.toLowerCase()}-${parameterName.toLowerCase()}`;
+        let paramKey = `${deviceName}.${parameterName}`;
         
         let offset = parameterControlMapping.offset ? parameterControlMapping.offset : 0;
         let paramValue = this.audioGraph.getDeviceParameterValue(device, parameterControlMapping.deviceParameter) - offset;
@@ -73,7 +73,7 @@ export class JamConnectApp {
         
         parameterControlMapping.lastSentAt = performance.now();
         
-        this.setupKnob(`knob-${paramKey}`, paramKey, (knobValue) => {
+        this.setupKnob(paramKey, paramKey, (knobValue) => {
           const parameterValue = offset + knobValue;
           const parameterDisplayValue = `${(knobValue * displayValueMultiplier).toFixed(2)}${displayValueUnit}`;
           
@@ -94,7 +94,7 @@ export class JamConnectApp {
       Object.keys(this.parameterSwitches[deviceName]).forEach(parameterName => {
         let parameterControlMapping = this.parameterSwitches[deviceName][parameterName];
         
-        let paramKey = `${deviceName.toLowerCase()}-${parameterName.toLowerCase()}`;
+        let paramKey = `${deviceName}.${parameterName}`;
         let paramValue = this.audioGraph.getDeviceParameterValue(device, parameterControlMapping.deviceParameter);
         let displayValuePrefix = parameterControlMapping.displayValuePrefix ? parameterControlMapping.displayValuePrefix : "";
         parameterControlMapping.lastSentAt = performance.now();
@@ -113,7 +113,7 @@ export class JamConnectApp {
   }
   
   onParameterChange(device, deviceName, parameterName, paramKey, parameterControlMapping, parameterValue, parameterDisplayValue = null) {
-    this.audioGraph.params[`${deviceName}${parameterName}`] = parameterValue;
+    this.audioGraph.params[deviceName][parameterName] = parameterValue;
     this.audioGraph.updateDeviceParameter(device, parameterControlMapping.deviceParameter, parameterValue);
     if (!this.jcClient.isApplyingRemoteUpdate) {
       const now = performance.now();
@@ -122,7 +122,7 @@ export class JamConnectApp {
         this.jcClient.connector.sendDeviceParameterChange(paramKey, parameterValue, parameterValue);
       }
     }
-    const valueDisplayElement = document.getElementById(`val-${paramKey}`);
+    const valueDisplayElement = document.querySelector(`span[data-parameter="${deviceName}.${parameterName}"]`);
     if (valueDisplayElement) {
       if (parameterDisplayValue == null)
         parameterDisplayValue = parameterValue;
@@ -147,8 +147,7 @@ export class JamConnectApp {
   // to the snapshot dictionary.
   addCommonDataToJamConnectSnapshot(snapshot) {
     snapshot.pattern = pattern;
-    snapshot.knobValues = { ...knobValues };
-    snapshot.switchValues = { ...switchValues };
+    snapshot.parameters = { ...this.audioGraph.params };
     snapshot.bpm = Math.round(Tone.Transport.bpm.value);
     snapshot.swingPct = Math.round((Tone.Transport.swing || 0) * 100);
     return snapshot;
@@ -172,7 +171,7 @@ export class JamConnectApp {
 
   applyCommonDataUpdatesFromJamConnectSnapshot(appName, snapshot) {
     this.applyPatternUpdateFromJamConnectSnapshot(appName, snapshot.pattern);
-    this.applyDeviceParameterChangesFromJamConnectSnapshot(appName, snapshot.parameterValues);
+    this.applyDeviceParameterChangesFromJamConnectSnapshot(appName, snapshot.parameters);
     this.applyTransportUpdatesFromJamConnectSnapshot(appName, snapshot.bpm, snapshot.swingPct);
   }
   

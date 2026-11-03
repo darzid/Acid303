@@ -1,16 +1,20 @@
+TabControl.render();
+
 import { AudioGraph } from "./jam909-audiograph.js";
 import { JamConnectApp } from "./jamconnect-app.js";
-
 
 export class App extends JamConnectApp {
   constructor() {
     super("jam909", new AudioGraph(), "#de9e09", "#100B09", "amber");
+    console.log("app")
+    
+    /*
     
     let swRegistration = null;
     if (location.origin !== "file://") {
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
-          .register("/jam909-service-worker.js", { scope: "/" })
+          .register("/jam909-service-worker2.js", { scope: "/" })
           .then((registration) => {
             // registration worked
             console.log("Registration succeeded.");
@@ -27,194 +31,194 @@ export class App extends JamConnectApp {
     }
     
     this.parameterKnobs = {
-      kick: {
-        Tone: {
+      BD: {
+        tune: {
           min: -2400,
           max: 1200,
           deviceParameter: "detune.value",
           displayValueUnit: "ct"
         },
-        PitchDecay: {
+        pitchDecay: {
           min: 0.01,
           max: 0.1,
           deviceParameter: "pitchDecay"
         },
-        Decay: {
+        decay: {
           deviceParameter: "envelope.decay",
           min: 0.01,
           max: 0.5,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
-        Level: {
+        level: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "level",
         },
-        Reverb: {
+        reverb: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "reverb",
         }
       },
-      snare: {
-        Tone: {
+      SD: {
+        tune: {
           min: -2400,
           max: 1200,
           deviceParameter: "bodySynth.detune.value",
           displayValueUnit: "ct"
         },
-        Decay: {
+        decay: {
           deviceParameter: "bodySynth.envelope.decay",
           min: 0.01,
           max: 0.5,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
-        Level: {
+        level: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "level",
         },
-        Reverb: {
+        reverb: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "reverb",
         }
       },
-      clap: {
-        Decay: {
+      CP: {
+        decay: {
           deviceParameter: "envelope.decay",
           min: 0.01,
           max: 0.5,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
-        Level: {
+        level: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "level",
         },
-        Reverb: {
+        reverb: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "reverb",
         }
       },
-      lowtom: {
-        Tune: {
+      LT: {
+        tune: {
           deviceParameter: "tune",
           min: 0.10,
           max: 0.60
         },
-        Decay: {
+        decay: {
           deviceParameter: "decay",
           min: 0.1,
           max: 1,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
-        Level: {
+        level: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "level",
         }
       },
-      midtom: {
-        Tune: {
+      MT: {
+        tune: {
           deviceParameter: "tune",
           min: 0.10,
           max: 0.60
         },
-        Decay: {
+        decay: {
           deviceParameter: "decay",
           min: 0.1,
           max: 1,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
-        Level: {
+        level: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "level",
         }
       },
-      hightom: {
-        Tune: {
+      HT: {
+        tune: {
           deviceParameter: "tune",
           min: 0.10,
           max: 0.60
         },
-        Decay: {
+        decay: {
           deviceParameter: "decay",
           min: 0.1,
           max: 1,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
-        Level: {
+        level: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "level",
         }
       },
-      closedhihat: {
-        Tune: {
+      CH: {
+        tune: {
           deviceParameter: "detune.value",
           min: -1200,
           max: 1200,
           displayValueUnit: "ct"
         },
-        Decay: {
+        decay: {
           deviceParameter: "envelope.decay",
           min: 0.01,
           max: 1,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
-        Level: {
+        level: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "level",
         },
-        Reverb: {
+        reverb: {
           min: 0,
           max: 5,
           displayValueMultiplier: 100,
           deviceParameter: "reverb",
         }
       },
-      openhihat: {
-        Tune: {
+      OH: {
+        tune: {
           deviceParameter: "detune.value",
           min: -1200,
           max: 1200,
           displayValueUnit: "ct"
         },
-        Decay: {
+        decay: {
           deviceParameter: "envelope.decay",
           min: 0.1,
           max: 1,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
-        Level: {
+        level: {
           min: 0,
           max: 1,
           displayValueMultiplier: 100,
           deviceParameter: "level",
         },
-        Reverb: {
+        reverb: {
           min: 0,
           max: 5,
           displayValueMultiplier: 100,
@@ -222,14 +226,14 @@ export class App extends JamConnectApp {
         }
       },
       reverb: {
-        Predelay: {
+        preDelay: {
           deviceParameter: "preDelay",
           min: 0,
           max: 0.25,
           displayValueMultiplier: 1000,
           displayValueUnit: "ms"
         },
-        Decay: {
+        decay: {
           deviceParameter: "decay",
           min: 0.001,
           max: 1.5,
@@ -237,9 +241,9 @@ export class App extends JamConnectApp {
           displayValueUnit: "ms"
         },
       }
-    }
+    }*/
   }
-
+/*
   playNote(note, stepData, duration, time) {
     this.playDrum(stepData.instrument, time, stepData.accent);
     
@@ -262,12 +266,12 @@ export class App extends JamConnectApp {
   
   run() {
     super.run();
-    
+  
     // Initialize Lucide Icons
     lucide.createIcons();
-    
-    TabControl.render();
     console.log("Render sequencer")
+    TabControl.render();
+    
     Sequencer.render(this.jcClient, this.audioGraph);
     
     // Handle Live Pad & Quantized Note Triggers (Local & Remote)
@@ -306,7 +310,7 @@ export class App extends JamConnectApp {
         this.jcClient.connector.triggerPad(this.jcClient.connector.appName, inst, note, 0.9, snapStrength);
       });
     });
-  }
+  }*/
 }
 
 const app = new App();
