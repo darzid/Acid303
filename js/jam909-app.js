@@ -1,26 +1,21 @@
-TabControl.render();
-
 import { AudioGraph } from "./jam909-audiograph.js";
 import { JamConnectApp } from "./jamconnect-app.js";
 
 export class App extends JamConnectApp {
   constructor() {
     super("jam909", new AudioGraph(), "#de9e09", "#100B09", "amber");
-    console.log("app")
-    
-    
-    
+
     let swRegistration = null;
     if (location.origin !== "file://") {
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
-          .register("/jam909-service-worker2.js", { scope: "/" })
+          .register("/jam909-service-worker.js", { scope: "/" })
           .then((registration) => {
             // registration worked
-            console.log("Registration succeeded.");
+            //console.log("Registration succeeded.");
             registration.unregister().then((boolean) => {
               // if boolean = true, unregister is successful
-              console.log("Unregister result " + boolean);
+              //console.log("Unregister result " + boolean);
             });
           })
           .catch((error) => {
@@ -269,9 +264,8 @@ export class App extends JamConnectApp {
   
     // Initialize Lucide Icons
     lucide.createIcons();
-    console.log("Render sequencer")
-    TabControl.render();
     
+    TabControl.render();
     Sequencer.render(this.jcClient, this.audioGraph);
     
     // Handle Live Pad & Quantized Note Triggers (Local & Remote)

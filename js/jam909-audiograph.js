@@ -1,5 +1,5 @@
 import { AudioGraphBase } from "./jamconnect-audiograph.js";
-import * as DAWSome from "https://darzid.github.io/tuneJS/DAWSome/DAWSome.js";
+import { TR909Snare } from "./devices/TR909Snare.js";
 import { TR909Toms } from "./devices/TR909Toms.js";
 
 const params = {
@@ -58,7 +58,6 @@ const params = {
 export class AudioGraph extends AudioGraphBase {
   constructor() {
     super(params)
-    console.log("loading")
     
     this.devices.effects.reverb = new Tone.Reverb(
     {
@@ -81,12 +80,13 @@ export class AudioGraph extends AudioGraphBase {
     
     
     
-    this.devices.instruments.SD = new DAWSome.TR909Snare();
+    this.devices.instruments.SD = new TR909Snare();
     this.devices.instruments.SD.bodySynth.detune.value = this.params.SD.tune;
     this.devices.instruments.SD.bodySynth.envelope.decay = this.params.SD.decay;
     this.createDeviceGain(this.groupBus, this.devices.instruments.SD, this.params.SD.level, this.devices.effects.reverb, this.params.SD.reverb);
     this.devices.instruments.SD.note = "C2";
     this.devices.instruments.SD.duration = "16n";
+    
     
     this.devices.instruments.CP = new Tone.NoiseSynth({
       noise: { type: 'pink' },

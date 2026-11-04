@@ -10,7 +10,6 @@ class Sequencer {
     });
     
     function drawGrid() {
-      console.log("draw sequencer grid")
       grid.innerHTML = "";
       for (let i = 0; i < 16; i++) {
         grid.innerHTML += `<div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
