@@ -8,7 +8,7 @@ export class App extends JamConnectApp {
     super("jam909", new AudioGraph(), "#de9e09", "#100B09", "amber");
     console.log("app")
     
-    /*
+    
     
     let swRegistration = null;
     if (location.origin !== "file://") {
@@ -241,9 +241,9 @@ export class App extends JamConnectApp {
           displayValueUnit: "ms"
         },
       }
-    }*/
+    }
   }
-/*
+
   playNote(note, stepData, duration, time) {
     this.playDrum(stepData.instrument, time, stepData.accent);
     
@@ -310,7 +310,7 @@ export class App extends JamConnectApp {
         this.jcClient.connector.triggerPad(this.jcClient.connector.appName, inst, note, 0.9, snapStrength);
       });
     });
-  }*/
+  }
 }
 
 const app = new App();

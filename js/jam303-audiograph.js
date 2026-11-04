@@ -4,7 +4,7 @@ const params = {
   tb303: {
     cutoff: 400,     // Hz
     resonance: 7,    // Q factor
-    envmod: 0.6,     // 0 to 1
+    envMod: 0.6,     // 0 to 1
     decay: 0.3,      // seconds
     accent: 0.8,     // 0 to 1
     drive: 0.35,     // distortion amount
@@ -53,7 +53,7 @@ export class AudioGraph extends AudioGraphBase {
         sustain: 0.0,
         release: 0.1,
         baseFrequency: this.params.tb303.cutoff,
-        octaves: this.params.tb303.envmod * 5,
+        octaves: this.params.tb303.envMod * 5,
         exponent: 2
       }
     });
@@ -79,9 +79,6 @@ export class AudioGraph extends AudioGraphBase {
         }
     });
     
-    
-
-        
 
     // Chain 303 Audio Routing
     this.devices.instruments.tb303.chain(this.devices.effects.distortion, this.devices.effects.delay, this.groupBus);
@@ -93,11 +90,11 @@ export class AudioGraph extends AudioGraphBase {
     try {
       if (accent) {
         this.devices.instruments.tb303.volume.setValueAtTime(4, time);
-        this.devices.instruments.tb303.filterEnvelope.octaves = this.params.tb303.envmod * 7.5 * this.params.tb303.accent;
+        this.devices.instruments.tb303.filterEnvelope.octaves = this.params.tb303.envMod * 7.5 * this.params.tb303.accent;
         this.devices.instruments.tb303.envelope.decay = this.params.tb303.decay * 0.7;
       } else {
         this.devices.instruments.tb303.volume.setValueAtTime(0, time);
-        this.devices.instruments.tb303.filterEnvelope.octaves = this.params.tb303.envmod * 4.5;
+        this.devices.instruments.tb303.filterEnvelope.octaves = this.params.tb303.envMod * 4.5;
         this.devices.instruments.tb303.envelope.decay = this.params.tb303.decay;
       }
       

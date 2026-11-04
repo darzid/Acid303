@@ -1,6 +1,9 @@
 class Visualizer {
-	constructor(waveAnalyser, canvasElementId, strokeColor = "#22c55e", bgColor = "#091209") {
+	constructor(waveAnalyser, canvasElementId, strokeColor = "#22c55e", bgColor = "#091209", type = "waveform") {
+		//this.waveAnalyser = new Tone.Waveform(2048);
+		//input.connect(this.waveAnalyser);
 		this.waveAnalyser = waveAnalyser;
+		
 		this.strokeColor = strokeColor;
 		this.bgColor = bgColor;
 		this.canvas = document.getElementById(canvasElementId);

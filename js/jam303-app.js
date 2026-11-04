@@ -23,9 +23,9 @@ export class App extends JamConnectApp {
     this.ccMap = {
           1: 'cutoff',   // Mod wheel -> Cutoff
           74: 'cutoff',  // Filter Cutoff
-          71: 'reso',    // Resonance
-          73: 'envmod',  // Env Mod
-          16: 'envmod',
+          71: 'resonance',    // Resonance
+          73: 'envMod',  // Env Mod
+          16: 'envMod',
           75: 'decay',   // Decay
           72: 'decay',
           76: 'accent',  // Accent
@@ -40,7 +40,7 @@ export class App extends JamConnectApp {
           deviceParameter: "filterEnvelope.baseFrequency",
           displayValueUnit: "Hz"
         },
-        reso: {
+        resonance: {
           min: 1,
           max: 20,
           deviceParameter: "filter.Q.value"

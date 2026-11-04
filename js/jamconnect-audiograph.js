@@ -2,7 +2,6 @@ export class AudioGraphBase {
 	constructor(params) {
 		this.params = params;
 		
-		console.log("agbase")
 		this.devices = {
 			instruments: {},
 			effects: {}
@@ -13,9 +12,9 @@ export class AudioGraphBase {
 		
 		this.groupBus = new Tone.Channel();
 		this.groupBus.connect(this.waveAnalyser);
-		
-		
 	}
+	
+	get output() { return this.groupBus.output; }
 	
 	createDeviceGain(groupBus, device, level, effectDevice = null, effectLevel = 0) {
 			let deviceGain = new Tone.Gain(level);
