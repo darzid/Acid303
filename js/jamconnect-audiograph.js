@@ -7,7 +7,7 @@ export class AudioGraphBase {
 			effects: {}
 		};
 		
-		this.waveAnalyser = new Tone.Waveform(128);
+		this.waveAnalyser = new Tone.Waveform(2048);
 		this.waveAnalyser.toDestination();
 		
 		this.groupBus = new Tone.Channel();
