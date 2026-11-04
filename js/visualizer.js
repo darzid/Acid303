@@ -1,8 +1,16 @@
 class Visualizer {
-	constructor(waveAnalyser, canvasElementId, strokeColor = "#22c55e", bgColor = "#091209", type = "waveform") {
-		//this.waveAnalyser = new Tone.Waveform(2048);
-		//input.connect(this.waveAnalyser);
-		this.waveAnalyser = waveAnalyser;
+	_oscillatorFrequency = 2048;
+	_spectrumBars = 16;
+	_spectrumBarSpacing = 2;
+	constructor(input, canvasElementId, strokeColor = "#22c55e", bgColor = "#091209", type = "fft") {
+		this.type = type;
+		this.waveAnalyser = (type == "waveform") ? 
+			new Tone.Waveform(this._oscillatorFrequency) : 
+			new Tone.FFT({size: this._spectrumBars, normalRange: true, smoothing: 0.8});
+		let gain = new Tone.Gain(10);
+		input.connect(gain);
+		
+		gain.connect(this.waveAnalyser);
 		
 		this.strokeColor = strokeColor;
 		this.bgColor = bgColor;
@@ -32,12 +40,19 @@ class Visualizer {
 	drawVisualizer() {
 		requestAnimationFrame(() => this.drawVisualizer());
 		
-		this.ctx.fillStyle = this.bgColor;
-		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-		
 		if (!this.isActive) return;
 		
 		const values = this.waveAnalyser.getValue();
+		if (this.type == "waveform")
+			this.drawOscillator(values);
+		else
+			this.drawSpectrum(values);
+	}
+	
+	drawOscillator(values) {
+		this.ctx.fillStyle = this.bgColor;
+		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
 		this.ctx.lineWidth = 2;
 		this.ctx.strokeStyle = this.strokeColor;
 		this.ctx.shadowBlur = 8;
@@ -60,5 +75,28 @@ class Visualizer {
 		}
 		
 		this.ctx.stroke();
+	}
+	
+	drawSpectrum(values) {
+		// Clear previous canvas frame
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		
+		const bufferLength = values.length;
+    const barWidth = (this.canvas.width / bufferLength) - this._spectrumBarSpacing;
+
+    for (let i = 0; i < bufferLength; i++) {
+    	const magnitude = values[i]; // Float between 0 and 1
+      const barHeight = magnitude * this.canvas.height;
+
+      // Position coordinates (draw from bottom up)
+      const x = i * (barWidth + this._spectrumBarSpacing);
+      const y = this.canvas.height - barHeight;
+
+      // Dynamic gradient based on amplitude/frequency
+      const hue = (i / bufferLength) * 260; // Blue to red
+      this.ctx.fillStyle = `hsl(${hue}, 80%, 55%)`;
+
+      this.ctx.fillRect(x, y, barWidth, barHeight);
+    }
 	}
 }

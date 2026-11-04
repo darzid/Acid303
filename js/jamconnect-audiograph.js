@@ -7,14 +7,18 @@ export class AudioGraphBase {
 			effects: {}
 		};
 		
-		this.waveAnalyser = new Tone.Waveform(128);
-		this.waveAnalyser.toDestination();
-		
 		this.groupBus = new Tone.Channel();
-		this.groupBus.connect(this.waveAnalyser);
 	}
 	
 	get output() { return this.groupBus.output; }
+	
+	connect(destination) {
+		this.output.connect(destination);
+	}
+	
+	toDestination() {
+		this.output.toDestination();
+	}
 	
 	createDeviceGain(groupBus, device, level, effectDevice = null, effectLevel = 0) {
 			let deviceGain = new Tone.Gain(level);
