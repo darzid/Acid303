@@ -77,8 +77,6 @@ class Visualizer {
 	}
 	
 	drawVisualizer() {
-		requestAnimationFrame(() => this.drawVisualizer());
-		
 		if (!this.isActive) return;
 		
 		this.clearCanvas();
@@ -88,6 +86,8 @@ class Visualizer {
 			this.drawOscillator(values);
 		else
 			this.drawSpectrum(values);
+			
+		requestAnimationFrame(() => this.drawVisualizer());
 	}
 	
 	clearCanvas() {
