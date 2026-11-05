@@ -5,21 +5,21 @@ import { TR909Toms } from "./devices/TR909Toms.js";
 const parameters = {
 	reverb: {
 		preDelay: {
-			value: 0.001,
+			value: 0,
 			deviceParameter: "preDelay",
 			range: {
 				min: 0,
-				max: 0.25,
+				max: 0.2,
 				displayValueMultiplier: 1000,
 				displayValueUnit: "ms"
 			}
 		},
 		decay: {
-			value: 0.5,
+			value: 0.25,
 			deviceParameter: "decay",
 			range: {
 				min: 0.001,
-				max: 1.5,
+				max: 1,
 				displayValueMultiplier: 1000,
 				displayValueUnit: "ms"
 			}
