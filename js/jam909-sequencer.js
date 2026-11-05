@@ -4,25 +4,28 @@ class Sequencer {
 	static render(jcClient, audioGraph) {
 	  this.audioGraph = audioGraph;
     
+    const sequencerGrid = document.getElementById("sequencer-grid");
     const grid = document.getElementById("grid");
+    const drumSelect = document.getElementById('drum-select');
+    const clearPatternBtn = document.getElementById('clear-btn');
+  
     Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
       instrumentPatterns[instrumentName] = Array(16).fill(null).map(() => ({ note: this.audioGraph.devices.instruments[instrumentName].note, gate: false, accent: false }));
     });
     
     function drawGrid() {
-      console.log("draw sequencer grid")
       grid.innerHTML = "";
       for (let i = 0; i < 16; i++) {
         grid.innerHTML += `<div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
                             <span class="text-[9px] font-mono text-slate-500 mb-1">${i + 1}</span>
-                            <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>
-                            <div id="step-gate-${i}" class="note-button"></div>
-                            <div id="step-accent-${i}" class="note-button"></div>
+                            <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75 mb-2"></div>
+                            <div id="step-gate-${i}" class="w-6 h-6 note-button mb-2"></div>
+                            <div id="step-accent-${i}" class="w-6 h-6 note-butto mb-2"></div>
                           </div>`;
       }
     }
     
-    const drumSelect = document.getElementById('drum-select');
+    
     Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => 
       drumSelect.innerHTML += `<option value="${instrumentName}">${instrumentName}</option>`
     );
@@ -101,23 +104,20 @@ class Sequencer {
     
     renderGrid();
     
-    
+    const firstGate = document.getElementById(`step-gate-0`);
     drumSelect.addEventListener('change', (e) => {
       const val = e.target.value;
       //let drumPattern = JSON.parse(JSON.stringify(pattern[val]));
       patternChanged(instrumentPatterns[val], val);
+      sequencerGrid.scroll(0,0);
     });
     
-    
-    const clearPatternBtn = document.getElementById('clear-btn');
-  
     function clearPattern() {
       instrumentPatterns[drumSelect.value] = Array(16).fill(null).map(() => ({ gate: false, accent: false }));
       patternChanged(instrumentPatterns[drumSelect.value], "clear");
-      
     }
+    clearPatternBtn.addEventListener('click', clearPattern);
     
-  
     function patternChanged(pattern, presetOrAction) {
       drawGrid();
       renderGrid();
@@ -125,6 +125,6 @@ class Sequencer {
         jcClient.connector.sendFullPatternUpdate(pattern, presetOrAction);
       }
     }
-    clearPatternBtn.addEventListener('click', clearPattern);
+    
 	}
 }

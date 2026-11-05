@@ -1,4 +1,3 @@
-
 /**
  * Frequentiespecificaties gebaseerd op het originele TR-909 stemcircuit
  */
@@ -27,14 +26,13 @@ const TOM_PROFILES = {
 };
 
 /**
- * Individuele TR-909 Tom Voice
+ * Individuele TR-909 Tom Voice opgebouwd met Tone.js synths
  */
 class TR909TomVoice {
   constructor(type = "mid", options = {}) {
     this.type = type;
     this.profile = TOM_PROFILES[type] || TOM_PROFILES.mid;
 
-    // Parameters (0.0 tot 1.0)
     this._tune = options.tune ?? 0.5;
     this._decay = options.decay ?? 0.4;
     this._level = options.level ?? 0.8;
@@ -43,111 +41,102 @@ class TR909TomVoice {
   }
 
   _initAudioNodes() {
-    // 1. Oscillatoren (VCO1 hoofdbody, VCO2 resonantie harmonische)
-    this.osc1 = new Tone.Oscillator({ type: "triangle" }).start();
-    this.osc2 = new Tone.Oscillator({ type: "triangle" }).start();
+    // 1. Hoofdbody (VCO1 pitch sweep)
+    this.body1 = new Tone.MembraneSynth({
+      pitchDecay: 0.04,
+      octaves: 2.2,
+      oscillator: { type: "triangle" },
+      envelope: {
+        attack: 0.002,
+        decay: this.decayDuration,
+        sustain: 0,
+        release: 0.05
+      }
+    });
 
-    this.osc1Gain = new Tone.Gain(1.0);
-    this.osc2Gain = new Tone.Gain(0.4); // VCO2 ligt ~8dB lager in de mix
+    // 2. Resonantiebody (VCO2 detuned interval, ca. 8dB lager in mix)
+    this.body2 = new Tone.MembraneSynth({
+      pitchDecay: 0.04,
+      octaves: 2.2,
+      oscillator: { type: "triangle" },
+      envelope: {
+        attack: 0.002,
+        decay: this.decayDuration,
+        sustain: 0,
+        release: 0.05
+      }
+    });
+    this.body2Gain = new Tone.Gain(0.4);
+    this.body2.connect(this.body2Gain);
 
-    this.osc1.connect(this.osc1Gain);
-    this.osc2.connect(this.osc2Gain);
-
-    // 2. VCA / Amplitude Envelope voor de tonale body
-    this.bodyVCA = new Tone.Gain(0);
-    this.osc1Gain.connect(this.bodyVCA);
-    this.osc2Gain.connect(this.bodyVCA);
-
-    // 3. Attack Click / Transient (Bandpass gefilterde ruis + snelle burst)
-    this.noise = new Tone.Noise("white").start();
-    this.noiseFilter = new Tone.Filter({
+    // 3. Stick click transient (bandpass ruisburst)
+    this.click = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: {
+        attack: 0.001,
+        decay: 0.012,
+        sustain: 0,
+        release: 0.01
+      }
+    });
+    this.clickFilter = new Tone.Filter({
       frequency: 2400,
       type: "bandpass",
       Q: 2.0
     });
-    this.noiseVCA = new Tone.Gain(0);
+    this.clickGain = new Tone.Gain(this.profile.clickGain);
+    this.click.chain(this.clickFilter, this.clickGain);
 
-    this.noise.connect(this.noiseFilter);
-    this.noiseFilter.connect(this.noiseVCA);
-
-    // 4. Analoge lowpass filtering (rolt ongewenste hoogfrequente harmonischen af)
-    this.voiceFilter = new Tone.Filter({
+    // 4. Analoge lowpass filter trap
+    this.filter = new Tone.Filter({
       frequency: this.profile.filterFreq,
       type: "lowpass",
       rolloff: -12
     });
 
-    this.bodyVCA.connect(this.voiceFilter);
-    this.noiseVCA.connect(this.voiceFilter);
+    // 5. Output stage
+    this.output = new Tone.Gain(this._level * 0.8);
 
-    // 5. Output stage met Level regeling
-    this.output = new Tone.Gain(this._level);
-    this.voiceFilter.connect(this.output);
+    this.body1.connect(this.filter);
+    this.body2Gain.connect(this.filter);
+    this.clickGain.connect(this.filter);
+    this.filter.connect(this.output);
   }
 
-  // Berekent de basisfrequentie via een logaritmische curve
   get baseFrequency() {
     return this.profile.minFreq * Math.pow(this.profile.maxFreq / this.profile.minFreq, this._tune);
   }
 
-  // Vertaalt 0-1 naar decaytijd tussen 0.10s en 0.85s
   get decayDuration() {
     return 0.10 + this._decay * 0.75;
   }
 
-  // --- TR-909 Parameter Getters & Setters ---
+  // Parameter getters & setters voor UI-binding
   get tune() { return this._tune; }
   set tune(val) { this._tune = Math.max(0, Math.min(1, val)); }
 
   get decay() { return this._decay; }
-  set decay(val) { this._decay = Math.max(0, Math.min(1, val)); }
+  set decay(val) {
+    this._decay = Math.max(0, Math.min(1, val));
+    const dur = this.decayDuration;
+    this.body1.envelope.decay = dur;
+    this.body2.envelope.decay = dur;
+  }
 
   get level() { return this._level; }
   set level(val) {
     this._level = Math.max(0, Math.min(1, val));
-    this.output.gain.setValueAtTime(this._level, Tone.now());
+    this.output.gain.value = this._level * 0.8;
   }
 
-  /**
-   * Triggert de tom met optionele velocity/accent
-   * @param {number} time - AudioContext timestamp
-   * @param {number} velocity - Aanslaggevoeligheid / Accent (0.1 tot 1.0+)
-   */
   triggerAttack(time = Tone.now(), velocity = 1.0) {
     const baseFreq = this.baseFrequency;
-    const decayTime = this.decayDuration;
-
-    // Pitch Envelope (909 punch: daalt snel in ~35-45ms)
-    // Bij een hogere velocity/accent buigt de pitch harder door
-    const pitchSweepFactor = 2.2 + velocity * 0.6;
-    const startFreq = baseFreq * pitchSweepFactor;
-    const pitchDecayTime = 0.04;
-
-    // VCO1 Envelope
-    this.osc1.frequency.cancelScheduledValues(time);
-    this.osc1.frequency.setValueAtTime(startFreq, time);
-    this.osc1.frequency.exponentialRampToValueAtTime(baseFreq, time + pitchDecayTime);
-
-    // VCO2 Envelope (volgt met de vaste interval-ratio)
     const baseFreq2 = baseFreq * this.profile.detuneRatio;
-    this.osc2.frequency.cancelScheduledValues(time);
-    this.osc2.frequency.setValueAtTime(startFreq * this.profile.detuneRatio, time);
-    this.osc2.frequency.exponentialRampToValueAtTime(baseFreq2, time + pitchDecayTime);
+    const dur = this.decayDuration;
 
-    // Body VCA Envelope (snelle attack, exponentiële decay)
-    this.bodyVCA.gain.cancelScheduledValues(time);
-    this.bodyVCA.gain.setValueAtTime(0.0001, time);
-    this.bodyVCA.gain.linearRampToValueAtTime(velocity, time + 0.002);
-    this.bodyVCA.gain.exponentialRampToValueAtTime(0.0001, time + decayTime);
-    this.bodyVCA.gain.setValueAtTime(0, time + decayTime);
-
-    // Stick Click Transient Envelope (extreem kort: ~12ms)
-    const clickAmp = this.profile.clickGain * velocity;
-    this.noiseVCA.gain.cancelScheduledValues(time);
-    this.noiseVCA.gain.setValueAtTime(0.0001, time);
-    this.noiseVCA.gain.linearRampToValueAtTime(clickAmp, time + 0.001);
-    this.noiseVCA.gain.exponentialRampToValueAtTime(0.0001, time + 0.012);
-    this.noiseVCA.gain.setValueAtTime(0, time + 0.012);
+    this.body1.triggerAttackRelease(baseFreq, dur, time, velocity);
+    this.body2.triggerAttackRelease(baseFreq2, dur, time, velocity * 0.4);
+    this.click.triggerAttackRelease(0.012, time, velocity);
   }
 
   connect(destination) {
@@ -155,16 +144,19 @@ class TR909TomVoice {
     return this;
   }
 
+  toDestination() {
+    this.output.toDestination();
+    return this;
+  }
+
   dispose() {
-    this.osc1.dispose();
-    this.osc2.dispose();
-    this.osc1Gain.dispose();
-    this.osc2Gain.dispose();
-    this.bodyVCA.dispose();
-    this.noise.dispose();
-    this.noiseFilter.dispose();
-    this.noiseVCA.dispose();
-    this.voiceFilter.dispose();
+    this.body1.dispose();
+    this.body2.dispose();
+    this.body2Gain.dispose();
+    this.click.dispose();
+    this.clickFilter.dispose();
+    this.clickGain.dispose();
+    this.filter.dispose();
     this.output.dispose();
   }
 }

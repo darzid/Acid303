@@ -24,10 +24,9 @@ const ASSETS = [
   './js/visualizer.js',
   
   './jam303.html',
-  './jam303-manifest.json',
-  './jam303-service-worker.js'
+  './jam303-manifest.json'
 ];
-//////////ggggggggggggggg
+//////////ggggggggggggg
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))

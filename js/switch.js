@@ -1,24 +1,24 @@
 class Switch {
-	constructor(paramKey, onChange, value) {
-		this.paramKey = paramKey;
-		this.switchButtons = document.querySelectorAll(`button[data-parameter="${paramKey}"]`);
+	constructor(id, onChange, value) {
+		this.id = id;
+		this.switchButtons = document.querySelectorAll(`button[data-parameter="${id}"]`);
+		if (this.switchButtons.length == 0) throw "No switch buttons found for parameter " + id;
 		this.onChange = onChange;
 		
 		this.switchButtons.forEach(switchButton => {
-		//	console.log("bitton", switchButton)
 			switchButton.addEventListener("click", () => { this.value = switchButton.dataset.value });
 		})
 
 		this.value = value;
 	}
 	
-	get activeSwitch() { return document.querySelector(`button[data-parameter="${this.paramKey}"].active-led`); }
+	get activeSwitch() { return document.querySelector(`button[data-parameter="${this.id}"].active-led`); }
 	
 	get value() { return this.activeSwitch ? this.activeSwitch.dataset.value : null; }
 	set value(value) {
 		if (value == this.value) return;
 		
-		let switchButton = document.querySelector(`button[data-parameter="${this.paramKey}"][data-value="${value}"]`);
+		let switchButton = document.querySelector(`button[data-parameter="${this.id}"][data-value="${value}"]`);
 		this.activateSwitchButton(switchButton);
 		this.onChange(value);
 	}

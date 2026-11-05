@@ -1,13 +1,17 @@
+import { AudioGraphBase } from "./jamconnect-audiograph.js";
+
 export class JamConnectApp {
   ccMap = {};
   isAudioStarted = false;
   currentStep = 0;
-  parameterKnobs = {};
-  parameterSwitches = {};
-  knobsByName = {};
-  switchesByName = {};
   
-  constructor(appName, audioGraph, visualizerStrokeColor = "#22c55e", visualizerBackgroundColor = "#091209", themeColorName = "emerald") {
+  parameterControls = {
+  	knobs: {},
+  	switches: {},
+  	toggles: {}
+  }
+  
+  constructor(appName, audioGraph, visualizerStrokeColor = "#22c55e", visualizerBackgroundColor = "#091209", themeColorName = "emerald", enableLogging = false) {
     this.appName = appName;
     this.audioGraph = audioGraph;
     this.audioGraph.toDestination();
@@ -37,9 +41,10 @@ export class JamConnectApp {
     this.midiDot = document.getElementById('midi-dot');
     
     this.activeMidiInput = null;
-    this.visualizer = new Visualizer(this.audioGraph, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
+    this.visualizer = new Visualizer(this.audioGraph.output, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
+    this.vuMeter = new LevelMeter(this.audioGraph, "levelmeter-canvas");
     
-    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"));
+    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), false);
     this.jcClient.connector.getFullStateSnapshot = () => this.getFullStateJamConnectSnapshot();
     this.jcClient.connector.applyFullStateSnapshot = (appName, snapshot) => this.applyFullStateJamConnectSnapshot(appName, snapshot);
     this.jcClient.connector.onMasterSettingUpdated = (appName, setting, value) => this.applyJamConnectMasterSettingUpdate(appName, setting, value);
@@ -47,83 +52,98 @@ export class JamConnectApp {
     this.jcClient.onStateChanged = (state) => this.onStateChanged(state);
   }
   
+  registerServiceWorker(path) {
+    if (location.origin !== "file://") {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register(path, { scope: "/" })
+          .then((registration) => {
+            this.swRegistration = registration;
+            // registration worked
+            //console.log("Registration succeeded.");
+            registration.unregister().then((boolean) => {
+              // if boolean = true, unregister is successful
+              console.log("Unregister result " + boolean);
+            });
+          })
+          .catch((error) => {
+            // registration failed
+            console.error(`Registration failed with ${error}`);
+          });
+      }
+    }
+  }
+  
   //// ------------------------
   //// UI SETUP METHODS
   //// ------------------------
   setupParameterControls() {
-    this.setupParameterKnobs();
-    this.setupParameterSwitches();
-  }
-  
-  setupParameterKnobs() {
-    Object.keys(this.parameterKnobs).forEach(deviceName => {
+    Object.keys(this.audioGraph.params).forEach(deviceName => {
       let device = this.audioGraph.getDeviceByName(deviceName);
-      //console.log("device", device)
-      Object.keys(this.parameterKnobs[deviceName]).forEach(parameterName => {
-        let parameterControlMapping = this.parameterKnobs[deviceName][parameterName];
-        
-        let paramKey = `${deviceName.toLowerCase()}-${parameterName.toLowerCase()}`;
-        
-        let offset = parameterControlMapping.offset ? parameterControlMapping.offset : 0;
-        let paramValue = this.audioGraph.getDeviceParameterValue(device, parameterControlMapping.deviceParameter) - offset;
-        
-        let min = parameterControlMapping.min ? parameterControlMapping.min : 0;
-        let max = parameterControlMapping.max ? parameterControlMapping.max : 1;
-        let displayValueMultiplier = parameterControlMapping.displayValueMultiplier ? parameterControlMapping.displayValueMultiplier : 1;
-        let displayValueUnit = parameterControlMapping.displayValueUnit ? " " + parameterControlMapping.displayValueUnit : "";
-        
+      Object.keys(this.audioGraph.params[deviceName]).forEach(parameterName => {
+        let parameterControlMapping = this.audioGraph.params[deviceName][parameterName];
         parameterControlMapping.lastSentAt = performance.now();
         
-        this.setupKnob(`knob-${paramKey}`, paramKey, (knobValue) => {
-          const parameterValue = offset + knobValue;
-          const parameterDisplayValue = `${(knobValue * displayValueMultiplier).toFixed(2)}${displayValueUnit}`;
-          
-          this.onParameterChange(device, deviceName, parameterName, paramKey, parameterControlMapping, parameterValue, parameterDisplayValue);
-          
-        }, paramValue, min, max);
+        let parameterId = `${deviceName}.${parameterName}`;
+        let defaultValue = AudioGraphBase.getDeviceParameterValue(device, parameterControlMapping.deviceParameter);
+        
+        if (parameterControlMapping.range) 
+          this.setupParameterKnob(parameterId, parameterControlMapping, defaultValue);
+        else if (parameterControlMapping.options)
+          this.setupParameterSwitch(parameterId, parameterControlMapping, defaultValue);
+        else if (parameterControlMapping.boolean == true)
+          this.setupParameterToggle(parameterId, parameterControlMapping, defaultValue);
+        else
+          throw "Unknown parameter definition " + parameterId;
       });
     });
   }
   
-  setupKnob(id, paramKey, onChange, value, min = 0, max = 1) {
-    this.knobsByName[paramKey] = new Knob(id, paramKey, onChange, value, min, max);
-  }
-
-  setupParameterSwitches() {
-    Object.keys(this.parameterSwitches).forEach(deviceName => {
-      let device = this.audioGraph.getDeviceByName(deviceName);
-      Object.keys(this.parameterSwitches[deviceName]).forEach(parameterName => {
-        let parameterControlMapping = this.parameterSwitches[deviceName][parameterName];
-        
-        let paramKey = `${deviceName.toLowerCase()}-${parameterName.toLowerCase()}`;
-        let paramValue = this.audioGraph.getDeviceParameterValue(device, parameterControlMapping.deviceParameter);
-        let displayValuePrefix = parameterControlMapping.displayValuePrefix ? parameterControlMapping.displayValuePrefix : "";
-        parameterControlMapping.lastSentAt = performance.now();
-        
-        this.setupSwitch(paramKey, (parameterValue) => {
-          const parameterDisplayValue = `${displayValuePrefix}${parameterValue}`;
-          
-          this.onParameterChange(device, deviceName, parameterName, paramKey, parameterControlMapping, parameterValue, parameterDisplayValue);
-        }, paramValue);
-      });
-    });
+  setupParameterKnob(parameterId, parameterControlMapping, defaultValue) {
+    let min = parameterControlMapping.range.min ? parameterControlMapping.range.min : 0;
+    let max = parameterControlMapping.range.max ? parameterControlMapping.range.max : 1;
+    let displayValueMultiplier = parameterControlMapping.range.displayValueMultiplier ? parameterControlMapping.range.displayValueMultiplier : 1;
+    let displayValueUnit = parameterControlMapping.range.displayValueUnit ? " " + parameterControlMapping.range.displayValueUnit : "";
+    
+    const onParamKnobChange = (parameterValue) => {
+      const parameterDisplayValue = `${(parameterValue * displayValueMultiplier).toFixed(2)}${displayValueUnit}`;
+      this.onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue);
+    }
+    
+    this.parameterControls.knobs[parameterId] = new Knob(parameterId, onParamKnobChange, defaultValue, min, max);
   }
   
-  setupSwitch(paramKey, onChange, value) {
-    this.switchesByName[paramKey] = new Switch(paramKey, onChange, value);
+  setupParameterSwitch(parameterId, parameterControlMapping, defaultValue) {
+    const onParamSwitchChange = (parameterValue) => {
+      const parameterDisplayValue = parameterValue;
+      this.onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue);
+    }
+    
+    this.parameterControls.switches[parameterId] = new Switch(parameterId, onParamSwitchChange, defaultValue);
   }
   
-  onParameterChange(device, deviceName, parameterName, paramKey, parameterControlMapping, parameterValue, parameterDisplayValue = null) {
-    this.audioGraph.params[`${deviceName}${parameterName}`] = parameterValue;
-    this.audioGraph.updateDeviceParameter(device, parameterControlMapping.deviceParameter, parameterValue);
+  setupParameterToggle(parameterId, parameterControlMapping, defaultValue) {
+    const onParamToggleChange = (parameterValue) => {
+      const parameterDisplayValue = parameterValue;
+      this.onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue);
+    }
+    
+    this.parameterControls.toggles[parameterId] = new Toggle(parameterId, onParamToggleChange, defaultValue);
+  }
+  
+  onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue = null) {
+    this.audioGraph.updateParameterValue(parameterId, parameterValue);
+    
+    /*
     if (!this.jcClient.isApplyingRemoteUpdate) {
       const now = performance.now();
       if (now - parameterControlMapping.lastSentAt > 30) {
         parameterControlMapping.lastSentAt = now;
-        this.jcClient.connector.sendDeviceParameterChange(paramKey, parameterValue, parameterValue);
+        this.jcClient.connector.sendDeviceParameterChange(parameterId, parameterValue, parameterValue);
       }
     }
-    const valueDisplayElement = document.getElementById(`val-${paramKey}`);
+    */
+    const valueDisplayElement = document.querySelector(`span[data-parameter="${parameterId}"]`);
     if (valueDisplayElement) {
       if (parameterDisplayValue == null)
         parameterDisplayValue = parameterValue;
@@ -148,8 +168,7 @@ export class JamConnectApp {
   // to the snapshot dictionary.
   addCommonDataToJamConnectSnapshot(snapshot) {
     snapshot.pattern = pattern;
-    snapshot.knobValues = { ...knobValues };
-    snapshot.switchValues = { ...switchValues };
+    snapshot.parameters = { ...this.audioGraph.getParameterValues() };
     snapshot.bpm = Math.round(Tone.Transport.bpm.value);
     snapshot.swingPct = Math.round((Tone.Transport.swing || 0) * 100);
     return snapshot;
@@ -160,6 +179,7 @@ export class JamConnectApp {
   addAppSpecificDataToJamConnectSnapshot(snapshot) {}
   
   applyFullStateJamConnectSnapshot(appName, snapshot) {
+    console.log("applyFullStateJamConnectSnapshot")
     if (!snapshot) return;
     
     this.jcClient.isApplyingRemoteUpdate = true;
@@ -172,8 +192,9 @@ export class JamConnectApp {
   }
 
   applyCommonDataUpdatesFromJamConnectSnapshot(appName, snapshot) {
+    console.log("applyCommonDataUpdatesFromJamConnectSnapshot")
     this.applyPatternUpdateFromJamConnectSnapshot(appName, snapshot.pattern);
-    this.applyDeviceParameterChangesFromJamConnectSnapshot(appName, snapshot.parameterValues);
+    this.applyDeviceParameterChangesFromJamConnectSnapshot(appName, snapshot.parameters);
     this.applyTransportUpdatesFromJamConnectSnapshot(appName, snapshot.bpm, snapshot.swingPct);
   }
   
@@ -187,21 +208,25 @@ export class JamConnectApp {
   
   applyDeviceParameterChangesFromJamConnectSnapshot(appName, snapshotParamValues) {
     if (snapshotParamValues) {
-      Object.entries(snapshotParamValues).forEach(([parameterName, value]) => {
-        this.applyDeviceParameterChange(parameterName, value);
+      Object.entries(snapshotParamValues).forEach(([parameterId, value]) => {
+        this.applyDeviceParameterChange(appName, parameterId, value);
       });
     }
   }
   
-  applyDeviceParameterChange(appName, parameterName, value) {
-    if (this.knobsByName[parameterName] && typeof value === 'number') {
-      this.knobsByName[parameterName].value = value;
-    } else if (this.switchesByName[parameterName]) {
-      this.switchesByName[parameterName].value = value;
+  applyDeviceParameterChange(appName, parameterId, value) {
+    console.log("applyDeviceParameterChange")
+    if (this.parameterControls.knobs[parameterId] && typeof value === 'number') {
+      this.parameterControls.knobs[parameterId].value = value;
+    } else if (this.parameterControls.switches[parameterId]) {
+      this.parameterControls.switches[parameterId].value = value;
+    } else if (this.parameterControls.toggles[parameterId]) {
+      this.parameterControls.toggles[parameterId].value = value;
     }
   }
   
   applyTransportUpdatesFromJamConnectSnapshot(appName, snapshotBpm, snapshotSwingPct) {
+    console.log("applyTransportUpdatesFromJamConnectSnapshot")
     if (typeof snapshotBpm === 'number')
       this.updateBpm(snapshotBpm);
     if (typeof snapshotSwingPct === 'number')
@@ -213,6 +238,7 @@ export class JamConnectApp {
   applyAppSpecificDataUpdatesFromJamConnectSnapshot(appName, snapshot) {}
   
   applyJamConnectMasterSettingUpdate(appName, setting, value) {
+    console.log("applyJamConnectMasterSettingUpdate")
     this.jcClient.isApplyingRemoteUpdate = true;
     try {
       if (setting === 'swing') {
@@ -231,11 +257,12 @@ export class JamConnectApp {
   // to apply all app specific data updates from the snapshot dictionary.
   applyAppSpecificJamConnectMasterSettingUpdate(appName, setting, value) {}
   
-  applyJamConnectDeviceParameterChange(appName, paramName, value, normalizedValue) {
+  applyJamConnectDeviceParameterChange(appName, parameterId, value, normalizedValue) {
+    console.log("applyJamConnectDeviceParameterChange")
     this.jcClient.isApplyingRemoteUpdate = true;
     try {
       const targetVal = typeof normalizedValue === 'number' ? normalizedValue : value;
-      this.applyDeviceParameterChange(appName, paramName, targetVal);
+      this.applyDeviceParameterChange(appName, parameterId, targetVal);
     } 
     finally {
       this.jcClient.isApplyingRemoteUpdate = false;
@@ -248,24 +275,23 @@ export class JamConnectApp {
   updateBpm(bpm) {
     if (bpm == Tone.Transport.bpm.value) return;
     
+    this.tempoSlider.value = bpm;
+    this.tempoVal.value = bpm;
+    this.displayTempo.textContent = `${bpm} BPM`;
+    
     if (!this.jcClient.isApplyingRemoteUpdate) {
       this.jcClient.bpm = bpm;
-      this.tempoSlider.value = bpm;
-      this.tempoVal.value = bpm;
-      this.displayTempo.textContent = `${bpm} BPM`;
     }
   }
   
   updateSwing(swingPercentage) {
-    if (swingPercentage == this.swingSlider.value) return;
-    
     Tone.Transport.swing = swingPercentage / 100;
     Tone.Transport.swingSubdivision = "16n";
     this.swingSlider.value = swingPercentage;
     this.swingVal.textContent = `${swingPercentage}%`;
     
     if (!this.jcClient.isApplyingRemoteUpdate)
-      this.jcClient.connector.sendMasterSettingUpdate(this.jcClient.connector.appName, 'swing', swingPercentage);
+      this.jcClient.connector.sendMasterSettingUpdate('swing', swingPercentage);
   }
   
   updateTransportUI(isPlaying) {
@@ -287,7 +313,6 @@ export class JamConnectApp {
   }
   
   onStateChanged(state) {
-    //console.log("onStateChanged", this.inviteBtn)
     this.inviteBtn.disabled = !state.canInvite || state.isInviting;
     this.inviteBtn.classList.toggle("active", state.userRole === "Host");
     this.joinBtn.disabled = !state.canJoin || state.isJoining;
@@ -312,7 +337,6 @@ export class JamConnectApp {
   }
   
 
-  
   //// ------------------------
   //// AUDIO METHODS
   //// ------------------------
@@ -320,9 +344,10 @@ export class JamConnectApp {
     if (this.isAudioStarted) return;
     await Tone.start();
     this.isAudioStarted = true;
-      
+    
     if (this.placeholder) this.placeholder.style.display = 'none';
     this.visualizer.isActive = true;
+    this.vuMeter.isActive = true;
   }
   
   //// ------------------------
@@ -385,10 +410,12 @@ export class JamConnectApp {
     }
     // Control Change (0xB0) -> Map common MIDI CCs to 303 Knobs
     else if (command === 0xb0) {
-      const norm = data2 / 127;
-      const paramName = this.ccMap[data1];
-      if (paramName)
-        this.applyDeviceParameterChange("midi", paramName, norm);
+      const parameterId = this.audioGraph.getMidiControlParameter(data1);
+      if (parameterId) {
+        const normalizedValue = data2 / 127;
+        const rangedValue = this.audioGraph.convertNormalizedValue(parameterId, normalizedValue);
+        this.applyDeviceParameterChange("midi", parameterId, rangedValue);
+      }
     }
   }
     
@@ -491,7 +518,7 @@ export class JamConnectApp {
         const stepData = instrumentPatterns[instrumentName][stepIdx];
         stepData.instrument = instrumentName;
         if (stepData && stepData.gate) {
-         // console.log("step", stepData)
+          //console.log("step", stepData)
           const noteFreq = `${stepData.note}${stepData.octave}`;
           this.playNote(noteFreq, stepData, "16n", time);
         }

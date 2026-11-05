@@ -12,7 +12,7 @@ const ASSETS = [
   './images/share.png',
   
   './js/devices/TR909Toms.js',
-  './js/flags.js',
+
   './js/jam909-app.js',
   './js/jam909-audiograph.js',
   './js/jam909-sequencer.js',
@@ -25,13 +25,11 @@ const ASSETS = [
   './js/qrcodemanager.js',
   './js/visualizer.js',
   
-  './index.html',
   './jam909.html',
-  './jam909-manifest.json',
-  './jam909-service-worker.js'
+  './jam909-manifest.json'
 ];
 
-//ggggghshdhdgg
+//yyyggggggg
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))

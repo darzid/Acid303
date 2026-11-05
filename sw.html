@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+
+<body>
+	<script>
+		    let swRegistration = null;
+    if (location.origin !== "file://") {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("./jam303-service-worker.js", { scope: "/" })
+          .then((registration) => {
+            // registration worked
+            console.log("Registration succeeded.");
+            registration.unregister().then((boolean) => {
+              // if boolean = true, unregister is successful
+              console.log("Unregister result " + boolean);
+            });
+          })
+          .catch((error) => {
+            // registration failed
+            console.error(`Registration failed with ${error}`);
+          });
+      }
+    }
+	</script>
+</body>
+
+</html>
