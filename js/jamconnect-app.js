@@ -14,7 +14,7 @@ export class JamConnectApp {
   constructor(appName, audioGraph, visualizerStrokeColor = "#22c55e", visualizerBackgroundColor = "#091209", themeColorName = "emerald", enableLogging = false) {
     this.appName = appName;
     this.audioGraph = audioGraph;
-    this.audioGraph.toDestination();
+    //this.audioGraph.toDestination();
     
     this.themeColorName = themeColorName;
     this.displayTempo = document.getElementById('display-tempo');
@@ -41,7 +41,8 @@ export class JamConnectApp {
     this.midiDot = document.getElementById('midi-dot');
     
     this.activeMidiInput = null;
-    this.visualizer = new Visualizer(this.audioGraph, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
+    this.visualizer = new Visualizer(this.audioGraph.output, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
+    this.vuMeter = new LevelMeter(this.audioGraph, "levelmeter-canvas");
     
     this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), false);
     this.jcClient.connector.getFullStateSnapshot = () => this.getFullStateJamConnectSnapshot();
@@ -132,14 +133,16 @@ export class JamConnectApp {
   
   onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue = null) {
     this.audioGraph.updateParameterValue(parameterId, parameterValue);
+    
+    /*
     if (!this.jcClient.isApplyingRemoteUpdate) {
       const now = performance.now();
       if (now - parameterControlMapping.lastSentAt > 30) {
         parameterControlMapping.lastSentAt = now;
-        //console.log(`Sending device parameter "${parameterId}" changed to ${parameterValue}`);
         this.jcClient.connector.sendDeviceParameterChange(parameterId, parameterValue, parameterValue);
       }
     }
+    */
     const valueDisplayElement = document.querySelector(`span[data-parameter="${parameterId}"]`);
     if (valueDisplayElement) {
       if (parameterDisplayValue == null)
@@ -176,6 +179,7 @@ export class JamConnectApp {
   addAppSpecificDataToJamConnectSnapshot(snapshot) {}
   
   applyFullStateJamConnectSnapshot(appName, snapshot) {
+    console.log("applyFullStateJamConnectSnapshot")
     if (!snapshot) return;
     
     this.jcClient.isApplyingRemoteUpdate = true;
@@ -188,6 +192,7 @@ export class JamConnectApp {
   }
 
   applyCommonDataUpdatesFromJamConnectSnapshot(appName, snapshot) {
+    console.log("applyCommonDataUpdatesFromJamConnectSnapshot")
     this.applyPatternUpdateFromJamConnectSnapshot(appName, snapshot.pattern);
     this.applyDeviceParameterChangesFromJamConnectSnapshot(appName, snapshot.parameters);
     this.applyTransportUpdatesFromJamConnectSnapshot(appName, snapshot.bpm, snapshot.swingPct);
@@ -210,14 +215,18 @@ export class JamConnectApp {
   }
   
   applyDeviceParameterChange(appName, parameterId, value) {
+    console.log("applyDeviceParameterChange")
     if (this.parameterControls.knobs[parameterId] && typeof value === 'number') {
       this.parameterControls.knobs[parameterId].value = value;
     } else if (this.parameterControls.switches[parameterId]) {
       this.parameterControls.switches[parameterId].value = value;
+    } else if (this.parameterControls.toggles[parameterId]) {
+      this.parameterControls.toggles[parameterId].value = value;
     }
   }
   
   applyTransportUpdatesFromJamConnectSnapshot(appName, snapshotBpm, snapshotSwingPct) {
+    console.log("applyTransportUpdatesFromJamConnectSnapshot")
     if (typeof snapshotBpm === 'number')
       this.updateBpm(snapshotBpm);
     if (typeof snapshotSwingPct === 'number')
@@ -229,6 +238,7 @@ export class JamConnectApp {
   applyAppSpecificDataUpdatesFromJamConnectSnapshot(appName, snapshot) {}
   
   applyJamConnectMasterSettingUpdate(appName, setting, value) {
+    console.log("applyJamConnectMasterSettingUpdate")
     this.jcClient.isApplyingRemoteUpdate = true;
     try {
       if (setting === 'swing') {
@@ -248,6 +258,7 @@ export class JamConnectApp {
   applyAppSpecificJamConnectMasterSettingUpdate(appName, setting, value) {}
   
   applyJamConnectDeviceParameterChange(appName, parameterId, value, normalizedValue) {
+    console.log("applyJamConnectDeviceParameterChange")
     this.jcClient.isApplyingRemoteUpdate = true;
     try {
       const targetVal = typeof normalizedValue === 'number' ? normalizedValue : value;
@@ -264,11 +275,12 @@ export class JamConnectApp {
   updateBpm(bpm) {
     if (bpm == Tone.Transport.bpm.value) return;
     
+    this.tempoSlider.value = bpm;
+    this.tempoVal.value = bpm;
+    this.displayTempo.textContent = `${bpm} BPM`;
+    
     if (!this.jcClient.isApplyingRemoteUpdate) {
       this.jcClient.bpm = bpm;
-      this.tempoSlider.value = bpm;
-      this.tempoVal.value = bpm;
-      this.displayTempo.textContent = `${bpm} BPM`;
     }
   }
   
@@ -301,7 +313,6 @@ export class JamConnectApp {
   }
   
   onStateChanged(state) {
-    //console.log("onStateChanged", this.inviteBtn)
     this.inviteBtn.disabled = !state.canInvite || state.isInviting;
     this.inviteBtn.classList.toggle("active", state.userRole === "Host");
     this.joinBtn.disabled = !state.canJoin || state.isJoining;
@@ -334,12 +345,9 @@ export class JamConnectApp {
     await Tone.start();
     this.isAudioStarted = true;
     
-    if (this.audioGraph.devices.instruments.tb303) {
-      console.log("303 params", JSON.stringify(this.audioGraph.getParameterValues()));
-    }
-    
     if (this.placeholder) this.placeholder.style.display = 'none';
     this.visualizer.isActive = true;
+    this.vuMeter.isActive = true;
   }
   
   //// ------------------------
@@ -510,7 +518,7 @@ export class JamConnectApp {
         const stepData = instrumentPatterns[instrumentName][stepIdx];
         stepData.instrument = instrumentName;
         if (stepData && stepData.gate) {
-         // console.log("step", stepData)
+          //console.log("step", stepData)
           const noteFreq = `${stepData.note}${stepData.octave}`;
           this.playNote(noteFreq, stepData, "16n", time);
         }

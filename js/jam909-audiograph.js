@@ -15,7 +15,7 @@ const parameters = {
 			}
 		},
 		decay: {
-			value: 1.5,
+			value: 0.5,
 			deviceParameter: "decay",
 			range: {
 				min: 0.001,
@@ -308,62 +308,6 @@ const parameters = {
 	}
 };
 
-
-/*
-const params = {
-  reverb: {
-    preDelay: 0.001,
-	  decay: 1.5,
-	  level: 1,
-  },
-  BD: {
-    tune: 6,
-    pitchDecay: 0.04,
-    decay: 0.35,
-    level: 0.5,
-    reverb: 0,
-  },
-  SD: {
-    tune: 0,
-    decay: 0.35,
-    level: 1,
-    reverb: 0.5,
-  },
-  CP: {
-    decay: 0.14,
-    level: 1,
-    reverb: 0.5,
-  },
-  LT: {
-    tune: 0.35,
-    decay: 0.70,
-    level: 0.60,
-  },
-  MT: {
-    tune: 0.50,
-    decay: 0.45,
-    level: 0.50,
-  },
-  HT: {
-    tune: 0.65,
-    decay: 0.30,
-    level: 0.55,
-  },
-  CH: {
-    tune: 0.1,
-    decay: 0.05,
-    level: 1,
-    reverb: 1,
-  },
-  OH: {
-    tune: 0,
-    decay: 1.5,
-    level: 1,
-    reverb: 2
-  }
-}
-*/
-
 export class AudioGraph extends AudioGraphBase {
   constructor() {
     super(parameters)
@@ -475,6 +419,5 @@ export class AudioGraph extends AudioGraphBase {
     AudioGraphBase.createDeviceGain(this.groupBus, this.devices.instruments.OH, this.params.OH.level.value, this.devices.effects.reverb, this.params.OH.reverb.value);
     this.devices.instruments.OH.note = "C2";
     this.devices.instruments.OH.duration = "16n";
-    
   }
 }

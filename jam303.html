@@ -23,6 +23,7 @@
   <script src="js/jam303-sequencer.js"></script>
   <script src="js/tabcontrol.js"></script>
   <script src="js/visualizer.js"></script>
+  <script src="js/level-meter.js"></script>
   
   <script>
     window.onerror = function(message, url, lineNumber) {  
@@ -48,6 +49,7 @@
             <span class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">SEQ STATUS</span>
             <span id="jam-badge" class="hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-700">LIVE JAM</span>
           </div>
+
           <span id="display-tempo" class="led-text text-xl font-bold font-mono">124 BPM</span>
         </div>
 
@@ -61,6 +63,10 @@
 
         <div class="flex justify-between items-center text-[10px] text-emerald-600 font-mono">
           <span>WAVE: <span data-parameter="tb303.waveform" class="uppercase">SAWTOOTH</span></span>
+          <div>
+            <canvas id="levelmeter-canvas" style="width: 80px; height: 12px;">
+            </canvas>
+          </div>
           <span id="display-step">STEP: 01/16</span>
         </div>
       </div>

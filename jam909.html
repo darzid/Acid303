@@ -23,6 +23,7 @@
   <script src="js/jam909-sequencer.js"></script>
   <script src="js/tabcontrol.js"></script>
   <script src="js/visualizer.js"></script>
+  <script src="js/level-meter.js"></script>
   
   <script>
     window.onerror = function(message, url, lineNumber, colNr, stack) {  
@@ -59,6 +60,10 @@
         </div>
 
         <div class="flex justify-between items-center text-[10px] text-amber-600 font-mono">
+          <div>
+            <canvas id="levelmeter-canvas" style="width: 80px; height: 12px;">
+            </canvas>
+          </div>
           <span id="display-step">STEP: 01/16</span>
         </div>
       </div>
