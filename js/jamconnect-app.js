@@ -326,7 +326,6 @@ export class JamConnectApp {
   }
   
 
-  
   //// ------------------------
   //// AUDIO METHODS
   //// ------------------------
@@ -334,7 +333,11 @@ export class JamConnectApp {
     if (this.isAudioStarted) return;
     await Tone.start();
     this.isAudioStarted = true;
-      
+    
+    if (this.audioGraph.devices.instruments.tb303) {
+      console.log("303 params", JSON.stringify(this.audioGraph.getParameterValues()));
+    }
+    
     if (this.placeholder) this.placeholder.style.display = 'none';
     this.visualizer.isActive = true;
   }

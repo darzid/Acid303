@@ -96,7 +96,7 @@ export class AudioGraphBase {
 		deviceGain.connect(groupBus);
 		Object.defineProperty(device, "level", {
 			get: () => { return deviceGain.gain.value; },
-			set: (value) => { deviceGain.gain.setValueAtTime(value, Tone.now()); }
+			set: (value) => { deviceGain.gain.value = value; }
 		});
 		if (effectDevice) {
 			let effectGain = new Tone.Gain(effectLevel);
@@ -104,7 +104,7 @@ export class AudioGraphBase {
 			effectGain.connect(effectDevice);
 			Object.defineProperty(device, `${effectDevice.name.toLowerCase()}`, {
 				get: () => { return effectGain.gain.value; },
-				set: (value) => { effectGain.gain.setValueAtTime(value, Tone.now()); }
+				set: (value) => { effectGain.gain.value = value; }
 			});
 		}
 	}
