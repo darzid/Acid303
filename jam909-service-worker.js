@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Jam909-v1.0.1';
+const CACHE_NAME = 'Jam909-v1.0.2';
 const ASSETS = [
   './',
   
@@ -12,7 +12,8 @@ const ASSETS = [
   './images/share.png',
   
   './js/devices/TR909Toms.js',
-
+  './js/devices/TR909Snare.js',
+  
   './js/jam909-app.js',
   './js/jam909-audiograph.js',
   './js/jam909-sequencer.js',
@@ -20,10 +21,12 @@ const ASSETS = [
   './js/jamconnect-app.js',
   './js/knob.js',
   './js/switch.js',
+  './js/toggle.js',
   './js/server.js',
   './js/tabcontrol.js',
   './js/qrcodemanager.js',
   './js/visualizer.js',
+  './js/level-meter.js',
   
   './jam909.html',
   './jam909-manifest.json'
