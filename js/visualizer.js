@@ -8,7 +8,7 @@ class Visualizer {
 	_spectrumBars = 16;
 	_spectrumBarSpacing = 2;
 	
-	constructor(input, canvasElementId, strokeColor = "#22c55e", bgColor = "#091209", type = VisualizerType.SpectrumAnalyser) {
+	constructor(input, canvasElementId, strokeColor = "#22c55e", bgColor = "#091209", type = VisualizerType.Oscilloscope) {
 		this._input = input;
 		
 		this.strokeColor = strokeColor;

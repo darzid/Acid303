@@ -5,18 +5,7 @@ export class App extends JamConnectApp {
   constructor() {
     super("jam303", new AudioGraph(), "#22c55e");
     
-    let swRegistration = null;
-    if (location.origin !== "file://") {
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .register("./jam303-service-worker.js")
-          .then((reg) => {
-            swRegistration = reg;
-          });
-      }
-    }
-   
-    
+    super.registerServiceWorker("/jam303-service-worker.js");
   }
   
   playNote(note, stepData, duration, time) {

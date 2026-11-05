@@ -30,7 +30,7 @@ const ASSETS = [
   './jam909-service-worker.js'
 ];
 
-//
+//yyyggggggg
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))

@@ -11,7 +11,7 @@ export class JamConnectApp {
   	toggles: {}
   }
   
-  constructor(appName, audioGraph, visualizerStrokeColor = "#22c55e", visualizerBackgroundColor = "#091209", themeColorName = "emerald") {
+  constructor(appName, audioGraph, visualizerStrokeColor = "#22c55e", visualizerBackgroundColor = "#091209", themeColorName = "emerald", enableLogging = false) {
     this.appName = appName;
     this.audioGraph = audioGraph;
     this.audioGraph.toDestination();
@@ -43,12 +43,34 @@ export class JamConnectApp {
     this.activeMidiInput = null;
     this.visualizer = new Visualizer(this.audioGraph, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
     
-    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"));
+    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), false);
     this.jcClient.connector.getFullStateSnapshot = () => this.getFullStateJamConnectSnapshot();
     this.jcClient.connector.applyFullStateSnapshot = (appName, snapshot) => this.applyFullStateJamConnectSnapshot(appName, snapshot);
     this.jcClient.connector.onMasterSettingUpdated = (appName, setting, value) => this.applyJamConnectMasterSettingUpdate(appName, setting, value);
     this.jcClient.connector.onDeviceParameterChanged = (appName, paramName, value, normalizedValue) => this.applyJamConnectDeviceParameterChange(appName, paramName, value, normalizedValue);
     this.jcClient.onStateChanged = (state) => this.onStateChanged(state);
+  }
+  
+  registerServiceWorker(path) {
+    if (location.origin !== "file://") {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register(path, { scope: "/" })
+          .then((registration) => {
+            this.swRegistration = registration;
+            // registration worked
+            //console.log("Registration succeeded.");
+            registration.unregister().then((boolean) => {
+              // if boolean = true, unregister is successful
+              console.log("Unregister result " + boolean);
+            });
+          })
+          .catch((error) => {
+            // registration failed
+            console.error(`Registration failed with ${error}`);
+          });
+      }
+    }
   }
   
   //// ------------------------
@@ -114,7 +136,7 @@ export class JamConnectApp {
       const now = performance.now();
       if (now - parameterControlMapping.lastSentAt > 30) {
         parameterControlMapping.lastSentAt = now;
-        console.log(`Sending device parameter "${parameterId}" changed to ${parameterValue}`);
+        //console.log(`Sending device parameter "${parameterId}" changed to ${parameterValue}`);
         this.jcClient.connector.sendDeviceParameterChange(parameterId, parameterValue, parameterValue);
       }
     }
@@ -251,15 +273,13 @@ export class JamConnectApp {
   }
   
   updateSwing(swingPercentage) {
-    if (swingPercentage == this.swingSlider.value) return;
-    
     Tone.Transport.swing = swingPercentage / 100;
     Tone.Transport.swingSubdivision = "16n";
     this.swingSlider.value = swingPercentage;
     this.swingVal.textContent = `${swingPercentage}%`;
     
     if (!this.jcClient.isApplyingRemoteUpdate)
-      this.jcClient.connector.sendMasterSettingUpdate(this.jcClient.connector.appName, 'swing', swingPercentage);
+      this.jcClient.connector.sendMasterSettingUpdate('swing', swingPercentage);
   }
   
   updateTransportUI(isPlaying) {

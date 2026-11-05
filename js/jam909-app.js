@@ -5,34 +5,19 @@ export class App extends JamConnectApp {
   constructor() {
     super("jam909", new AudioGraph(), "#de9e09", "#100B09", "amber");
 
-    let swRegistration = null;
-    if (location.origin !== "file://") {
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .register("/jam909-service-worker.js", { scope: "/" })
-          .then((registration) => {
-            // registration worked
-            //console.log("Registration succeeded.");
-            registration.unregister().then((boolean) => {
-              // if boolean = true, unregister is successful
-              //console.log("Unregister result " + boolean);
-            });
-          })
-          .catch((error) => {
-            // registration failed
-            console.error(`Registration failed with ${error}`);
-          });
-      }
-    }
+    super.registerServiceWorker("./jam909-service-worker.js");
   }
 
   playNote(note, stepData, duration, time) {
+    //console.log("appNamr, nite, stepdata, duration, time", note, stepData)
     this.playDrum(stepData.instrument, time, stepData.accent);
   }
   
   playDrum(instrumentName, time, accent) {
+    //console.log("playDrum instrumentName, time, accent", instrumentName, time, accent)
     let instrument = this.audioGraph.devices.instruments[instrumentName];
-    let velocity = accent ? 1 : 0.5;
+    let velocity = accent ? 1 : 0.7;
+    
     if (instrument.duration) {
       if (instrument.note)
         instrument.triggerAttackRelease(instrument.note, instrument.duration, time, velocity);
@@ -53,7 +38,8 @@ export class App extends JamConnectApp {
     Sequencer.render(this.jcClient, this.audioGraph);
     
     // Handle Live Pad & Quantized Note Triggers (Local & Remote)
-    this.jcClient.connector.onPadTriggered = (appName, instrument, note, velocity = 0.85, scheduledTime = Tone.now(), extra = {}) => {
+    this.jcClient.connector.onPadTriggered = (instrument, note, velocity = 0.85, scheduledTime = Tone.now(), extra = {}) => {
+      //console.log("onPadTriggered, instrument, note, velocity, scheduledTime", instrument, note, velocity, scheduledTime)
       const playAt = Math.max(Tone.now(), scheduledTime || Tone.now());
       this.playDrum(instrument, playAt, velocity = 1);
     };
@@ -85,7 +71,7 @@ export class App extends JamConnectApp {
         const note = padBtn.dataset.padNote;
         const snapSelect = document.getElementById('jam-snap-select');
         const snapStrength = snapSelect ? parseFloat(snapSelect.value) : 0;
-        this.jcClient.connector.triggerPad(this.jcClient.connector.appName, inst, note, 0.9, snapStrength);
+        this.jcClient.connector.triggerPad(this.jcClient.connector.appName, inst, note, 0.8, snapStrength);
       });
     });
   }
