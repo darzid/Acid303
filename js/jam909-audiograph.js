@@ -325,7 +325,11 @@ export class AudioGraph extends AudioGraphBase {
       octaves: 6,
       detune: this.params.BD.tune.value,
       oscillator: { type: 'sine' },
-      envelope: { attack: 0.005, decay: this.params.BD.decay.value, sustain: 0, release: 0.05 },
+      envelope: { 
+      	attack: 0.005, 
+      	decay: this.params.BD.decay.value, 
+      	sustain: 0, 
+      	release: 0.2 },
     });
     AudioGraphBase.createDeviceGain(this.groupBus, this.devices.instruments.BD, this.params.BD.level.value, this.devices.effects.reverb, this.params.BD.reverb.value);
     this.devices.instruments.BD.note = "C1";
@@ -343,7 +347,10 @@ export class AudioGraph extends AudioGraphBase {
     
     this.devices.instruments.CP = new Tone.NoiseSynth({
       noise: { type: 'pink' },
-      envelope: { attack: 0.003, decay: this.params.CP.decay.value, sustain: 0 },
+      envelope: { 
+      	attack: 0.003, 
+      	decay: this.params.CP.decay.value,
+      	sustain: 0 },
     });
     AudioGraphBase.createDeviceGain(this.groupBus, this.devices.instruments.CP, this.params.CP.level.value, this.devices.effects.reverb, this.params.CP.reverb.value);
     this.devices.instruments.CP.note = "";
@@ -388,7 +395,7 @@ export class AudioGraph extends AudioGraphBase {
       { 
         attack: 0.001, 
         decay: this.params.CH.decay.value, 
-        sustain: 0.5,
+        sustain: 0,
         release: 0.2
       },
       portamento: 0,
@@ -398,7 +405,7 @@ export class AudioGraph extends AudioGraphBase {
     });
     AudioGraphBase.createDeviceGain(this.groupBus, this.devices.instruments.CH, this.params.CH.level.value, this.devices.effects.reverb, this.params.CH.reverb.value);
     this.devices.instruments.CH.note = "C2";
-    this.devices.instruments.CH.duration = "16n";
+    this.devices.instruments.CH.duration = "";
     
     
     
@@ -408,7 +415,7 @@ export class AudioGraph extends AudioGraphBase {
       { 
         attack: 0.001, 
         decay: this.params.OH.decay.value, 
-        sustain: 0.5,
+        sustain: 0,
         release: 0.2
       },
       portamento: 0,
@@ -418,6 +425,6 @@ export class AudioGraph extends AudioGraphBase {
     });
     AudioGraphBase.createDeviceGain(this.groupBus, this.devices.instruments.OH, this.params.OH.level.value, this.devices.effects.reverb, this.params.OH.reverb.value);
     this.devices.instruments.OH.note = "C2";
-    this.devices.instruments.OH.duration = "16n";
+    this.devices.instruments.OH.duration = "2n";
   }
 }
