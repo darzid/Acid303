@@ -61,10 +61,10 @@ export class JamConnectApp {
             this.swRegistration = registration;
             // registration worked
             //console.log("Registration succeeded.");
-            registration.unregister().then((boolean) => {
+           /* registration.unregister().then((boolean) => {
               // if boolean = true, unregister is successful
               console.log("Unregister result " + boolean);
-            });
+            });*/
           })
           .catch((error) => {
             // registration failed
