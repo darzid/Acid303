@@ -333,6 +333,8 @@ export class JamConnectApp {
   async initializeAudio() {
     if (this.isAudioStarted) return;
     await Tone.start();
+    Tone.setContext(new Tone.Context({ latencyHint: "playback" }));
+		Tone.getContext().lookAhead = 0.10;
     this.isAudioStarted = true;
       
     if (this.placeholder) this.placeholder.style.display = 'none';

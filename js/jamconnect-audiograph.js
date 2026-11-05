@@ -8,9 +8,11 @@ export class AudioGraphBase {
 		};
 		
 		this.groupBus = new Tone.Channel();
+		this.compressor = new Tone.Compressor(-30, 3);
+		this.groupBus.connect(this.compressor);
 	}
 	
-	get output() { return this.groupBus.output; }
+	get output() { return this.compressor; }
 	
 	connect(destination) {
 		this.output.connect(destination);
