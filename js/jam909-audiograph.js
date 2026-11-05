@@ -416,7 +416,7 @@ export class AudioGraph extends AudioGraphBase {
         attack: 0.001, 
         decay: this.params.OH.decay.value, 
         sustain: 0,
-        release: 0.2
+        release: 0.03
       },
       portamento: 0,
       harmonicity: 0.65,
