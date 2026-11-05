@@ -5,7 +5,7 @@ export class App extends JamConnectApp {
   constructor() {
     super("jam909", new AudioGraph(), "#de9e09", "#100B09", "amber");
 
-    super.registerServiceWorker("./jam909-service-worker.js");
+    super.registerServiceWorker("../jam909-service-worker.js");
   }
 
   playNote(note, stepData, duration, time) {

@@ -98,8 +98,8 @@ class Sequencer {
       for (let i = 0; i < 16; i++) {
         grid.innerHTML += `<div id="step-${i}" class="items-center" style="display: flex; flex-direction: column">
                             <span class="text-[9px] font-mono text-slate-500 mb-1">${i + 1}</span>
-                            <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75 mb-1"></div>
-                            <div id="step-note-${i}" class=""></div>
+                            <div id="step-led-${i}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>
+                            <div id="step-note-${i}"></div>
                             <div id="step-oct-${i}" class="mb-2"></div>
                             <div id="step-gate-${i}" class="w-6 h-6 note-button mb-2"></div>
                             <div id="step-accent-${i}" class="w-6 h-6 note-button mb-2"></div>
@@ -161,10 +161,27 @@ class Sequencer {
         const octSelect = document.createElement('select');
         octSelect.id = `select-oct-${i}`;
         octSelect.className = 'w-full bg-slate-950 text-sky-400 text-[10px] font-mono border border-slate-700 rounded p-0.5 outline-none cursor-pointer focus:border-sky-500';
-        [1, 2, 3].forEach(o => {
+        [4, 3, 2, 1, 0].forEach(o => {
           const opt = document.createElement('option');
           opt.value = o;
-          opt.textContent = o == 1 ? "🔽" : o == 3 ? "🔼" : ""; 
+          switch (o) {
+            case 4:
+              opt.textContent = "⏫️";
+              break;
+            case 3:
+              opt.textContent = "🔼";
+              break;
+            case 2:
+              opt.textContent = "⏺";
+              break;
+            case 1:
+              opt.textContent = "🔽";
+              break;   
+            case 0:
+              opt.textContent = "⏬️";
+              break;
+          }
+          
           if (o === step.octave) opt.selected = true;
           octSelect.appendChild(opt);
         });
