@@ -325,11 +325,11 @@ export class AudioGraph extends AudioGraphBase {
       octaves: 6,
       detune: this.params.BD.tune.value,
       oscillator: { type: 'sine' },
-      envelope: { attack: 0.01, decay: this.params.BD.decay.value, sustain: 0.05, release: 0.03 },
+      envelope: { attack: 0.005, decay: this.params.BD.decay.value, sustain: 0, release: 0.05 },
     });
     AudioGraphBase.createDeviceGain(this.groupBus, this.devices.instruments.BD, this.params.BD.level.value, this.devices.effects.reverb, this.params.BD.reverb.value);
     this.devices.instruments.BD.note = "C1";
-    this.devices.instruments.BD.duration = "16n";
+    this.devices.instruments.BD.duration = "";
     
     
     

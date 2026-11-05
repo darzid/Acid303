@@ -14,7 +14,7 @@ export class JamConnectApp {
   constructor(appName, audioGraph, visualizerStrokeColor = "#22c55e", visualizerBackgroundColor = "#091209", themeColorName = "emerald", enableLogging = false) {
     this.appName = appName;
     this.audioGraph = audioGraph;
-    //this.audioGraph.toDestination();
+    this.audioGraph.toDestination();
     
     this.themeColorName = themeColorName;
     this.displayTempo = document.getElementById('display-tempo');

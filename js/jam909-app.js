@@ -24,8 +24,12 @@ export class App extends JamConnectApp {
       else
         instrument.triggerAttackRelease(instrument.duration, time, velocity);
     }
-    else
-      instrument.triggerAttack(time, velocity);
+    else {
+      if (instrument.note) 
+        instrument.triggerAttack(instrument.note, time, velocity);
+      else 
+        instrument.triggerAttack(time, velocity);
+    }
   }
   
   run() {
