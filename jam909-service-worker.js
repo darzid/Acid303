@@ -26,8 +26,7 @@ const ASSETS = [
   './js/visualizer.js',
   
   './jam909.html',
-  './jam909-manifest.json',
-  './jam909-service-worker.js'
+  './jam909-manifest.json'
 ];
 
 //yyyggggggg
