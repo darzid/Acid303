@@ -44,8 +44,8 @@ class TR909TomVoice {
 
   _initAudioNodes() {
     // 1. Oscillatoren (VCO1 hoofdbody, VCO2 resonantie harmonische)
-    this.osc1 = new Tone.Oscillator({ type: "triangle" }).start();
-    this.osc2 = new Tone.Oscillator({ type: "triangle" }).start();
+    this.osc1 = new Tone.Oscillator({ type: "triangle" });
+    this.osc2 = new Tone.Oscillator({ type: "triangle" });
 
     this.osc1Gain = new Tone.Gain(1.0);
     this.osc2Gain = new Tone.Gain(0.4); // VCO2 ligt ~8dB lager in de mix
@@ -59,7 +59,7 @@ class TR909TomVoice {
     this.osc2Gain.connect(this.bodyVCA);
 
     // 3. Attack Click / Transient (Bandpass gefilterde ruis + snelle burst)
-    this.noise = new Tone.Noise("white").start();
+    this.noise = new Tone.Noise("white");
     this.noiseFilter = new Tone.Filter({
       frequency: 2400,
       type: "bandpass",
@@ -122,7 +122,11 @@ class TR909TomVoice {
     const pitchSweepFactor = 2.2 + velocity * 0.6;
     const startFreq = baseFreq * pitchSweepFactor;
     const pitchDecayTime = 0.04;
-
+    
+    this.osc1.start();
+    this.osc2.start();
+    this.noise.start();
+    
     // VCO1 Envelope
     this.osc1.frequency.cancelScheduledValues(time);
     this.osc1.frequency.setValueAtTime(startFreq, time);
@@ -148,6 +152,10 @@ class TR909TomVoice {
     this.noiseVCA.gain.linearRampToValueAtTime(clickAmp, time + 0.001);
     this.noiseVCA.gain.exponentialRampToValueAtTime(0.0001, time + 0.012);
     this.noiseVCA.gain.setValueAtTime(0, time + 0.012);
+    
+    this.osc1.stop(time + decayTime + 0.2);
+    this.osc2.stop(time + decayTime + 0.2);
+    this.noise.stop(time + 0.012 + 0.);
   }
 
   connect(destination) {
