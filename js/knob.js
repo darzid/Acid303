@@ -1,9 +1,8 @@
 class Knob {
-  constructor(id, paramKey, onChange, value, min = 0, max = 1) {
+  constructor(id, onChange, defaultValue, min, max) {
     this.id = id;
-    this.paramKey = paramKey;
     this.knob = document.getElementById(id);
-   // console.log("knob " + id, this.knob)
+    if (!this.knob) throw "No knob found for parameter " + id;
     this.onChange = onChange;
     this.min = min;
     this.max = max;
@@ -15,7 +14,7 @@ class Knob {
       
     this.knob.addEventListener('pointerdown', (e) => this.onPointerDown(e));
     
-    this.value = value;
+    this.value = defaultValue;
   }
   
   get value() { return parseFloat(this.knob.dataset.value); }

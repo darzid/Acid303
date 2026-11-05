@@ -81,7 +81,7 @@ class TR909TomVoice {
     this.noiseVCA.connect(this.voiceFilter);
 
     // 5. Output stage met Level regeling
-    this.output = new Tone.Gain(this._level);
+    this.output = new Tone.Gain(this._level * 0.8);
     this.voiceFilter.connect(this.output);
   }
 
@@ -105,7 +105,7 @@ class TR909TomVoice {
   get level() { return this._level; }
   set level(val) {
     this._level = Math.max(0, Math.min(1, val));
-    this.output.gain.setValueAtTime(this._level, Tone.now());
+    this.output.gain.setValueAtTime(this._level * 0.8, Tone.now());
   }
 
   /**

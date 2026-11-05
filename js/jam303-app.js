@@ -15,96 +15,8 @@ export class App extends JamConnectApp {
           });
       }
     }
+   
     
-    this.delayToggle = document.getElementById('delay-toggle');
-    this.waveSaw = document.getElementById('wave-saw');
-    this.waveSqr = document.getElementById('wave-sqr');
-    
-    this.ccMap = {
-          1: 'cutoff',   // Mod wheel -> Cutoff
-          74: 'cutoff',  // Filter Cutoff
-          71: 'resonance',    // Resonance
-          73: 'envMod',  // Env Mod
-          16: 'envMod',
-          75: 'decay',   // Decay
-          72: 'decay',
-          76: 'accent',  // Accent
-          77: 'drive'    // Drive
-        };
-        
-    this.parameterKnobs = {
-      tb303: {
-        cutoff: {
-          min: 100,
-          max: 8000,
-          deviceParameter: "filterEnvelope.baseFrequency",
-          displayValueUnit: "Hz"
-        },
-        resonance: {
-          min: 1,
-          max: 20,
-          deviceParameter: "filter.Q.value"
-        },
-        envMod: {
-          deviceParameter: "filterEnvelope.octaves",
-          min: 0,
-          max: 5,
-          displayValueMultiplier: 20,
-          displayValueUnit: "%"
-        },
-        decay: {
-          deviceParameter: "decay",
-          min: 0.1,
-          max: 1.2,
-          displayValueMultiplier: 1000,
-          displayValueUnit: "ms"
-        },
-        accent: {
-          deviceParameter: "accent",
-          min: 0,
-          max: 1,
-          displayValueMultiplier: 100,
-          displayValueUnit: "%"
-        },
-        drive: {
-          deviceParameter: "drive",
-          min: 0,
-          max: 1,
-          displayValueMultiplier: 100,
-          displayValueUnit: "%"
-        },
-      }
-    }
-    
-    this.parameterSwitches = {
-      tb303: {
-        waveform: {
-          deviceParameter: "oscillator.type",
-          displayValuePrefix: "WAVE: "
-        }
-      }
-    }
-  }
-  
-  getAppSpecificSnapshot() {
-    return {
-      delayEnabled: this.delayToggle.checked,
-      waveform: this.audioGraph.params.waveform,
-    }
-  }
-  
-  applyAppSpecificDataUpdatesFromJamConnectSnapshot(appName, snapshot) {
-    if (typeof snapshot.delayEnabled === 'boolean') {
-      this.delayToggle.checked = snapshot.delayEnabled;
-      this.audioGraph.devices.effects.delay.wet.value = snapshot.delayEnabled ? 0.25 : 0;
-    }
-  }
-  
-  applyAppSpecificMasterSettingUpdate(appName, setting, value) {
-    if (setting === 'delay') {
-      this.delayToggle.checked = !!value;
-      this.audioGraph.devices.effects.delay.wet.value = value ? 0.25 : 0;
-    }
   }
   
   playNote(note, stepData, duration, time) {
@@ -120,15 +32,8 @@ export class App extends JamConnectApp {
     TabControl.render();
     Sequencer.render(this.jcClient);
     
-    this.delayToggle.addEventListener('change', (e) => {
-      this.audioGraph.devices.effects.delay.wet.value = e.target.checked ? 0.25 : 0;
-      if (!this.jcClient.isApplyingRemoteUpdate) {
-        this.jcClient.connector.sendMasterSettingUpdate(this.jcClient.connector.appName, 'delay', e.target.checked);
-      }
-    });
-    
     // Receive single-step or full-pattern updates from peers
-    this.jcClient.connector.onPatternUpdated = (aopName, newPattern, stepIndex, stepData, presetName) => {
+    this.jcClient.connector.onPatternUpdated = (appName, newPattern, stepIndex, stepData, presetName) => {
       this.jcClient.isApplyingRemoteUpdate = true;
       try {
         if (Array.isArray(newPattern) && newPattern.length === 16) {

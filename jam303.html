@@ -19,6 +19,7 @@
 
   <script src="js/knob.js"></script>
   <script src="js/switch.js"></script>
+  <script src="js/toggle.js"></script>
   <script src="js/jam303-sequencer.js"></script>
   <script src="js/tabcontrol.js"></script>
   <script src="js/visualizer.js"></script>
@@ -59,7 +60,7 @@
         </div>
 
         <div class="flex justify-between items-center text-[10px] text-emerald-600 font-mono">
-          <span data-parameter="tb303.waveform" class="uppercase">WAVE: SAWTOOTH</span>
+          <span>WAVE: <span data-parameter="tb303.waveform" class="uppercase">SAWTOOTH</span></span>
           <span id="display-step">STEP: 01/16</span>
         </div>
       </div>
@@ -94,7 +95,7 @@
         
         <div id="delay" class="flex items-center gap-1">
           <label class="text-xs font-bold text-slate-800">DELAY:</label>
-          <input type="checkbox" id="delay-toggle" checked class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
+          <input type="checkbox" id="delay.enabled" checked class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
         </div>
       </div>
     </div>
