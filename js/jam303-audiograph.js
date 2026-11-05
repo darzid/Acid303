@@ -30,12 +30,12 @@ const parameters = {
     },
     envMod: {
       value: 0.6,
-      deviceParameter: "filterEnvelope.octaves",
+      deviceParameter: "envMod",
       midiControlMapping: [16, 73],
       range: {
         min: 0,
-        max: 5,
-        displayValueMultiplier: 20,
+        max: 1,
+        displayValueMultiplier: 100,
         displayValueUnit: "%"
       }
     },
@@ -138,6 +138,15 @@ export class AudioGraph extends AudioGraphBase {
         this.devices.instruments.tb303.filterEnvelope.decay = val;
       }
     });
+    
+    Object.defineProperty(this.devices.instruments.tb303, "envMod", {
+      get:()=>{return this.devices.instruments.tb303._envMod; },
+      set:(val)=>{
+        this.devices.instruments.tb303._envMod = val;
+        this.devices.instruments.tb303.filterEnvelope.octaves = val * 5;
+      }
+    });
+    this.devices.instruments.tb303._envMod = this.params.tb303.envMod.value;
     
     Object.defineProperty(this.devices.instruments.tb303, "accent", {
       get:()=>{return this.devices.instruments.tb303._accent},

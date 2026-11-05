@@ -6,6 +6,7 @@ export class App extends JamConnectApp {
     super("jam303", new AudioGraph(), "#22c55e");
     
     super.registerServiceWorker("/jam303-service-worker.js");
+    console.log("test")
   }
   
   playNote(note, stepData, duration, time) {
