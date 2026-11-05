@@ -11,7 +11,10 @@ class Knob {
     this.isDragging = false;
     this.activePointerId = null;
     this.startY = 0;
-      
+    
+    this._boundPointerMove = (e) => this.onPointerMove(e);
+    this._boundPointerUp = (e) => this.onPointerUp(e);
+
     this.knob.addEventListener('pointerdown', (e) => this.onPointerDown(e));
     
     this.value = defaultValue;
@@ -43,8 +46,8 @@ class Knob {
     this.knob.setPointerCapture(e.pointerId);
   
     this.startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-    document.addEventListener('pointermove', (e) => this.onPointerMove(e));
-    document.addEventListener('pointerup', (e) => this.onPointerUp(e));
+    document.addEventListener('pointermove', this._boundPointerMove);
+    document.addEventListener('pointerup', this._boundPointerUp);
   }
 
   onPointerMove(e) {
@@ -70,7 +73,7 @@ class Knob {
     this.activePointerId = null;
     this.isDragging = false;
     
-    document.removeEventListener('pointermove', this.onPointerMove);
-    document.removeEventListener('pointerup', this.onPointerUp);
+    document.removeEventListener('pointermove', this._boundPointerMove);
+    document.removeEventListener('pointerup', this._boundPointerUp);
   }
 }
