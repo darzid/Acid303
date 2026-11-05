@@ -18,6 +18,15 @@ export class App extends JamConnectApp {
     let instrument = this.audioGraph.devices.instruments[instrumentName];
     let velocity = accent ? 1 : 0.7;
     
+    // --- TR-909 HI-HAT CHOKE GROUP ---
+    // Als de Closed Hat speelt, kap dan de Open Hat direct af op dat tijdstip:
+    if (instrumentName === "CH") {
+      const oh = this.audioGraph.devices.instruments.OH;
+      if (oh) {
+        oh.triggerRelease(time);
+      }
+    }
+
     if (instrument.duration) {
       if (instrument.note)
         instrument.triggerAttackRelease(instrument.note, instrument.duration, time, velocity);
