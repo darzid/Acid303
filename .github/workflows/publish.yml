@@ -50,15 +50,6 @@ jobs:
           mkdir -p _site/js/devices
           cp ./js/devices/*.js _site/js/devices
           
-      - name: Build Tailwind CSS
-          uses: ArnaudLigny/tailwind-builder@main
-          with:
-            working-directory: .
-            input: css/tailwind.css
-            output: _site/css/tailwind.css
-            minify: true
-            tailwind-version: latest
-            
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
