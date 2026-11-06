@@ -31,6 +31,12 @@ jobs:
           scheme: semver
           increment: patch
   
+      - name: Build css
+        run: |
+          npm install -D tailwindcss
+          npx tailwindcss init
+          npx tailwindcss -o ./css/tailwind.css --minify
+
       - name: Copy files
         run: |
           mkdir -p _site

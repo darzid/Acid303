@@ -3,7 +3,8 @@ const ASSETS = [
   './',
   
   './css/styles.css',
-    
+  './css/tailwind.css',
+  
   './images/favicon.ico',
   './images/favicon-192x192.png',
   './images/favicon-512x512.png',
