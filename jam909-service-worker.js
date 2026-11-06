@@ -4,6 +4,7 @@ const ASSETS = [
   
   './css/styles.css',
   './css/jam909.css',
+  './css/tailwind.css',
   
   './images/favicon.ico',
   './images/jam909-192x192.png',

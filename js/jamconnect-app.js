@@ -483,22 +483,31 @@ export class JamConnectApp {
   
     this.setupParameterControls();
     
+    // Initialization:
+this.ledElements = Array.from({ length: 16 }, (_, i) => document.getElementById(`step-led-${i}`));
+this.prevStepIdx = -1;
+
+
+
+    
     // Tone.js Repeat Loop — locked to Transport ticks for multi-peer beat alignment
     Tone.Transport.scheduleRepeat((time) => {
       const sixteenthTicks = Tone.Time("16n").toTicks();
       const tickStep = Math.floor(Math.max(0, Tone.Transport.ticks) / sixteenthTicks) % 16;
       const stepIdx = Number.isFinite(tickStep) ? tickStep : (currentStep % 16);
       
-      
       // Update Step UI Highlights
       Tone.Draw.schedule(() => {
-        document.querySelectorAll('[id^="step-led-"]').forEach((led, idx) => {
-          if (idx === stepIdx) {
-            led.className = `w-3 h-3 rounded-full bg-${this.themeColorName}-400 border border-${this.themeColorName}-300 shadow-md shadow-${this.themeColorName}-400/80 scale-125`;
-          } else {
-            led.className = 'w-3 h-3 rounded-full bg-slate-950 border border-slate-800';
-          }
-        });
+        // Inside Tone.Draw.schedule():
+        if (this.prevStepIdx !== -1 && this.ledElements[this.prevStepIdx]) {
+          this.ledElements[this.prevStepIdx].classList.remove('bg-amber-400', 'scale-125');
+          this.ledElements[this.prevStepIdx].classList.add('bg-slate-950');
+        }
+        if (this.ledElements[stepIdx]) {
+          this.ledElements[stepIdx].classList.remove('bg-slate-950');
+          this.ledElements[stepIdx].classList.add('bg-amber-400', 'scale-125');
+        }
+        this.prevStepIdx = stepIdx;
         
         this.displayStep.textContent = `STEP: ${String(stepIdx + 1).padStart(2, '0')}/16`;
         this.displayStep.classList.toggle("highlight", stepIdx == 0);
@@ -506,7 +515,7 @@ export class JamConnectApp {
         if (stepIdx % 4 == 0) {
           if (!this.jcClient.connector.lastBeatTimes) this.jcClient.connector.lastBeatTimes = [];
           if (this.jcClient.connector.lastBeatTimes.length > 4) {
-            this.jcClient.connector.lastBeatTimes = this.jcClient.connector.lastBeatTimes.splice(0, 1);
+            this.jcClient.connector.lastBeatTimes.shift();
           }
           this.jcClient.connector.lastBeatTimes.push({ position: Tone.Transport.position, timestamp: timestamp });
           if (this.jcClient.userRole === JamConnectUserRoles.Host)
