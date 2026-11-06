@@ -6,6 +6,7 @@ export class App extends JamConnectApp {
     super("jam909", new AudioGraph(), "#de9e09", "#100B09", "amber");
 
     super.registerServiceWorker("../jam909-service-worker.js");
+    this.renderDebounceTimers = {};
   }
 
   playNote(note, stepData, duration, time) {
@@ -14,33 +15,66 @@ export class App extends JamConnectApp {
   }
   
   playDrum(instrumentName, time, accent) {
-    //console.log("playDrum instrumentName, time, accent", instrumentName, time, accent)
-    let instrument = this.audioGraph.devices.instruments[instrumentName];
-    let velocity = accent ? 1 : 0.7;
     
-    // --- TR-909 HI-HAT CHOKE GROUP ---
-    // Als de Closed Hat speelt, kap dan de Open Hat direct af op dat tijdstip:
+    const isLive = this.audioGraph.liveMode[instrumentName];
+    const velocity = accent ? 1 : 0.7;
+  
+    // Hi-hat choke group: CH stops OH immediately
     if (instrumentName === "CH") {
-      const oh = this.audioGraph.devices.instruments.OH;
-      if (oh) {
-        oh.triggerRelease(time);
+      const ohLive = this.audioGraph.devices.instruments.OH;
+      const ohPlayer = this.audioGraph.players.OH;
+      if (ohLive) ohLive.triggerRelease(time);
+      if (ohPlayer) ohPlayer.stop(time);
+    }
+  
+    if (isLive) {
+      // User is currently tweaking this voice: fire the live synth
+      const instrument = this.audioGraph.devices.instruments[instrumentName];
+      this.audioGraph.playDrum(instrument, time, velocity);
+    } else {
+      // Normal playback: fire pre-rendered sample (zero DSP cost)
+      const player = this.audioGraph.players[instrumentName];
+      if (player && player.loaded) {
+        player.start(time, 0, undefined, velocity);
+        
       }
-    }
-
-    if (instrument.duration) {
-      if (instrument.note)
-        instrument.triggerAttackRelease(instrument.note, instrument.duration, time, velocity);
-      else
-        instrument.triggerAttackRelease(instrument.duration, time, velocity);
-    }
-    else {
-      if (instrument.note) 
-        instrument.triggerAttack(instrument.note, time, velocity);
-      else 
-        instrument.triggerAttack(time, velocity);
     }
   }
   
+  
+  onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue) {
+    const [instrumentName] = parameterId.split('.');
+  
+    if (instrumentName != "reverb") {
+          // 1. Instantly switch to live synthesis if this drum has a live voice
+      if (this.audioGraph.liveMode[instrumentName] !== undefined) {
+        this.audioGraph.liveMode[instrumentName] = true;
+      }
+    
+      // 2. Update the live DSP parameters in real-time
+      this.audioGraph.updateParameterValue(parameterId, parameterValue);
+    
+      // 3. Clear pending debounce timer
+      if (this.renderDebounceTimers[instrumentName]) {
+        clearTimeout(this.renderDebounceTimers[instrumentName]);
+      }
+    
+      // 4. Set debounce to render the new sample when user stops tweaking
+      this.renderDebounceTimers[instrumentName] = setTimeout(async () => {
+        const newBuffer = await this.audioGraph.renderDrumBuffer(instrumentName, this.audioGraph.params);
+       // console.log("Setting player buffer for " + instrumentName, this.audioGraph.players[instrumentName])
+        this.audioGraph.players[instrumentName].buffer = newBuffer;
+        
+        // Smoothly return to low-CPU sampled playback
+        this.audioGraph.liveMode[instrumentName] = false;
+        console.log("Created sample " + instrumentName)
+      }, 400); // 400ms pause after last tweak
+      
+    }
+
+    super.onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue);
+  }
+
   run() {
     super.run();
   

@@ -28,7 +28,7 @@ const TOM_PROFILES = {
 /**
  * Individuele TR-909 Tom Voice opgebouwd met Tone.js synths
  */
-class TR909TomVoice {
+export class TR909TomVoice {
   constructor(type = "mid", options = {}) {
     this.type = type;
     this.profile = TOM_PROFILES[type] || TOM_PROFILES.mid;
