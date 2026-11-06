@@ -134,7 +134,7 @@ export class JamConnectApp {
   onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue = null) {
     this.audioGraph.updateParameterValue(parameterId, parameterValue);
     
-    /*
+    
     if (!this.jcClient.isApplyingRemoteUpdate) {
       const now = performance.now();
       if (now - parameterControlMapping.lastSentAt > 30) {
@@ -142,7 +142,7 @@ export class JamConnectApp {
         this.jcClient.connector.sendDeviceParameterChange(parameterId, parameterValue, parameterValue);
       }
     }
-    */
+    
     const valueDisplayElement = document.querySelector(`span[data-parameter="${parameterId}"]`);
     if (valueDisplayElement) {
       if (parameterDisplayValue == null)
@@ -484,8 +484,8 @@ export class JamConnectApp {
     this.setupParameterControls();
     
     // Initialization:
-this.ledElements = Array.from({ length: 16 }, (_, i) => document.getElementById(`step-led-${i}`));
-this.prevStepIdx = -1;
+    this.ledElements = Array.from({ length: 16 }, (_, i) => document.getElementById(`step-led-${i}`));
+    this.prevStepIdx = -1;
 
 
 
@@ -500,12 +500,12 @@ this.prevStepIdx = -1;
       Tone.Draw.schedule(() => {
         // Inside Tone.Draw.schedule():
         if (this.prevStepIdx !== -1 && this.ledElements[this.prevStepIdx]) {
-          this.ledElements[this.prevStepIdx].classList.remove('bg-amber-400', 'scale-125');
+          this.ledElements[this.prevStepIdx].classList.remove(`bg-${this.themeColorName}-400`, 'scale-125');
           this.ledElements[this.prevStepIdx].classList.add('bg-slate-950');
         }
         if (this.ledElements[stepIdx]) {
           this.ledElements[stepIdx].classList.remove('bg-slate-950');
-          this.ledElements[stepIdx].classList.add('bg-amber-400', 'scale-125');
+          this.ledElements[stepIdx].classList.add(`bg-${this.themeColorName}-400`, 'scale-125');
         }
         this.prevStepIdx = stepIdx;
         

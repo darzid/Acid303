@@ -7,6 +7,9 @@ export class AudioGraphBase {
 			effects: {}
 		};
 		
+		this.deviceGains = {
+		};
+		
 		this.groupBus = new Tone.Channel();
 	}
 	
@@ -90,6 +93,7 @@ export class AudioGraphBase {
 			return normalizedValue;
 	}
 	
+	
 	static createDeviceGain(groupBus, device, level, effectDevice = null, effectLevel = 0) {
 		let deviceGain = new Tone.Gain(level);
 		device.connect(deviceGain);
@@ -107,6 +111,8 @@ export class AudioGraphBase {
 				set: (value) => { effectGain.gain.value = value; }
 			});
 		}
+		
+		return deviceGain;
 	}
 	
 	
