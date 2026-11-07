@@ -17,6 +17,7 @@ const ASSETS = [
   './js/jam303-sequencer.js',
   './js/jamconnect-audiograph.js',
   './js/jamconnect-app.js',
+  './js/jamconnect-sequencer.js',
   './js/knob.js',
   './js/switch.js',
   './js/toggle.js',
@@ -29,7 +30,7 @@ const ASSETS = [
   './jam303.html',
   './jam303-manifest.json'
 ];
-//////////ggggggggggggg
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))

@@ -22,6 +22,7 @@
   <script src="js/knob.js"></script>
   <script src="js/switch.js"></script>
   <script src="js/toggle.js"></script>
+  <script src="js/jamconnect-sequencer.js"></script>
   <script src="js/jam303-sequencer.js"></script>
   <script src="js/tabcontrol.js"></script>
   <script src="js/visualizer.js"></script>
@@ -84,7 +85,6 @@
         <div id="tempo" class="flex items-center gap-1">
           <label class="text-xs font-bold text-slate-800">TEMPO:</label>
           <input type="range" id="tempo-slider" min="60" max="180" value="124" class="w-24 accent-slate-800 cursor-pointer">
-          <!--<span id="tempo-val" class="font-mono text-xs font-bold text-slate-900 w-8">124</span>-->
           <input type="number" id="tempo-val" readonly="true" class="font-mono text-xs font-bold text-slate-900" min="60" max="180" value="124">
         </div>
         
@@ -102,8 +102,7 @@
     </div>
     
     <div id="tab-control">
-      <div class="tab-strip flex items-center gap-1 p-1">
-      </div>
+      <div class="tab-strip flex items-center gap-1 p-1"></div>
       
       <div class="tab-container">
         <div title="SOUND" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">

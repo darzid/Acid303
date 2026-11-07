@@ -14,6 +14,11 @@
   color: rgb(229,229,229);
 }
 
+
+.synth-btn-light {
+	background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
+}
+
 .tab-strip .synth-btn {
   color: rgb(229,229,229);
 }

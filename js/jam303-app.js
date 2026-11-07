@@ -6,10 +6,10 @@ export class App extends JamConnectApp {
     super("jam303", new AudioGraph(), "#22c55e");
     
     super.registerServiceWorker("/jam303-service-worker.js");
-    console.log("test")
+    this.sequencer = new Jam303Sequencer(this.jcClient, this.audioGraph);
   }
   
-  playNote(note, stepData, duration, time) {
+  playNote(instrumentName, note, stepData, duration, time) {
     this.audioGraph.play303StepNote(note, stepData.accent, stepData.slide, duration, time);
   }
   
@@ -20,19 +20,21 @@ export class App extends JamConnectApp {
     lucide.createIcons();
     
     TabControl.render();
-    Sequencer.render(this.jcClient);
     
     // Receive single-step or full-pattern updates from peers
-    this.jcClient.connector.onPatternUpdated = (appName, newPattern, stepIndex, stepData, presetName) => {
+    this.jcClient.connector.onPatternUpdated = (appName, instrumentName, newPattern, stepIndex, stepData, presetName) => {
       this.jcClient.isApplyingRemoteUpdate = true;
       try {
         if (Array.isArray(newPattern) && newPattern.length === 16) {
-          pattern = JSON.parse(JSON.stringify(newPattern));
-          if (presetName && patternSelect) patternSelect.value = presetName;
-          drawGrid();
-          renderGrid();
+          this.sequencer.instrumentPatterns[instrumentName] = JSON.parse(JSON.stringify(newPattern));
+          if (this.sequencer.selectedInstrumentName == instrumentName) {
+            if (presetName && this.sequencer.patternSelect) this.sequencer.patternSelect.value = presetName;
+            this.sequencer.updateSequencerUI();
+          }
         } else if (typeof stepIndex === 'number' && stepData) {
-          updateSingleStepUI(stepIndex, stepData);
+          if (this.sequencer.selectedInstrumentName == instrumentName) {
+            this.sequencer.updateSingleStepUI(stepIndex, stepData);
+          }
         }
       } finally {
         this.jcClient.isApplyingRemoteUpdate = false;
