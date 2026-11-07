@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Jam303-v1.0.2';
+const CACHE_NAME = 'Jam303-v1.0.3';
 const ASSETS = [
   './',
   
@@ -25,7 +25,7 @@ const ASSETS = [
   './js/tabcontrol.js',
   './js/qrcodemanager.js',
   './js/visualizer.js',
-   './js/level-meter.js',
+  './js/level-meter.js',
   
   './jam303.html',
   './jam303-manifest.json'

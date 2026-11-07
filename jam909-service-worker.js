@@ -1,10 +1,9 @@
-const CACHE_NAME = 'Jam909-v1.0.2';
+const CACHE_NAME = 'Jam909-v1.0.3';
 const ASSETS = [
   './',
   
   './css/styles.css',
   './css/jam909.css',
-  './css/tailwind.css',
   
   './images/favicon.ico',
   './images/jam909-192x192.png',
