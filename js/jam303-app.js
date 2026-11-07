@@ -5,7 +5,7 @@ export class App extends JamConnectApp {
   constructor() {
     super("jam303", new AudioGraph(), "#22c55e");
     
-    super.registerServiceWorker("/jam303-service-worker.js");
+    super.registerServiceWorker("../jam303-service-worker.js");
     this.sequencer = new Jam303Sequencer(this.jcClient, this.audioGraph);
   }
   

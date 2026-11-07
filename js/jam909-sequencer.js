@@ -8,6 +8,7 @@ class Jam909Sequencer extends SequencerBase {
     this.clearAllBtn = document.getElementById('clearall-btn');
     this.clearAllBtn.addEventListener('click', () => {
       this.clearInstrumentPatterns();
+      this.patternSelect.value = "";
     });
   }
   
