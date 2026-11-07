@@ -21,6 +21,7 @@
 
   <script src="js/knob.js"></script>
   <script src="js/switch.js"></script>
+  <script src="js/jamconnect-sequencer.js"></script>
   <script src="js/jam909-sequencer.js"></script>
   <script src="js/tabcontrol.js"></script>
   <script src="js/visualizer.js"></script>
@@ -509,18 +510,20 @@
         
         
         
-        <div title="SEQUENCER" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
+        <div title="SEQUENCER" class="tab bg-stone-400/60 rounded-xl p-2 border border-stone-700/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
           
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
       
-            <div id="drum-selector" class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <div class="flex flex-col">
                 <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Select Drum</label>
-                <select id="drum-select" class="bg-slate-900 text-amber-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-amber-500">
-                </select>
+                <select id="instrument-select" class="bg-slate-900 text-amber-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-amber-500"></select>
+              </div>
+          		<div class="flex flex-col">
+                <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Select Pattern</label>
+                <select id="pattern-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500"></select>
               </div>
             </div>
-          
           </div>
 
           <div id="sequencer-grid" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
@@ -533,13 +536,13 @@
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4 mt-4">
             <div  class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
      
-              <button id="randomize-btn" title="Randomize Sequence" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
-                <i data-lucide="dices" class="w-4 h-4"></i> Random
-              </button>
-              <button id="clear-btn" title="Clear Sequence" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+              <button id="clear-btn" title="Clear Sequence" class="self-end px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
                 <i data-lucide="trash" class="w-4 h-4"></i> Clear
               </button>
-              <button id="save-btn" title="Save Preset" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+              <button id="clearall-btn" title="Clear Sequences" class="self-end px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="trash" class="w-4 h-4"></i> Clear all
+              </button>
+              <button id="save-btn" title="Save Preset" class="self-end px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
                 <i data-lucide="save" class="w-4 h-4"></i> Save
               </button>
             </div>

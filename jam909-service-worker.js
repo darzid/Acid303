@@ -20,6 +20,7 @@ const ASSETS = [
   './js/jam909-sequencer.js',
   './js/jamconnect-audiograph.js',
   './js/jamconnect-app.js',
+  './js/jamconnect-sequencer.js',
   './js/knob.js',
   './js/switch.js',
   './js/toggle.js',

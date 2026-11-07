@@ -16,6 +16,8 @@ export class JamConnectApp {
     this.audioGraph = audioGraph;
     this.audioGraph.toDestination();
     
+    this.sequencer = null;
+    
     this.themeColorName = themeColorName;
     this.displayTempo = document.getElementById('display-tempo');
     this.playLed = document.getElementById('play-led');
@@ -425,7 +427,7 @@ export class JamConnectApp {
     return `${noteName}${Math.max(1, Math.min(4, octave))}`;
   }
   
-  playNote(note, stepData, duration, time) {}
+  playNote(instrumentName, note, stepData, duration, time) {}
   
   
   //// ------------------------
@@ -482,6 +484,8 @@ export class JamConnectApp {
     });
   
     this.setupParameterControls();
+    if (this.sequencer)
+      this.sequencer.render();
     
     // Initialization:
     this.ledElements = Array.from({ length: 16 }, (_, i) => document.getElementById(`step-led-${i}`));
@@ -524,12 +528,11 @@ export class JamConnectApp {
       }, time);
     
       Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
-        const stepData = instrumentPatterns[instrumentName][stepIdx];
-        stepData.instrument = instrumentName;
+        const stepData = this.sequencer.instrumentPatterns[instrumentName][stepIdx];
         if (stepData && stepData.gate) {
-          //console.log("step", stepData)
+          console.log("step for " + instrumentName, stepData, )
           const noteFreq = `${stepData.note}${stepData.octave}`;
-          this.playNote(noteFreq, stepData, "16n", time);
+          this.playNote(instrumentName, noteFreq, stepData, "16n", time);
         }
       });
       this.currentStep = (stepIdx + 1) % 16;

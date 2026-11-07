@@ -7,11 +7,13 @@ export class App extends JamConnectApp {
 
     super.registerServiceWorker("../jam909-service-worker.js");
     this.renderDebounceTimers = {};
+    
+    this.sequencer = new Jam909Sequencer(this.jcClient, this.audioGraph);
   }
 
-  playNote(note, stepData, duration, time) {
+  playNote(instrumentName, note, stepData, duration, time) {
     //console.log("appNamr, nite, stepdata, duration, time", note, stepData)
-    this.playDrum(stepData.instrument, time, stepData.accent);
+    this.playDrum(instrumentName, time, stepData.accent);
   }
   
   playDrum(instrumentName, time, accent) {
@@ -82,7 +84,6 @@ export class App extends JamConnectApp {
     lucide.createIcons();
     
     TabControl.render();
-    Sequencer.render(this.jcClient, this.audioGraph);
     
     // Handle Live Pad & Quantized Note Triggers (Local & Remote)
     this.jcClient.connector.onPadTriggered = (instrument, note, velocity = 0.85, scheduledTime = Tone.now(), extra = {}) => {
@@ -96,12 +97,12 @@ export class App extends JamConnectApp {
       this.jcClient.isApplyingRemoteUpdate = true;
       try {
         if (Array.isArray(newPattern) && newPattern.length === 16) {
+          this.sequencer.instrumentPatterns[instrumentName] = JSON.parse(JSON.stringify(newPattern));
           pattern = JSON.parse(JSON.stringify(newPattern));
           if (presetName && patternSelect) patternSelect.value = presetName;
-          drawGrid();
-          renderGrid();
+          this.sequencer.updateSequencerUI();
         } else if (typeof stepIndex === 'number' && stepData) {
-          updateSingleStepUI(stepIndex, stepData);
+          this.sequencer.updateSingleStepUI(stepIndex, stepData);
         }
       } finally {
         this.jcClient.isApplyingRemoteUpdate = false;
