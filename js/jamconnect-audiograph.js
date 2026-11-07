@@ -151,10 +151,8 @@ export class AudioGraphBase {
 	static getDeviceParameterValue(device, parameterPath) {
 		let parts = parameterPath.split(".");
 		let parameterName = parts[parts.length - 1];
-		//console.log("get device param", device, parameterPath)
 		try {
 			let parameterParent = AudioGraphBase.getDeviceParameterParent(device, parameterPath);
-			//console.log("param parent", parameterParent)
 			return parameterParent[parameterName];
 		}
 		catch (error) {

@@ -93,28 +93,6 @@ class Jam303Sequencer extends SequencerBase {
   constructor(jcClient, audioGraph) {
     super(jcClient, audioGraph, DEFAULT_PRESETS);
     
-    /*
-    this.presets = [];
-    Object.keys(DEFAULT_PRESETS).forEach(presetName =>
-      this.presets[presetName] = DEFAULT_PRESETS[presetName]);
-    var userPresets = this.loadUserPresets();
-    Object.keys(userPresets).forEach(presetName =>
-      this.presets[presetName] = userPresets[presetName]);
-    
-    this.patternSelect = document.getElementById('pattern-select');
-    Object.keys(this.presets).forEach(presetName => 
-      this.patternSelect.innerHTML += `<option value="${presetName}">${presetName}</option>`
-    );
-    
-    this.patternSelect.addEventListener('change', (e) => {
-      const presetName = e.target.value;
-      if (this.presets[presetName]) {
-        this.instrumentPatterns[this.selectedInstrumentName] = JSON.parse(JSON.stringify(this.presets[presetName]));
-        this.patternChanged(this.selectedInstrumentPattern, presetName);
-      }
-    });
-    */
-    
     this.addStepSelect("note", "emerald", NOTES);
     this.addStepSelect("octave", "sky", [4, 3, 2, 1, 0], ["⏫️", "🔼", "⏺", "🔽", "⏬️"]);
     this.addStepButton("gate", "emerald", "GATE", "OFF");

@@ -530,7 +530,6 @@ export class JamConnectApp {
       Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
         const stepData = this.sequencer.instrumentPatterns[instrumentName][stepIdx];
         if (stepData && stepData.gate) {
-          console.log("step for " + instrumentName, stepData, )
           const noteFreq = `${stepData.note}${stepData.octave}`;
           this.playNote(instrumentName, noteFreq, stepData, "16n", time);
         }

@@ -60,7 +60,6 @@ class SequencerBase {
 	presetSelected(presetName) {
 	  if (this.presets[presetName]) {
       this.instrumentPatterns = JSON.parse(JSON.stringify(this.presets[presetName]));
-      console.log("preset " + presetName + " selected", this.presets[presetName], this.instrumentPatterns)
       Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => 
         this.patternChanged(instrumentName, this.instrumentPatterns[instrumentName], presetName)
       );
@@ -184,7 +183,6 @@ class SequencerBase {
         });
           
         stepSelect.addEventListener('change', (e) => {
-          console.log(stepSelect.id + " change")
           this.selectedInstrumentPattern[stepIndex][controlName] = e.target.value;            
           if (!this.jcClient.isApplyingRemoteUpdate) {
             this.jcClient.connector.sendPatternStepUpdate(this.selectedInstrumentName, stepIndex, this.selectedInstrumentPattern[stepIndex]);
@@ -208,7 +206,6 @@ class SequencerBase {
   stepButtonClicked(stepIndex, controlName, stepButton) {
     let step = this.selectedInstrumentPattern[stepIndex];
     step[controlName] = !step[controlName];
-    console.log("pattern " + controlName + " updated for " + this.selectedInstrumentName, this.selectedInstrumentPattern[stepIndex]);
     this.updateStepButton(step, controlName, stepButton);
               
     if (!this.jcClient.isApplyingRemoteUpdate) {
@@ -223,7 +220,6 @@ class SequencerBase {
   }
   
   updateSequencerUI() {
-    console.log("updateSequencerUI for " + this.selectedInstrumentName, this.instrumentPatterns, this.selectedInstrumentPattern)
     for (let stepIndex = 0; stepIndex < 16; stepIndex++) {
       
       const step = this.selectedInstrumentPattern[stepIndex];
@@ -253,7 +249,6 @@ class SequencerBase {
   }
   
   patternChanged(instrumentName, pattern, presetOrAction) {
-    console.log("pattern changed for " + instrumentName)
     if (this.selectedInstrumentName == instrumentName) {
       this.updateSequencerUI();
     }
