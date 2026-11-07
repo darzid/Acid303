@@ -46,11 +46,13 @@ export class JamConnectApp {
     this.visualizer = new Visualizer(this.audioGraph.output, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
     this.vuMeter = new LevelMeter(this.audioGraph, "levelmeter-canvas");
     
-    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), false);
+    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), true);
     this.jcClient.connector.getFullStateSnapshot = () => this.getFullStateJamConnectSnapshot();
     this.jcClient.connector.applyFullStateSnapshot = (appName, snapshot) => this.applyFullStateJamConnectSnapshot(appName, snapshot);
     this.jcClient.connector.onMasterSettingUpdated = (appName, setting, value) => this.applyJamConnectMasterSettingUpdate(appName, setting, value);
     this.jcClient.connector.onDeviceParameterChanged = (appName, paramName, value, normalizedValue) => this.applyJamConnectDeviceParameterChange(appName, paramName, value, normalizedValue);
+    this.jcClient.connector.onPatternUpdated = (appName, instrumentName, pattern, stepIndex, stepData, presetName) => this.applyJamConnectPatternUpdate(appName, instrumentName, pattern, presetName);
+    this.jcClient.connector.onPatternStepUpdated = (appName, instrumentName, pattern, stepIndex, stepData, presetName) => this.applyJamConnectPatternStepUpdate(appName, instrumentName, stepIndex, stepData);
     this.jcClient.onStateChanged = (state) => this.onStateChanged(state);
   }
   
@@ -169,7 +171,7 @@ export class JamConnectApp {
   // Adds all common data (data used in each JamConnect app) 
   // to the snapshot dictionary.
   addCommonDataToJamConnectSnapshot(snapshot) {
-    snapshot.pattern = pattern;
+    snapshot.pattern = this.sequencer.instrumentPatterns;
     snapshot.parameters = { ...this.audioGraph.getParameterValues() };
     snapshot.bpm = Math.round(Tone.Transport.bpm.value);
     snapshot.swingPct = Math.round((Tone.Transport.swing || 0) * 100);
@@ -202,11 +204,11 @@ export class JamConnectApp {
   
   applyPatternUpdateFromJamConnectSnapshot(appName, snapshotPattern) {
     if (Array.isArray(snapshotPattern) && snapshotPattern.length === 16) {
-      pattern = JSON.parse(JSON.stringify(snapshotPattern));
-      drawGrid();
-      renderGrid();
+      this.sequencer.instrumentPatterns = JSON.parse(JSON.stringify(snapshotPattern));
+      this.sequencer.updateSequencerUI();
     }
   }
+  
   
   applyDeviceParameterChangesFromJamConnectSnapshot(appName, snapshotParamValues) {
     if (snapshotParamValues) {
@@ -217,7 +219,7 @@ export class JamConnectApp {
   }
   
   applyDeviceParameterChange(appName, parameterId, value) {
-    console.log("applyDeviceParameterChange")
+    console.log("applyDeviceParameterChange " + parameterId, value);
     if (this.parameterControls.knobs[parameterId] && typeof value === 'number') {
       this.parameterControls.knobs[parameterId].value = value;
     } else if (this.parameterControls.switches[parameterId]) {
@@ -233,6 +235,20 @@ export class JamConnectApp {
       this.updateBpm(snapshotBpm);
     if (typeof snapshotSwingPct === 'number')
       this.updateSwing(snapshotSwingPct);
+  }
+  
+  applyJamConnectPatternUpdate(appName, instrumentName, pattern, presetName) {
+    console.log("applyJamConnectPatternUpdate " + instrumentName, pattern, presetName);
+    this.sequencer.instrumentPatterns[instrumentName] = JSON.parse(JSON.stringify(pattern));
+    if (this.sequencer.selectedInstrumentName == instrumentName)
+      this.sequencer.updateSequencerUI(); 
+  }
+  
+  applyJamConnectPatternStepUpdate(appName, instrumentName, stepIndex, stepData) {
+    console.log("applyJamConnectPatternStepUpdate " + instrumentName, stepIndex, stepData);
+    this.sequencer.instrumentPatterns[instrumentName][stepIndex] = stepData;
+    if (this.sequencer.selectedInstrumentName == instrumentName)
+      this.sequencer.updateSequencerUI(); 
   }
   
   // Method to be implemented by each specific JamConnect app,
@@ -315,6 +331,8 @@ export class JamConnectApp {
   }
   
   onStateChanged(state) {
+    console.log("onStateChanged", state);
+    
     this.inviteBtn.disabled = !state.canInvite || state.isInviting;
     this.inviteBtn.classList.toggle("active", state.userRole === "Host");
     this.joinBtn.disabled = !state.canJoin || state.isJoining;
@@ -490,9 +508,6 @@ export class JamConnectApp {
     // Initialization:
     this.ledElements = Array.from({ length: 16 }, (_, i) => document.getElementById(`step-led-${i}`));
     this.prevStepIdx = -1;
-
-
-
     
     // Tone.js Repeat Loop — locked to Transport ticks for multi-peer beat alignment
     Tone.Transport.scheduleRepeat((time) => {
