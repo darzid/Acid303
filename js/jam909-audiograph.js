@@ -54,7 +54,7 @@ const parameters = {
 			}
 		},
 		level: {
-			value: 0.5,
+			value: 1,
 			deviceParameter: "level",
 			range: {
 				min: 0,
@@ -243,11 +243,12 @@ const parameters = {
 			deviceParameter: "envelope.decay",
 			range: {
 				min: 0.01,
-				max: 1,
+				max: 0.2,
 				displayValueMultiplier: 1000,
 				displayValueUnit: "ms"
 			}
 		},
+
 		level: {
 			value: 1,
 			deviceParameter: "level",
@@ -278,15 +279,16 @@ const parameters = {
 			}
 		},
 		decay: {
-			value: 1.5,
+			value: 0.3,
 			deviceParameter: "envelope.decay",
 			range: {
 				min: 0.1,
-				max: 1,
+				max: 0.4,
 				displayValueMultiplier: 1000,
 				displayValueUnit: "ms"
 			}
 		},
+		
 		level: {
 			value: 1,
 			deviceParameter: "level",
@@ -470,7 +472,9 @@ export class AudioGraph extends AudioGraphBase {
       envelope: { 
       	attack: 0.003, 
       	decay: this.params.CP.decay.value,
-      	sustain: 0 },
+      	sustain: 0, 
+      	release: 0.2 
+      },
     });
     CP.note = "";
     CP.duration = "16n";
@@ -520,12 +524,13 @@ export class AudioGraph extends AudioGraphBase {
         sustain: 0,
         release: 0.2
       },
-      portamento: 0,
+ 
       harmonicity: 0.65,
-      modulationIndex: 1
-    //  octaves: 1.5
+      modulationIndex: 1,
+      octaves: 0.832,
+      
     });
-    CH.note = "C2";
+    CH.note = "G3";
 		CH.duration = "";
 		return CH;
 	}
@@ -535,17 +540,16 @@ export class AudioGraph extends AudioGraphBase {
       detune: this.params.OH.tune.value,
       envelope: 
       { 
-        attack: 0.001, 
-        decay: this.params.OH.decay.value, 
-        sustain: 0,
-        release: 0.03
+      	attack: 0.001, 
+      	decay: this.params.OH.decay.value, 
+      	sustain: 0.0,
+      	release: 0.2
       },
-      portamento: 0,
-      harmonicity: 0.65,
-      modulationIndex: 1
-      //octaves: 1.5
+    	harmonicity: 0.65,
+  		modulationIndex: 1,
+  		octaves: 0.832
     });
-    OH.note = "C2";
+    OH.note = "G3";
     OH.duration = "2n";
     return OH;
 	}

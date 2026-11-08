@@ -63,12 +63,17 @@ export class App extends JamConnectApp {
     
       // 4. Set debounce to render the new sample when user stops tweaking
       this.renderDebounceTimers[instrumentName] = setTimeout(async () => {
+        let buttons = document.querySelectorAll(`button[data-pad-inst="${instrumentName}"]`);
+        buttons.forEach(button => button.classList.add("rendering"));
+        
         const newBuffer = await this.audioGraph.renderDrumBuffer(instrumentName, this.audioGraph.params);
        // console.log("Setting player buffer for " + instrumentName, this.audioGraph.players[instrumentName])
         this.audioGraph.players[instrumentName].buffer = newBuffer;
         
         // Smoothly return to low-CPU sampled playback
         this.audioGraph.liveMode[instrumentName] = false;
+        buttons.forEach(button => button.classList.remove("rendering"));
+        
         console.log("Created sample " + instrumentName)
       }, 400); // 400ms pause after last tweak
       

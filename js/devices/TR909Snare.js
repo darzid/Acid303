@@ -15,7 +15,7 @@ export class TR909Snare {
 		
 		// 2. De Snappy (de ruis / matjes onder de snare)
 		this.noiseSynth = new Tone.NoiseSynth({
-			noise: { type: "white" },
+			noise: { type: "pink" },
 			envelope: {
 				attack: 0.001,
 				decay: 0.15,
@@ -48,6 +48,16 @@ export class TR909Snare {
 	set detune(value) {
 		if (value < 0.001 || value > 1.2) throw "Detune must be between -1200 and 1200";
 		this.bodySynth.detune.value = value;
+	}
+
+	get noiseType() { return this.noiseSynth.noise.type; }
+	set noiseType(value) {
+		this.noiseSynth.noise.type = value;
+	}
+	
+	get cutoff() { return this.filter.frequency.value; }
+	set cutoff(value) {
+		this.filter.frequency.value = value;
 	}
 	
 	get decay() { return this.noiseSynth.envelope.decay; }
