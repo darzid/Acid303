@@ -46,7 +46,7 @@ export class JamConnectApp {
     this.visualizer = new Visualizer(this.audioGraph.output, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
     this.vuMeter = new LevelMeter(this.audioGraph, "levelmeter-canvas");
     
-    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), false);
+    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), true);
     this.jcClient.connector.getFullStateSnapshot = () => this.getFullStateJamConnectSnapshot();
     this.jcClient.connector.applyFullStateSnapshot = (appName, snapshot) => this.applyFullStateJamConnectSnapshot(appName, snapshot);
     this.jcClient.connector.onMasterSettingUpdated = (appName, setting, value) => this.applyJamConnectMasterSettingUpdate(appName, setting, value);
@@ -87,7 +87,6 @@ export class JamConnectApp {
       let device = this.audioGraph.getDeviceByName(deviceName);
       Object.keys(this.audioGraph.params[deviceName]).forEach(parameterName => {
         let parameterControlMapping = this.audioGraph.params[deviceName][parameterName];
-        parameterControlMapping.lastSentAt = performance.now();
         
         let parameterId = `${deviceName}.${parameterName}`;
         let defaultValue = AudioGraphBase.getDeviceParameterValue(device, parameterControlMapping.deviceParameter);
