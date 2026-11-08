@@ -46,7 +46,7 @@ export class JamConnectApp {
     this.visualizer = new Visualizer(this.audioGraph.output, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
     this.vuMeter = new LevelMeter(this.audioGraph, "levelmeter-canvas");
     
-    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), true);
+    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), false);
     this.jcClient.connector.getFullStateSnapshot = () => this.getFullStateJamConnectSnapshot();
     this.jcClient.connector.applyFullStateSnapshot = (appName, snapshot) => this.applyFullStateJamConnectSnapshot(appName, snapshot);
     this.jcClient.connector.onMasterSettingUpdated = (appName, setting, value) => this.applyJamConnectMasterSettingUpdate(appName, setting, value);
@@ -54,6 +54,7 @@ export class JamConnectApp {
     this.jcClient.connector.onPatternUpdated = (appName, instrumentName, pattern, stepIndex, stepData, presetName) => this.applyJamConnectPatternUpdate(appName, instrumentName, pattern, presetName);
     this.jcClient.connector.onPatternStepUpdated = (appName, instrumentName, pattern, stepIndex, stepData, presetName) => this.applyJamConnectPatternStepUpdate(appName, instrumentName, stepIndex, stepData);
     this.jcClient.onStateChanged = (state) => this.onStateChanged(state);
+    this.prevState = null;
   }
   
   registerServiceWorker(path) {
@@ -140,11 +141,7 @@ export class JamConnectApp {
     
     
     if (!this.jcClient.isApplyingRemoteUpdate) {
-      const now = performance.now();
-      if (now - parameterControlMapping.lastSentAt > 30) {
-        parameterControlMapping.lastSentAt = now;
-        this.jcClient.connector.sendDeviceParameterChange(parameterId, parameterValue, parameterValue);
-      }
+      this.jcClient.connector.sendDeviceParameterChange(parameterId, parameterValue, parameterValue);
     }
     
     const valueDisplayElement = document.querySelector(`span[data-parameter="${parameterId}"]`);
@@ -330,8 +327,14 @@ export class JamConnectApp {
     }
   }
   
+  
   onStateChanged(state) {
-    console.log("onStateChanged", state);
+    if (this.prevState && JSON.stringify(this.prevState) == JSON.stringify(state)) {
+      //console.log("onStateChanged: state unchanged", state, this.prevState);
+      return;
+    }
+    console.log("onStateChanged", JSON.stringify(state));
+    this.prevState = state;
     
     this.inviteBtn.disabled = !state.canInvite || state.isInviting;
     this.inviteBtn.classList.toggle("active", state.userRole === "Host");
@@ -537,8 +540,8 @@ export class JamConnectApp {
             this.jcClient.connector.lastBeatTimes.shift();
           }
           this.jcClient.connector.lastBeatTimes.push({ position: Tone.Transport.position, timestamp: timestamp });
-          if (this.jcClient.userRole === JamConnectUserRoles.Host)
-            this.jcClient.connector.broadcastBeat(timestamp);
+          //if (this.jcClient.userRole === JamConnectUserRoles.Host)
+           // this.jcClient.connector.broadcastBeat(timestamp);
         }
       }, time);
     

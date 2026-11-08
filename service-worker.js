@@ -4,17 +4,17 @@ const ASSETS = [
   
   './css/styles.css',
     
-  './images/favicon.ico',
-  './images/favicon-192x192.png',
-  './images/favicon-512x512.png',
-  
+  './images/JamConnect favicon.ico',
+  './images/JamConnect icon 192x192.jpg',
+  './images/JamConnect icon 512x512.jpg',
+  './images/JamConnect logo 726x203.jpg',
   './app.js',
   
   './index.html',
   './manifest.json',
   './service-worker.js'
 ];
-//////////ggggggggggggggg
+//////////g
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
