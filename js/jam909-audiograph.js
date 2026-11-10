@@ -1,6 +1,6 @@
 import { AudioGraphBase } from "./jamconnect-audiograph.js";
 import { TR909Snare } from "./devices/TR909Snare.js";
-import { TR909Rimshot } from "./devices/TR909-Rimshot.js";
+import { TR909Rimshot } from "./devices/TR909Rimshot.js";
 import { TR909Toms, TR909TomVoice } from "./devices/TR909Toms.js";
 
 const parameters = {
