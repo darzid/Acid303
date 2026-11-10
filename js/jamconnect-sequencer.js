@@ -41,9 +41,28 @@ class SequencerBase {
       const presetName = e.target.value;
       this.presetSelected(presetName);
     });
-    
+  
+    this.presetNameDialog = document.getElementById("preset-name-dialog");
+    this.presetName = document.getElementById("preset-name");
     this.savePatternBtn = document.getElementById('save-btn');
-    this.savePatternBtn.addEventListener('click', () => this.savePattern());
+    this.presetOkBtn = document.getElementById('preset-ok-btn');
+    this.presetCancelBtn = document.getElementById('preset-cancel-btn');
+ 
+    this.savePatternBtn.addEventListener('click', () => {
+      this.presetName.value = this.patternSelect.value;
+      this.presetOkBtn.disabled = this.presetName.value == "";
+      this.presetNameDialog.style.display = "flex";
+    });
+    this.presetName.addEventListener("input", () => {
+      this.presetOkBtn.disabled = this.presetName.value == "";
+    });
+    this.presetOkBtn.addEventListener('click', () => {
+      this.savePattern(this.presetName.value);
+      this.presetNameDialog.style.display = "none";
+    });
+    this.presetCancelBtn.addEventListener('click', () => {
+      this.presetNameDialog.style.display = "none";
+    });
 	}
 	
 	get instrumentCount() { return Object.keys(this.audioGraph.devices.instruments).length; }
@@ -261,8 +280,7 @@ class SequencerBase {
   createEmptyPattern() {
   }
   
-  savePattern() {
-    let presetName = window.prompt("Preset name?");
+  savePattern(presetName) {
     if (!presetName) return;
       
     let userPresets = this.loadUserPresets();

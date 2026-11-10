@@ -95,3 +95,8 @@ main { margin-top: 0pt; }
 .uppercase { 
   text-transform: uppercase;
 }
+
+
+
+#preset-name-dialog { display: none; background: rgba(0,0,0, 0.2); border: 1pt solid rgba(100,100,100,0.5); margin: 2pt; padding: 2pt; }
+.dialog-btn { min-width: 80px; margin-top: 5px; margin-right: 5px; }

@@ -28,6 +28,7 @@ export class JamConnectApp {
     this.playBtn = document.getElementById('play-btn');
     this.stopBtn = document.getElementById('stop-btn');
     
+
     this.tempoSlider = document.getElementById('tempo-slider');
     this.tempoVal = document.getElementById('tempo-val');
     
@@ -535,7 +536,7 @@ export class JamConnectApp {
       this.updateSwing(pct);
     });
   
-
+    
     if (this.sequencer)
       this.sequencer.render();
     
