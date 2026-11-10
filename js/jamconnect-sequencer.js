@@ -79,9 +79,13 @@ class SequencerBase {
 	presetSelected(presetName) {
 	  if (this.presets[presetName]) {
       this.instrumentPatterns = JSON.parse(JSON.stringify(this.presets[presetName]));
-      Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => 
+      Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
+        if (!this.instrumentPatterns[instrumentName]) {
+          console.log("fill empty pattern")
+          this.instrumentPatterns[instrumentName] = this.createEmptyPattern();
+        }
         this.patternChanged(instrumentName, this.instrumentPatterns[instrumentName], presetName)
-      );
+      });
     }
 	}
 	
@@ -284,9 +288,11 @@ class SequencerBase {
     if (!presetName) return;
       
     let userPresets = this.loadUserPresets();
+    let isExisting = userPresets[presetName] != null;
     userPresets[presetName] = this.instrumentPatterns;
     this.saveUserPresets(userPresets);
-    this.patternSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
+    if (!isExisting)
+      this.patternSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
   }
   
   loadUserPresets() {
