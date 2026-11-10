@@ -13,6 +13,7 @@ const ASSETS = [
   
   './js/devices/TR909Toms.js',
   './js/devices/TR909Snare.js',
+  './js/devices/TR909Rimshot.js',
   
   './js/jam909-app.js',
   './js/jam909-audiograph.js',

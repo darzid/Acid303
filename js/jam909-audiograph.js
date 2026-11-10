@@ -1,6 +1,7 @@
 import { AudioGraphBase } from "./jamconnect-audiograph.js";
 import { TR909Snare } from "./devices/TR909Snare.js";
-import { TR909Rimshot } from "./devices/TR909-Rimshot.js";
+import { TR909Rimshot } from "./devices/TR909Rimshot.js";
+import { TR909Ride } from "./devices/TR909Ride.js";
 import { TR909Toms, TR909TomVoice } from "./devices/TR909Toms.js";
 
 const parameters = {
@@ -466,6 +467,53 @@ const parameters = {
 			}
 		},
 	},
+	RC: {
+		level: {
+			value: 1,
+			deviceParameter: "level",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		drive: {
+			value: 0,
+			deviceParameter: "distortion",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		reverb: {
+			value: 0.5,
+			deviceParameter: "reverb",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		decay: {
+			value: 2.5,
+			deviceParameter: "decay",
+			range: {
+				min: 0.5,
+				max: 4,
+				displayValueMultiplier: 1000,
+				displayValueUnit: "ms"
+			}
+		},
+		tune: {
+			value: 1,
+			deviceParameter: "tune",
+			range: {
+				min: 0.5,
+				max: 2,
+			}
+		},
+	},
 };
 
 
@@ -549,15 +597,25 @@ export class AudioGraph extends AudioGraphBase {
     	this.devices.effects.reverb, this.params.RS.reverb.value);
     AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.RS, this.deviceGains.RS,
 			this.devices.effects.distortion, this.params.RS.drive.value);
+		
+		this.devices.instruments.RC = this.createRC();
+    this.deviceGains.RC = AudioGraphBase.createDeviceGain(
+    	this.groupBus, this.devices.instruments.RC, this.params.RC.level.value, 
+    	this.devices.effects.reverb, this.params.RC.reverb.value);
+    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.RC, 
+    this.deviceGains.RC,
+			this.devices.effects.distortion, this.params.RC.drive.value);
 			
     
     // Each drum keeps track of its pre-rendered buffer and state
 		this.sampleBuffers = {
-		  BD: null, SD: null, CP: null, LT: null, MT: null, HT: null, CH: null, OH: null, RS: null
+		  BD: null, SD: null, CP: null, LT: null, MT: null, HT: null, 
+		  CH: null, OH: null, RS: null, RC: null
 		};
 		
 		this.liveMode = {
-		  BD: false, SD: false, CP: false, LT: false, MT: false, HT: false, CH: false, OH: false, RS: false
+		  BD: false, SD: false, CP: false, LT: false, MT: false, HT: false, 
+		  CH: false, OH: false, RS: false, RC: false
 		};
 		
 		this.players = {
@@ -569,7 +627,8 @@ export class AudioGraph extends AudioGraphBase {
 		  HT: new Tone.Player().connect(this.deviceGains.HT),
 		  CH: new Tone.Player().connect(this.deviceGains.CH),
 		  OH: new Tone.Player().connect(this.deviceGains.OH),
-		  RS: new Tone.Player().connect(this.deviceGains.RS)
+		  RS: new Tone.Player().connect(this.deviceGains.RS),
+		  RC: new Tone.Player().connect(this.deviceGains.RC)
 		};
 		
 		console.log("Created players")
@@ -623,6 +682,10 @@ export class AudioGraph extends AudioGraphBase {
 			else if (instrumentName === 'RS') {
 				voice = this.createRS().toDestination();
 				this.playDrum(voice, 0, 1.0);
+			}
+			else if (instrumentName === 'RC') {
+				voice = this.createRC().toDestination();
+				this.playDrum(voice, 0, 4.0);
 			}
 	  }, duration);
 	
@@ -762,9 +825,19 @@ export class AudioGraph extends AudioGraphBase {
 	createRS() {
 		let RS = new TR909Rimshot();
     RS.tune = this.params.RS.tune.value;
+    RS.decay = this.params.RS.decay.value;
     RS.note = "";
     RS.duration = "";
     return RS;
+	}
+	
+	createRC() {
+		let RC = new TR909Ride();
+    RC.tune = this.params.RC.tune.value;
+    RC.decay = this.params.RC.decay.value;
+    RC.note = "";
+    RC.duration = "";
+    return RC;
 	}
 	
 }
