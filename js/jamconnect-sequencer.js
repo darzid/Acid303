@@ -288,9 +288,11 @@ class SequencerBase {
     if (!presetName) return;
       
     let userPresets = this.loadUserPresets();
+    let isExisting = userPresets[presetName] != null;
     userPresets[presetName] = this.instrumentPatterns;
     this.saveUserPresets(userPresets);
-    this.patternSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
+    if (!isExisting)
+      this.patternSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
   }
   
   loadUserPresets() {
