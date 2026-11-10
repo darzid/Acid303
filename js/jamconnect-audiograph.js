@@ -115,6 +115,15 @@ export class AudioGraphBase {
 		return deviceGain;
 	}
 	
+	static createDeviceSend(groupBus, device, deviceGain, effectDevice, effectLevel = 0) {
+		let effectGain = new Tone.Gain(effectLevel);
+		deviceGain.connect(effectGain);
+		effectGain.connect(effectDevice);
+		Object.defineProperty(device, `${effectDevice.name.toLowerCase()}`, {
+			get: () => { return effectGain.gain.value; },
+			set: (value) => { effectGain.gain.value = value; }
+		});
+	}
 	
 	static getDeviceParameter(device, parameterPath) {
 		let parts = parameterPath.split(".");
