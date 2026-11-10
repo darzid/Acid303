@@ -11,6 +11,29 @@ export class App extends JamConnectApp {
     this.sequencer = new Jam909Sequencer(this.jcClient, this.audioGraph);
   }
 
+  createParameterKnob(parameterId, parameterControlMapping) {
+    console.log("jam909App.createParameterKnob")
+    let parts = parameterId.split(".");
+    let deviceName = parts[0];
+    let parameterName = parts[1];
+    let deviceKnobs = document.getElementById(deviceName + "-knobs");
+    deviceKnobs.innerHTML += this.createKnobHtml(deviceName, parameterName);
+  }
+  
+  createKnobHtml(deviceName, parameterName) {
+    let html = `
+      <div class="flex flex-col items-center">
+        <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">${parameterName.toUpperCase()}</span>
+        <div class="knob-container" id="${deviceName}.${parameterName}" data-value="1">
+          <div class="knob-body"></div>
+          <div class="knob-cap"></div>
+          <div class="knob-indicator"></div>
+        </div>
+        <span class="text-[10px] font-mono text-slate-600 mt-1 mb-1" data-parameter="${deviceName}.${parameterName}">100</span>
+      </div>`;
+    return html;
+  }
+  
   playNote(instrumentName, note, stepData, duration, time) {
     //console.log("appNamr, nite, stepdata, duration, time", note, stepData)
     this.playDrum(instrumentName, time, stepData.accent);
@@ -46,8 +69,8 @@ export class App extends JamConnectApp {
   
   onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue) {
     const [instrumentName] = parameterId.split('.');
-  
-    if (instrumentName != "reverb") {
+    
+    if (this.audioGraph.devices.instruments[instrumentName]) {
           // 1. Instantly switch to live synthesis if this drum has a live voice
       if (this.audioGraph.liveMode[instrumentName] !== undefined) {
         this.audioGraph.liveMode[instrumentName] = true;
@@ -67,9 +90,9 @@ export class App extends JamConnectApp {
         buttons.forEach(button => button.classList.add("rendering"));
         
         const newBuffer = await this.audioGraph.renderDrumBuffer(instrumentName, this.audioGraph.params);
-       // console.log("Setting player buffer for " + instrumentName, this.audioGraph.players[instrumentName])
+        // console.log("Setting player buffer for " + instrumentName, this.audioGraph.players[instrumentName])
         this.audioGraph.players[instrumentName].buffer = newBuffer;
-        
+
         // Smoothly return to low-CPU sampled playback
         this.audioGraph.liveMode[instrumentName] = false;
         buttons.forEach(button => button.classList.remove("rendering"));
@@ -82,6 +105,7 @@ export class App extends JamConnectApp {
     super.onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue);
   }
 
+  
   run() {
     super.run();
   

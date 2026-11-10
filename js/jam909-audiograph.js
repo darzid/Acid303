@@ -38,6 +38,43 @@ const parameters = {
 		},
 	},
 	BD: {
+		level: {
+			value: 1,
+			deviceParameter: "level",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		drive: {
+			value: 0,
+			deviceParameter: "distortion",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		reverb: {
+			value: 0,
+			deviceParameter: "reverb",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		decay: {
+			value: 0.35,
+			deviceParameter: "envelope.decay",
+			range: {
+				min: 0.01,
+				max: 0.5,
+				displayValueMultiplier: 1000,
+				displayValueUnit: "ms"
+			}
+		},
 		tune: {
 			value: 6,
 			deviceParameter: "detune.value",
@@ -55,28 +92,11 @@ const parameters = {
 				max: 0.1
 			}
 		},
-		decay: {
-			value: 0.35,
-			deviceParameter: "envelope.decay",
-			range: {
-				min: 0.01,
-				max: 0.5,
-				displayValueMultiplier: 1000,
-				displayValueUnit: "ms"
-			}
-		},
+	},
+	SD: {
 		level: {
 			value: 1,
 			deviceParameter: "level",
-			range: {
-				min: 0,
-				max: 1,
-				displayValueMultiplier: 100
-			}
-		},
-		reverb: {
-			value: 0,
-			deviceParameter: "reverb",
 			range: {
 				min: 0,
 				max: 1,
@@ -91,16 +111,14 @@ const parameters = {
 				max: 1,
 				displayValueMultiplier: 100
 			}
-		}
-	},
-	SD: {
-		tune: {
-			value: 0,
-			deviceParameter: "bodySynth.detune.value",
+		},
+		reverb: {
+			value: 0.5,
+			deviceParameter: "reverb",
 			range: {
-				min: -2400,
-				max: 1200,
-				displayValueUnit: "ct"
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
 			}
 		},
 		decay: {
@@ -113,9 +131,29 @@ const parameters = {
 				displayValueUnit: "ms"
 			}
 		},
+		tune: {
+			value: 0,
+			deviceParameter: "bodySynth.detune.value",
+			range: {
+				min: -2400,
+				max: 1200,
+				displayValueUnit: "ct"
+			}
+		},
+	},
+	CP: {
 		level: {
 			value: 1,
 			deviceParameter: "level",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		drive: {
+			value: 0,
+			deviceParameter: "distortion",
 			range: {
 				min: 0,
 				max: 1,
@@ -131,17 +169,6 @@ const parameters = {
 				displayValueMultiplier: 100
 			}
 		},
-		drive: {
-			value: 0,
-			deviceParameter: "distortion",
-			range: {
-				min: 0,
-				max: 1,
-				displayValueMultiplier: 100
-			}
-		}
-	},
-	CP: {
 		decay: {
 			value: 0.14,
 			deviceParameter: "envelope.decay",
@@ -152,53 +179,8 @@ const parameters = {
 				displayValueUnit: "ms"
 			}
 		},
-		level: {
-			value: 1,
-			deviceParameter: "level",
-			range: {
-				min: 0,
-				max: 1,
-				displayValueMultiplier: 100
-			}
-		},
-		reverb: {
-			value: 0.5,
-			deviceParameter: "reverb",
-			range: {
-				min: 0,
-				max: 1,
-				displayValueMultiplier: 100
-			}
-		},
-		drive: {
-			value: 0,
-			deviceParameter: "distortion",
-			range: {
-				min: 0,
-				max: 1,
-				displayValueMultiplier: 100
-			}
-		}
 	},
 	LT: {
-		tune: {
-			value: 0.35,
-			deviceParameter: "tune",
-			range: {
-				min: 0.1,
-				max: 0.6
-			}
-		},
-		decay: {
-			value: 0.7,
-			deviceParameter: "decay",
-			range: {
-				min: 0.1,
-				max: 1,
-				displayValueMultiplier: 1000,
-				displayValueUnit: "ms"
-			}
-		},
 		level: {
 			value: 0.6,
 			deviceParameter: "level",
@@ -216,19 +198,18 @@ const parameters = {
 				max: 1,
 				displayValueMultiplier: 100
 			}
-		}
-	},
-	MT: {
-		tune: {
+		},
+		reverb: {
 			value: 0.5,
-			deviceParameter: "tune",
+			deviceParameter: "reverb",
 			range: {
-				min: 0.1,
-				max: 0.6
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
 			}
 		},
 		decay: {
-			value: 0.45,
+			value: 0.7,
 			deviceParameter: "decay",
 			range: {
 				min: 0.1,
@@ -237,6 +218,16 @@ const parameters = {
 				displayValueUnit: "ms"
 			}
 		},
+		tune: {
+			value: 0.35,
+			deviceParameter: "tune",
+			range: {
+				min: 0.1,
+				max: 0.6
+			}
+		},
+	},
+	MT: {
 		level: {
 			value: 0.5,
 			deviceParameter: "level",
@@ -254,19 +245,18 @@ const parameters = {
 				max: 1,
 				displayValueMultiplier: 100
 			}
-		}
-	},
-	HT: {
-		tune: {
-			value: 0.65,
-			deviceParameter: "tune",
+		},
+		reverb: {
+			value: 0.5,
+			deviceParameter: "reverb",
 			range: {
-				min: 0.1,
-				max: 0.6
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
 			}
 		},
 		decay: {
-			value: 0.3,
+			value: 0.45,
 			deviceParameter: "decay",
 			range: {
 				min: 0.1,
@@ -275,6 +265,16 @@ const parameters = {
 				displayValueUnit: "ms"
 			}
 		},
+		tune: {
+			value: 0.5,
+			deviceParameter: "tune",
+			range: {
+				min: 0.1,
+				max: 0.6
+			}
+		},
+	},
+	HT: {
 		level: {
 			value: 0.55,
 			deviceParameter: "level",
@@ -292,16 +292,61 @@ const parameters = {
 				max: 1,
 				displayValueMultiplier: 100
 			}
-		}
+		},
+		reverb: {
+			value: 0.5,
+			deviceParameter: "reverb",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		decay: {
+			value: 0.3,
+			deviceParameter: "decay",
+			range: {
+				min: 0.1,
+				max: 1,
+				displayValueMultiplier: 1000,
+				displayValueUnit: "ms"
+			}
+		},
+		tune: {
+			value: 0.65,
+			deviceParameter: "tune",
+			range: {
+				min: 0.1,
+				max: 0.6
+			}
+		},
 	},
 	CH: {
-		tune: {
-			value: 0,
-			deviceParameter: "detune.value",
+		level: {
+			value: 1,
+			deviceParameter: "level",
 			range: {
-				min: -1200,
-				max: 1200,
-				displayValueUnit: "ct"
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		drive: {
+			value: 0,
+			deviceParameter: "distortion",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		reverb: {
+			value: 0.5,
+			deviceParameter: "reverb",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
 			}
 		},
 		decay: {
@@ -314,35 +359,6 @@ const parameters = {
 				displayValueUnit: "ms"
 			}
 		},
-		level: {
-			value: 1,
-			deviceParameter: "level",
-			range: {
-				min: 0,
-				max: 1,
-				displayValueMultiplier: 100
-			}
-		},
-		reverb: {
-			value: 1,
-			deviceParameter: "reverb",
-			range: {
-				min: 0,
-				max: 5,
-				displayValueMultiplier: 100
-			}
-		},
-		drive: {
-			value: 0,
-			deviceParameter: "distortion",
-			range: {
-				min: 0,
-				max: 1,
-				displayValueMultiplier: 100
-			}
-		}
-	},
-	OH: {
 		tune: {
 			value: 0,
 			deviceParameter: "detune.value",
@@ -352,19 +368,20 @@ const parameters = {
 				displayValueUnit: "ct"
 			}
 		},
-		decay: {
-			value: 0.3,
-			deviceParameter: "envelope.decay",
-			range: {
-				min: 0.1,
-				max: 0.4,
-				displayValueMultiplier: 1000,
-				displayValueUnit: "ms"
-			}
-		},
+	},
+	OH: {
 		level: {
 			value: 1,
 			deviceParameter: "level",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100
+			}
+		},
+		drive: {
+			value: 0,
+			deviceParameter: "distortion",
 			range: {
 				min: 0,
 				max: 1,
@@ -380,17 +397,28 @@ const parameters = {
 				displayValueMultiplier: 100
 			}
 		},
-				drive: {
-			value: 0,
-			deviceParameter: "distortion",
+		decay: {
+			value: 0.3,
+			deviceParameter: "envelope.decay",
 			range: {
-				min: 0,
-				max: 1,
-				displayValueMultiplier: 100
+				min: 0.1,
+				max: 0.4,
+				displayValueMultiplier: 1000,
+				displayValueUnit: "ms"
 			}
-		}
+		},
+		tune: {
+			value: 0,
+			deviceParameter: "detune.value",
+			range: {
+				min: -1200,
+				max: 1200,
+				displayValueUnit: "ct"
+			}
+		},
 	}
 };
+
 
 export class AudioGraph extends AudioGraphBase {
   constructor() {
@@ -426,9 +454,12 @@ export class AudioGraph extends AudioGraphBase {
   	AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.CP, this.deviceGains.CP,
 			this.devices.effects.distortion, this.params.CP.drive.value);
 			
-  	this.devices.instruments.LT = this.createLT();
+  	    	this.devices.instruments.LT = this.createLT();
     this.devices.instruments.LT.connect(this.groupBus);
     this.deviceGains.LT = this.devices.instruments.LT.output;
+    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.LT, this.deviceGains.LT,
+    	this.devices.effects.reverb, this.params.LT.reverb.value);
+  
     AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.LT, this.deviceGains.LT,
 			this.devices.effects.distortion, this.params.LT.drive.value);
 			
@@ -436,11 +467,15 @@ export class AudioGraph extends AudioGraphBase {
     this.devices.instruments.MT.connect(this.groupBus);
     this.deviceGains.MT = this.devices.instruments.MT.output;
     AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.MT, this.deviceGains.MT,
+    	this.devices.effects.reverb, this.params.MT.reverb.value);
+    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.MT, this.deviceGains.MT,
 			this.devices.effects.distortion, this.params.MT.drive.value);
 			
     this.devices.instruments.HT = this.createHT();
     this.devices.instruments.HT.connect(this.groupBus);
     this.deviceGains.HT = this.devices.instruments.HT.output;
+    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.HT, this.deviceGains.HT,
+    	this.devices.effects.reverb, this.params.HT.reverb.value);
     AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.HT, this.deviceGains.HT,
 			this.devices.effects.distortion, this.params.HT.drive.value);
 			
@@ -480,7 +515,7 @@ export class AudioGraph extends AudioGraphBase {
 		  OH: new Tone.Player().connect(this.deviceGains.OH)
 		};
 		
-		console.log("players", this.players.BD)
+		console.log("Created players")
   }
   
   

@@ -55,6 +55,8 @@ export class JamConnectApp {
     this.jcClient.connector.onPatternStepUpdated = (appName, instrumentName, pattern, stepIndex, stepData, presetName) => this.applyJamConnectPatternStepUpdate(appName, instrumentName, stepIndex, stepData);
     this.jcClient.onStateChanged = (state) => this.onStateChanged(state);
     this.prevState = null;
+    
+    this.createParameterControls();
   }
   
   registerServiceWorker(path) {
@@ -82,6 +84,33 @@ export class JamConnectApp {
   //// ------------------------
   //// UI SETUP METHODS
   //// ------------------------
+  createParameterControls() {
+    console.log("JamConnectApp.createParameterControls")
+    Object.keys(this.audioGraph.params).forEach(deviceName => {
+      let device = this.audioGraph.getDeviceByName(deviceName);
+      Object.keys(this.audioGraph.params[deviceName]).forEach(parameterName => {
+        let parameterControlMapping = this.audioGraph.params[deviceName][parameterName];
+        
+        let parameterId = `${deviceName}.${parameterName}`;
+      
+        if (parameterControlMapping.range) 
+          this.createParameterKnob(parameterId, parameterControlMapping);
+        else if (parameterControlMapping.options)
+          this.createParameterSwitch(parameterId, parameterControlMapping);
+        else if (parameterControlMapping.boolean == true)
+          this.createParameterToggle(parameterId, parameterControlMapping);
+        else
+          throw "Unknown parameter definition " + parameterId;
+      });
+    });
+  }
+  
+  createParameterKnob(parameterId, parameterControlMapping) {}
+  
+  createParameterSwitch(parameterId, parameterControlMapping) {}
+  
+  createParameterToggle(parameterId, parameterControlMapping) {}
+  
   setupParameterControls() {
     Object.keys(this.audioGraph.params).forEach(deviceName => {
       let device = this.audioGraph.getDeviceByName(deviceName);
@@ -104,6 +133,7 @@ export class JamConnectApp {
   }
   
   setupParameterKnob(parameterId, parameterControlMapping, defaultValue) {
+    console.log("setupParameterKnob " + parameterId)
     let min = parameterControlMapping.range.min ? parameterControlMapping.range.min : 0;
     let max = parameterControlMapping.range.max ? parameterControlMapping.range.max : 1;
     let displayValueMultiplier = parameterControlMapping.range.displayValueMultiplier ? parameterControlMapping.range.displayValueMultiplier : 1;
@@ -454,6 +484,8 @@ export class JamConnectApp {
   //// MAIN APP RUN METHOD
   //// ------------------------
 	async run() {
+	  this.setupParameterControls();
+	  
 	  await this.initWebMidi();
 	  
 	  this.playBtn.addEventListener('click', async () => {
@@ -503,7 +535,7 @@ export class JamConnectApp {
       this.updateSwing(pct);
     });
   
-    this.setupParameterControls();
+
     if (this.sequencer)
       this.sequencer.render();
     
