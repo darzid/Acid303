@@ -12,7 +12,7 @@ export class App extends JamConnectApp {
   }
 
   createParameterKnob(parameterId, parameterControlMapping) {
-    console.log("jam909App.createParameterKnob")
+    //console.log("jam909App.createParameterKnob")
     let parts = parameterId.split(".");
     let deviceName = parts[0];
     let parameterName = parts[1];

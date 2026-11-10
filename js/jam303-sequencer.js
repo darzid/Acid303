@@ -99,8 +99,8 @@ class Jam303Sequencer extends SequencerBase {
     this.addStepButton("accent", "amber", "ACC", "---");
     this.addStepButton("slide", "fuchsia", "SLD", "---");
     
-    this.randomizeBtn = document.getElementById('randomize-btn');
-    this.randomizeBtn.addEventListener("click", () => this.randomizePattern());
+    this.randomizePatternBtn = document.getElementById('randomize-pattern-btn');
+    this.randomizePatternBtn.addEventListener("click", () => this.randomizePattern());
   }
   
   createEmptyPattern() {

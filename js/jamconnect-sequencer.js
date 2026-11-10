@@ -11,14 +11,7 @@ class SequencerBase {
     
     this.selectedInstrumentName = Object.keys(this.audioGraph.devices.instruments)[0];
     
-    this.clearInstrumentPatterns(false);
-    
-    this.clearPatternBtn = document.getElementById('clear-btn');
-    this.clearPatternBtn.addEventListener('click', () => {
-      this.instrumentPatterns[this.selectedInstrumentName] = this.createEmptyPattern();
-      this.patternChanged(this.selectedInstrumentName, this.selectedInstrumentPattern, "clear");
-      this.patternSelect.value = "";
-    });
+    this.clearPreset(false);
     
     this.presets = {};
     
@@ -32,43 +25,68 @@ class SequencerBase {
       this.presets[presetName] = userPresets[presetName];
     });
     
-    this.patternSelect = document.getElementById('pattern-select');
+    this.presetSelect = document.getElementById('preset-select');
+    this.clearPatternBtn = document.getElementById('clear-pattern-btn');
+    this.clearPresetBtn = document.getElementById('clear-preset-btn');
+    this.savePresetDialog = document.getElementById("save-preset-dialog");
+    this.presetNameInput = document.getElementById("preset-name-input");
+    this.savePresetBtn = document.getElementById('save-preset-btn');
+    this.savePresetOkBtn = document.getElementById('save-preset-ok-btn');
+    this.savePresetCancelBtn = document.getElementById('save-preset-cancel-btn');
+    this.exportPresetBtn = document.getElementById('export-preset-btn');
+    
     Object.keys(this.presets).forEach(presetName => 
-      this.patternSelect.innerHTML += `<option value="${presetName}">${presetName}</option>`
+      this.presetSelect.innerHTML += `<option value="${presetName}">${presetName}</option>`
     );
     
-    this.patternSelect.addEventListener('change', (e) => {
+    this.presetSelect.addEventListener('change', (e) => {
       const presetName = e.target.value;
       this.presetSelected(presetName);
     });
   
-    this.presetNameDialog = document.getElementById("preset-name-dialog");
-    this.presetName = document.getElementById("preset-name");
-    this.savePatternBtn = document.getElementById('save-btn');
-    this.presetOkBtn = document.getElementById('preset-ok-btn');
-    this.presetCancelBtn = document.getElementById('preset-cancel-btn');
- 
-    this.savePatternBtn.addEventListener('click', () => {
-      this.presetName.value = this.patternSelect.value;
-      this.presetOkBtn.disabled = this.presetName.value == "";
-      this.presetNameDialog.style.display = "flex";
+    this.clearPatternBtn.addEventListener('click', () => {
+      this.instrumentPatterns[this.selectedInstrumentName] = this.createEmptyPattern();
+      this.patternChanged(this.selectedInstrumentName, this.selectedInstrumentPattern, "clear");
+      if (this.isSingleInstrument)
+        this.presetSelect.value = "";
     });
-    this.presetName.addEventListener("input", () => {
-      this.presetOkBtn.disabled = this.presetName.value == "";
+    
+    if (this.clearPresetBtn != null) {
+      this.clearPresetBtn.addEventListener('click', () => {
+        this.clearPreset();
+        this.presetSelect.value = "";
+      });
+    }
+    
+    this.savePresetBtn.addEventListener('click', () => {
+      this.presetNameInput.value = this.presetSelect.value;
+      this.savePresetOkBtn.disabled = this.presetNameInput.value == "";
+      this.savePresetDialog.style.display = "flex";
     });
-    this.presetOkBtn.addEventListener('click', () => {
-      this.savePattern(this.presetName.value);
-      this.presetNameDialog.style.display = "none";
+    
+    this.presetNameInput.addEventListener("input", () => {
+      this.savePresetOkBtn.disabled = this.presetNameInput.value == "";
     });
-    this.presetCancelBtn.addEventListener('click', () => {
-      this.presetNameDialog.style.display = "none";
+    
+    this.savePresetOkBtn.addEventListener('click', () => {
+      this.savePattern(this.presetNameInput.value);
+      this.savePresetDialog.style.display = "none";
+    });
+    
+    this.savePresetCancelBtn.addEventListener('click', () => {
+      this.savePresetDialog.style.display = "none";
+    });
+    
+    this.exportPresetBtn.addEventListener('click', () => {
+      this.exportPreset();
     });
 	}
 	
 	get instrumentCount() { return Object.keys(this.audioGraph.devices.instruments).length; }
+	get isSingleInstrument() { return this.instrumentCount == 1; }
 	get selectedInstrumentPattern() { return this.instrumentPatterns[this.selectedInstrumentName]; }
 	
-	clearInstrumentPatterns(notify = true) {
+	clearPreset(notify = true) {
 	  Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
       this.instrumentPatterns[instrumentName] = this.createEmptyPattern();
       if (notify)
@@ -81,7 +99,7 @@ class SequencerBase {
       this.instrumentPatterns = JSON.parse(JSON.stringify(this.presets[presetName]));
       Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
         if (!this.instrumentPatterns[instrumentName]) {
-          console.log("fill empty pattern")
+          //console.log("fill empty pattern")
           this.instrumentPatterns[instrumentName] = this.createEmptyPattern();
         }
         this.patternChanged(instrumentName, this.instrumentPatterns[instrumentName], presetName)
@@ -149,8 +167,8 @@ class SequencerBase {
     
     this.createGrid();
     
-    if (this.patternSelect.value) {
-      let presetName = this.patternSelect.value;
+    if (this.presetSelect.value) {
+      let presetName = this.presetSelect.value;
       this.presetSelected(presetName);
     }
 	}
@@ -292,7 +310,7 @@ class SequencerBase {
     userPresets[presetName] = this.instrumentPatterns;
     this.saveUserPresets(userPresets);
     if (!isExisting)
-      this.patternSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
+      this.presetSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
   }
   
   loadUserPresets() {
@@ -305,6 +323,21 @@ class SequencerBase {
     
   saveUserPresets(userPresets) {
     localStorage.setItem(this.jcClient.connector.appName + "UserPresets", JSON.stringify(userPresets));
+  }
+  
+  exportPreset() {
+    const presetJson = JSON.stringify(this.instrumentPatterns);
+    let presetName = this.presetSelect.value ? this.jcClient.connector.appName + "-" + this.presetSelect.value : this.jcClient.connector.appName + "-" + "Preset";
+    
+    if (window.navigator.userAgent.toString().startsWith("Mozilla/5.0 (Linux; Android 16; SM-A556B")) {
+      console.log("Preset download", presetJson);
+      return;
+    }
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(presetJson);
+    const a = document.createElement("a");
+    a.href = dataStr;
+    a.download = `${presetName}.json`;
+    a.click();
   }
 }
 
