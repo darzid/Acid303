@@ -71,12 +71,13 @@ export class TR909Rimshot {
 
   get name() { return "DAWSome.TR909Rimshot" }
   
-  get decay() { return this.osc3.envelope.decay; }
+  get decay() { return this.click.envelope.decay; }
 	set decay(value) {
-		if (value < 0.010 || value > 0.03) throw "Decay must be between 0.01 and 0.03";
-		this.osc1.envelope.decay = value + 0.05;
-		this.osc2.envelope.decay = value + 0.04;
-		this.osc3.envelope.decay = value;
+		if (value < 0.001 || value > 0.03) throw "Decay must be between 0.01 and 0.03";
+		this.osc1.envelope.decay = value + 0.18;
+		this.osc2.envelope.decay = value + 0.17;
+		this.osc3.envelope.decay = value + 0.13;
+		this.click.envelope.decay = value;
 	}
 	
   get tune() { return this.osc1.detune.value; }

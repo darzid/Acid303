@@ -447,11 +447,11 @@ const parameters = {
 			}
 		},
 		decay: {
-			value: 0.25,
+			value: 0.008,
 			deviceParameter: "decay",
 			range: {
-				min: 0.01,
-				max: 0.03,
+				min: 0.001,
+				max: 0.030,
 				displayValueMultiplier: 1000,
 				displayValueUnit: "ms"
 			}
