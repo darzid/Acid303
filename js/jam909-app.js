@@ -23,13 +23,13 @@ export class App extends JamConnectApp {
   createKnobHtml(deviceName, parameterName) {
     let html = `
       <div class="flex flex-col items-center">
-        <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">${parameterName.toUpperCase()}</span>
+        <span class="text-[10px] font-extrabold uppercase text-slate-700 mb-0.5">${parameterName.toUpperCase()}</span>
         <div class="knob-container" id="${deviceName}.${parameterName}" data-value="1">
           <div class="knob-body"></div>
           <div class="knob-cap"></div>
           <div class="knob-indicator"></div>
         </div>
-        <span class="text-[10px] font-mono text-slate-600 mt-1 mb-1" data-parameter="${deviceName}.${parameterName}">100</span>
+        <span class="text-[9px] font-mono text-slate-600 mt-0.5 mb-1.5" data-parameter="${deviceName}.${parameterName}">100</span>
       </div>`;
     return html;
   }
