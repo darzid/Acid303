@@ -5,11 +5,7 @@ class Jam909Sequencer extends SequencerBase {
     this.addStepButton("gate", "emerald", "GATE", "OFF", "emerald");
     this.addStepButton("accent", "amber", "ACC", "---");
     
-    this.clearAllBtn = document.getElementById('clearall-btn');
-    this.clearAllBtn.addEventListener('click', () => {
-      this.clearInstrumentPatterns();
-      this.patternSelect.value = "";
-    });
+    
   }
   
   createEmptyPattern() {

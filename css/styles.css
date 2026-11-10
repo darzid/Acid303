@@ -96,7 +96,23 @@ main { margin-top: 0pt; }
   text-transform: uppercase;
 }
 
+#save-preset-dialog { 
+  display: none; 
+  background: rgba(0,0,0, 0.2); 
+  border: 1pt solid rgba(100,100,100,0.5); 
+  margin: 2pt 2pt; 
+  margin-bottom: 5pt;
+  padding: 2pt; 
+  box-shadow: 0 1px 2px rgba(0,0,0, 0.5);
+  
+  input { border-radius: 2pt; }
+  
+  .save-preset-dialog-buttons {
+    display: flex;
+    flex-direction: row;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
 
-
-#preset-name-dialog { display: none; background: rgba(0,0,0, 0.2); border: 1pt solid rgba(100,100,100,0.5); margin: 2pt; padding: 2pt; }
-.dialog-btn { min-width: 80px; margin-top: 5px; margin-right: 5px; }
+.dialog-btn { min-width: 40px; margin-top: 5px; margin-right: 5px; }

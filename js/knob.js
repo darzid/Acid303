@@ -18,7 +18,7 @@ class Knob {
     this.knob.addEventListener('pointerdown', (e) => this.onPointerDown(e));
     
     this.value = defaultValue;
-    console.log("Knob() " + this.id)
+    //console.log("Knob() " + this.id)
   }
   
   get value() { return parseFloat(this.knob.dataset.value); }

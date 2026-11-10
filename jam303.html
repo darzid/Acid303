@@ -190,7 +190,7 @@
             <div id="preset-selector" class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <div class="flex flex-col">
                 <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
-                <select id="pattern-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
+                <select id="preset-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
                 </select>
               </div>
             </div>
@@ -206,25 +206,33 @@
           </div>
       
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4 mt-4">
-            <div id="preset-name-dialog" class="flex flex-wrap rounded">
-              Name: <input id="preset-name">
-              <button id="preset-ok-btn" title="OK" class="dialog-btn px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">OK</button>
-              <button id="preset-cancel-btn" title="OK" class="dialog-btn px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">Cancel</button>
-            </div>
-            <div  class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-     
-              <button id="randomize-btn" title="Randomize Sequence" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
-                <i data-lucide="dices" class="w-4 h-4"></i> Random
-              </button>
-              <button id="clear-btn" title="Clear Sequence" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
-                <i data-lucide="trash" class="w-4 h-4"></i> Clear
-              </button>
-              <button id="save-btn" title="Save Preset" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
-                <i data-lucide="save" class="w-4 h-4"></i> Save
-              </button>
+            <div id="save-preset-dialog" class="flex flex-wrap rounded">
+              Name:
+              <input id="preset-name-input">
+              <div class="save-preset-dialog-buttons">
+                <button id="save-preset-ok-btn" title="OK" class="dialog-btn px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-700"></i>
+                </button>
+                <button id="save-preset-cancel-btn" title="OK" class="dialog-btn px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                  <i data-lucide="X" class="w-4 h-4 text-rose-700"></i>
+                </button>
+              </div>
             </div>
             
-
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <button id="randomize-pattern-btn" title="Randomize Sequence" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="dices" class="w-4 h-4"></i>
+              </button>
+              <button id="clear-pattern-btn" title="Clear Preset" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="square-x" class="w-4 h-4"></i>
+              </button>
+              <button id="save-preset-btn" title="Save Preset" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="save" class="w-4 h-4"></i>
+              </button>
+              <button id="export-preset-btn" title="Export Preset" class="self-end px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="download" class="w-4 h-4"></i>
+              </button>
+            </div>
             
           </div>
           

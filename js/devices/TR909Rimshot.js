@@ -83,7 +83,7 @@ export class TR909Rimshot {
   get tune() { return this.osc1.detune.value; }
 	set tune(value) {
 		if (value < -1200 || value > 1200) throw "Tune must be between -1200 and 1200";
-		console.log("tune " + value)
+		//console.log("tune " + value)
 		this.osc1.detune.value = value;
 		this.osc2.detune.value = value;
 		this.osc3.detune.value = value;
