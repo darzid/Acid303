@@ -95,6 +95,17 @@ class SequencerBase {
 	get isSingleInstrument() { return this.instrumentCount == 1; }
 	get selectedInstrumentPattern() { return this.instrumentPatterns[this.selectedInstrumentName]; }
 	
+	isSequenceEmpty() {
+		Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
+			let instrumentPattern = this.instrumentPatterns[instrumentName];
+			for (let step = 0; step < 16; step++) {
+				if (instrumentPattern[step].gate) 
+				 return false;
+			}
+		});
+		return true;
+	}
+	
 	clearPreset(notify = true) {
 	  Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
       this.instrumentPatterns[instrumentName] = this.createEmptyPattern();

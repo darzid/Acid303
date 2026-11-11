@@ -47,7 +47,7 @@ export class JamConnectApp {
     this.visualizer = new Visualizer(this.audioGraph.output, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
     this.vuMeter = new LevelMeter(this.audioGraph, "levelmeter-canvas");
     
-    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), false);
+    this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), true);
     this.jcClient.connector.getFullStateSnapshot = () => this.getFullStateJamConnectSnapshot();
     this.jcClient.connector.applyFullStateSnapshot = (appName, snapshot) => this.applyFullStateJamConnectSnapshot(appName, snapshot);
     this.jcClient.connector.onMasterSettingUpdated = (appName, setting, value) => this.applyJamConnectMasterSettingUpdate(appName, setting, value);
@@ -540,53 +540,8 @@ export class JamConnectApp {
     if (this.sequencer)
       this.sequencer.render();
     
-    // Initialization:
-    this.ledElements = Array.from({ length: 16 }, (_, i) => document.getElementById(`step-led-${i}`));
-    this.prevStepIdx = -1;
-    
-    // Tone.js Repeat Loop — locked to Transport ticks for multi-peer beat alignment
-    Tone.Transport.scheduleRepeat((time) => {
-      const sixteenthTicks = Tone.Time("16n").toTicks();
-      const tickStep = Math.floor(Math.max(0, Tone.Transport.ticks) / sixteenthTicks) % 16;
-      const stepIdx = Number.isFinite(tickStep) ? tickStep : (currentStep % 16);
-      
-      // Update Step UI Highlights
-      Tone.Draw.schedule(() => {
-        // Inside Tone.Draw.schedule():
-        if (this.prevStepIdx !== -1 && this.ledElements[this.prevStepIdx]) {
-          this.ledElements[this.prevStepIdx].classList.remove(`bg-${this.themeColorName}-400`, 'scale-125');
-          this.ledElements[this.prevStepIdx].classList.add('bg-slate-950');
-        }
-        if (this.ledElements[stepIdx]) {
-          this.ledElements[stepIdx].classList.remove('bg-slate-950');
-          this.ledElements[stepIdx].classList.add(`bg-${this.themeColorName}-400`, 'scale-125');
-        }
-        this.prevStepIdx = stepIdx;
-        
-        this.displayStep.textContent = `STEP: ${String(stepIdx + 1).padStart(2, '0')}/16`;
-        this.displayStep.classList.toggle("highlight", stepIdx == 0);
-        var timestamp = performance.now();
-        if (stepIdx % 4 == 0) {
-          if (!this.jcClient.connector.lastBeatTimes) this.jcClient.connector.lastBeatTimes = [];
-          if (this.jcClient.connector.lastBeatTimes.length > 4) {
-            this.jcClient.connector.lastBeatTimes.shift();
-          }
-          this.jcClient.connector.lastBeatTimes.push({ position: Tone.Transport.position, timestamp: timestamp });
-          //if (this.jcClient.userRole === JamConnectUserRoles.Host)
-           // this.jcClient.connector.broadcastBeat(timestamp);
-        }
-      }, time);
-    
-      Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
-        const stepData = this.sequencer.instrumentPatterns[instrumentName][stepIdx];
-        if (stepData && stepData.gate) {
-          const noteFreq = `${stepData.note}${stepData.octave}`;
-          this.playNote(instrumentName, noteFreq, stepData, "16n", time);
-        }
-      });
-      this.currentStep = (stepIdx + 1) % 16;
-    }, "16n");
-    
+    this.scheduleSequence();
+
 	    // Auto-Join Jam Session when opening a shared Invite URL (?session=303-XXXX&token=YYYY)
     window.addEventListener('DOMContentLoaded', () => {
       const paramsUrl = new URLSearchParams(window.location.search);
@@ -617,6 +572,68 @@ export class JamConnectApp {
             errEl.style.display = 'block';
           }
         });
+      }
+    });
+	}
+	
+	scheduleSequence() {
+	  // Initialization:
+    this.ledElements = Array.from({ length: 16 }, (_, i) => document.getElementById(`step-led-${i}`));
+    this.prevStepIdx = -1;
+    
+    // Tone.js Repeat Loop — locked to Transport ticks for multi-peer beat alignment
+    Tone.Transport.scheduleRepeat((time) => {
+      const sixteenthTicks = Tone.Time("16n").toTicks();
+      const tickStep = Math.floor(Math.max(0, Tone.Transport.ticks) / sixteenthTicks) % 16;
+      const stepIdx = Number.isFinite(tickStep) ? tickStep : (currentStep % 16);
+      
+      // Update Step UI Highlights
+      Tone.Draw.schedule(() => {
+        this.drawStep(stepIdx, time);
+      }, time);
+      
+      this.playStep(stepIdx, time);
+      
+      this.currentStep = (stepIdx + 1) % 16;
+    }, "16n");
+	}
+	
+	drawStep(stepIdx, time) {
+	  // Inside Tone.Draw.schedule():
+	  if (this.prevStepIdx !== -1 && this.ledElements[this.prevStepIdx]) {
+	    this.ledElements[this.prevStepIdx].classList.remove(`bg-${this.themeColorName}-400`, 'scale-125');
+      this.ledElements[this.prevStepIdx].classList.add('bg-slate-950');
+    }
+	  if (this.ledElements[stepIdx]) {
+      this.ledElements[stepIdx].classList.remove('bg-slate-950');
+      this.ledElements[stepIdx].classList.add(`bg-${this.themeColorName}-400`, 'scale-125');
+	  }
+	  this.prevStepIdx = stepIdx;
+        
+	  this.displayStep.textContent = `STEP: ${String(stepIdx + 1).padStart(2, '0')}/16`;
+	  this.displayStep.classList.toggle("highlight", stepIdx == 0);
+	  var timestamp = performance.now();
+	  if (stepIdx % 4 == 0) {
+      if (!this.jcClient.connector.lastBeatTimes) this.jcClient.connector.lastBeatTimes = [];
+      if (this.jcClient.connector.lastBeatTimes.length > 4) {
+        this.jcClient.connector.lastBeatTimes.shift();
+      }
+      this.jcClient.connector.lastBeatTimes.push({ position: Tone.Transport.position, timestamp: timestamp });
+      //if (this.jcClient.userRole === JamConnectUserRoles.Host)
+      // this.jcClient.connector.broadcastBeat(timestamp);
+	  }
+	}
+	
+	playStep(stepIdx, time) {
+	  Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
+      const stepData = this.sequencer.instrumentPatterns[instrumentName][stepIdx];
+      if (stepData && stepData.gate) {
+        const noteFreq = stepData.note ? `${stepData.note}${stepData.octave}` : this.audioGraph.devices.instruments[instrumentName].padNote;
+        this.playNote(instrumentName, noteFreq, stepData, "16n", time);
+        
+        let velocity = stepData.accent ? 1 : 0.8;
+        let duration = "16n";
+        this.jcClient.connector.playNote(instrumentName, noteFreq, velocity, duration, time);
       }
     });
 	}

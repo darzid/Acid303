@@ -7,6 +7,9 @@ export class App extends JamConnectApp {
     
     super.registerServiceWorker("../jam303-service-worker.js");
     this.sequencer = new Jam303Sequencer(this.jcClient, this.audioGraph);
+    
+    this.jcClient.connector.onNotePlayed = (appName, instrument, note, velocity, duration, time) => this.jamConnectNotePlayed(appName, instrument, note, velocity, duration, time);
+
   }
   
   createParameterKnob(parameterId, parameterControlMapping) {
@@ -30,6 +33,12 @@ export class App extends JamConnectApp {
         <span class="text-[10px] font-mono text-slate-600 mt-1" data-parameter="${deviceName}.${parameterName}" >400 Hz</span>
       </div>`;
     return html;
+  }
+  
+  jamConnectNotePlayed(appName, instrument, note, velocity, duration, time) {
+  	if (Tone.Transport.state == 'started' && !this.sequencer.isSequenceEmpty)
+  		return;
+  	this.playNote("tb303", note, { accent: velocity == 1 }, duration, time);
   }
   
   playNote(instrumentName, note, stepData, duration, time) {
