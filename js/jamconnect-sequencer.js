@@ -34,6 +34,9 @@ class SequencerBase {
     this.savePresetOkBtn = document.getElementById('save-preset-ok-btn');
     this.savePresetCancelBtn = document.getElementById('save-preset-cancel-btn');
     this.exportPresetBtn = document.getElementById('export-preset-btn');
+    this.loadPresetDialog = document.getElementById("load-preset-dialog");
+    this.importPresetBtn = document.getElementById('import-preset-btn');
+    this.presetFileInput = document.getElementById('preset-file-input');
     
     Object.keys(this.presets).forEach(presetName => 
       this.presetSelect.innerHTML += `<option value="${presetName}">${presetName}</option>`
@@ -79,6 +82,12 @@ class SequencerBase {
     
     this.exportPresetBtn.addEventListener('click', () => {
       this.exportPreset();
+    });
+    
+    this.presetFileInput.addEventListener('change', async (e) => this.importPreset(e) );
+    this.importPresetBtn.addEventListener('click', () => {
+      //this.loadPresetDialog.style.display = "flex";
+      this.presetFileInput.click();
     });
 	}
 	
@@ -309,8 +318,10 @@ class SequencerBase {
     let isExisting = userPresets[presetName] != null;
     userPresets[presetName] = this.instrumentPatterns;
     this.saveUserPresets(userPresets);
-    if (!isExisting)
+    if (!isExisting) {
       this.presetSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
+    }
+    this.presetSelect.value = presetName;
   }
   
   loadUserPresets() {
@@ -338,6 +349,38 @@ class SequencerBase {
     a.href = dataStr;
     a.download = `${presetName}.json`;
     a.click();
+  }
+  
+  async importPreset(e) {
+    const file = this.presetFileInput.files[0];
+    this.presetFileInput.value = "";
+    if (!file) return;
+    try {
+      var reader = new FileReader();
+      reader.addEventListener("load", (e) => {
+        var contents = e.target.result;
+        let preset = JSON.parse(contents);
+        let presetName = file.name.replace(/\.json?$/i, "");
+        //console.log("Loaded preset " + presetName, preset)
+        
+        let userPresets = this.loadUserPresets();
+        let isExisting = userPresets[presetName] != null;
+        userPresets[presetName] = preset;
+        this.saveUserPresets(userPresets);
+        this.presets[presetName] = preset;
+        if (!isExisting) {
+          this.presetSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
+        }
+        this.presetSelect.value = presetName;
+        this.presetSelected(presetName);
+      });
+      reader.readAsText(file);
+    } catch (err) {
+      alert(`Could not load ${file.name}: ${err.message}`);
+    }
+    finally {
+      this.loadPresetDialog.style.display = "none";
+    }
   }
 }
 

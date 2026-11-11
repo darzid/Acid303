@@ -139,7 +139,7 @@
           </div>
       
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4 mt-4">
-            <div id="save-preset-dialog" class="flex flex-wrap rounded">
+            <div id="save-preset-dialog" class="preset-dialog flex flex-wrap rounded">
               Name:
               <input id="preset-name-input">
               <div class="save-preset-dialog-buttons">
@@ -150,6 +150,10 @@
                   <i data-lucide="X" class="w-4 h-4 text-rose-700"></i>
                 </button>
               </div>
+            </div>
+            
+            <div id="load-preset-dialog" class="preset-dialog flex flex-wrap rounded">
+              <input id="preset-file-input" type="file" accept=".json">
             </div>
             
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -164,6 +168,9 @@
               </button>
               <button id="export-preset-btn" title="Export Preset" class="self-end px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
                 <i data-lucide="download" class="w-4 h-4"></i>
+              </button>
+              <button id="import-preset-btn" title="Import Preset" class="self-end px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="upload" class="w-4 h-4"></i>
               </button>
             </div>
             
