@@ -15,8 +15,9 @@ export class App extends JamConnectApp {
 		let octave = 2;
 		pianoNotes.forEach(pianoNote => {
 			let noteName = pianoNote.innerText;
-			pianoNote.addEventListener("pointerdown", () => {
+			pianoNote.addEventListener("pointerdown", async () => {
 				let note = `${noteName}${octave}`;
+				await this.initializeAudio();
 				this.audioGraph.start303Note(note, false, Tone.now());
 			});
 			pianoNote.addEventListener("pointerup", () => {
