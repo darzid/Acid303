@@ -6,25 +6,9 @@ export class App extends JamConnectApp {
     super("jam303", new AudioGraph(), "#22c55e");
     
     super.registerServiceWorker("../jam303-service-worker.js");
-    this.sequencer = new Jam303Sequencer(this.jcClient, this.audioGraph);
+    this.sequencer = new Jam303Sequencer(this.jcClient, this.audioGraph, this.themeColorName);
     
     this.jcClient.connector.onNotePlayed = (appName, instrument, note, velocity, duration, time) => this.jamConnectNotePlayed(appName, instrument, note, velocity, duration, time);
-		
-		this.piano = document.getElementById("piano");
-		let pianoNotes = this.piano.querySelectorAll("button.piano-note");
-		let octave = 2;
-		pianoNotes.forEach(pianoNote => {
-			let noteName = pianoNote.innerText;
-			pianoNote.addEventListener("pointerdown", async () => {
-				let note = `${noteName}${octave}`;
-				await this.initializeAudio();
-				this.audioGraph.start303Note(note, false, Tone.now());
-			});
-			pianoNote.addEventListener("pointerup", () => {
-				let note = `${noteName}${octave}`;
-				this.audioGraph.stop303Note(Tone.now());
-			});
-		})
   }
   
   createParameterKnob(parameterId, parameterControlMapping) {

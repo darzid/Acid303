@@ -1,13 +1,16 @@
 class SequencerBase {
-	constructor(jcClient, audioGraph, defaultPresets = null) {
+	constructor(jcClient, audioGraph, themeColorName, defaultPresets = null) {
 		this.jcClient = jcClient;
 		this.audioGraph = audioGraph;
+		this.themeColorName = themeColorName;
 		this.sequencerGrid = document.getElementById("sequencer-grid");
     this.grid = document.getElementById("grid");
     this.instrumentPatterns = {};
     this.stepButtons = {};
     this.selectedInstrumentName = "";
     this.stepControls = {};
+    this.ledElements = [];
+    this.prevStepIdx = -1;
     
     this.selectedInstrumentName = Object.keys(this.audioGraph.devices.instruments)[0];
     
@@ -24,7 +27,7 @@ class SequencerBase {
     Object.keys(userPresets).forEach(presetName => {
       this.presets[presetName] = userPresets[presetName];
     });
-    
+   
     this.presetSelect = document.getElementById('preset-select');
     this.clearPatternBtn = document.getElementById('clear-pattern-btn');
     this.clearPresetBtn = document.getElementById('clear-preset-btn');
@@ -139,12 +142,12 @@ class SequencerBase {
 	  this.stepControls[name] = {
 	    themeColorName: themeColorName,
 	    options: options,
-	    className: `w-full bg-slate-950 text-[10px] font-mono border border-slate-700 rounded p-0.5 outline-none cursor-pointer text-${themeColorName}-400 focus:border-${themeColorName}-500`
+	    className: ` w-full bg-slate-950 text-[10px] font-mono border border-slate-700 rounded p-0.5 outline-none cursor-pointer text-${themeColorName}-400 focus:border-${themeColorName}-500`
 	  };
 	}
 	
 	addStepButton(name, themeColorName, activeText, inactiveText) {
-	  const buttonClass = "w-full h-7 rounded text-[10px] font-bold transition flex items-center justify-center";
+	  const buttonClass = "w-full h-6 rounded text-[10px] font-bold transition flex items-center justify-center";
     const buttonInactiveClass = " bg-slate-800 text-slate-500 border border-slate-700";
     const buttonActiveClass = " text-slate-950 shadow-md";
     
@@ -191,6 +194,24 @@ class SequencerBase {
       let presetName = this.presetSelect.value;
       this.presetSelected(presetName);
     }
+    
+    this.ledElements = Array.from({ length: 16 }, (_, i) => document.getElementById(`step-led-${i}`));
+    
+	}
+	
+	turnStepLedOff() {
+		if (this.prevStepIdx !== -1 && this.ledElements[this.prevStepIdx]) {
+	    this.ledElements[this.prevStepIdx].classList.remove(`bg-${this.themeColorName}-400`, 'scale-125');
+      this.ledElements[this.prevStepIdx].classList.add('bg-slate-950');
+    }
+	}
+	
+	turnStepLedOn(stepIndex) {
+		if (this.ledElements[stepIndex]) {
+      this.ledElements[stepIndex].classList.remove('bg-slate-950');
+      this.ledElements[stepIndex].classList.add(`bg-${this.themeColorName}-400`, 'scale-125');
+      this.prevStepIdx = stepIndex;
+	  } 
 	}
 	
 	createGrid() {
@@ -198,16 +219,16 @@ class SequencerBase {
     for (let stepIndex = 0; stepIndex < 16; stepIndex++) {
       let stepHtml = `
         <div id="step-${stepIndex}" class="items-center" style="display: flex; flex-direction: column">
-           <span class="text-[9px] font-mono text-slate-500 mb-1">${stepIndex + 1}</span>
+           <span class="text-[9px] font-mono text-slate-500 mb-0.5">${stepIndex + 1}</span>
            <div id="step-led-${stepIndex}" class="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 transition-all duration-75"></div>`;
       
       Object.keys(this.stepControls).forEach(controlName => {
         let isButton = (this.stepControls[controlName].activeText);
         let controlContainerClass = "";
         if (isButton) 
-          controlContainerClass += " mt-2 w-6 h-6 note-button";
+          controlContainerClass += " mb-0.5 mt-1 w-6 h-5 note-button";
         else 
-          controlContainerClass += " 1"
+          controlContainerClass += " "
         
         stepHtml += `<div id="step-${controlName}-${stepIndex}" class="${controlContainerClass}"></div>`;
       });
@@ -282,7 +303,6 @@ class SequencerBase {
   
   updateSequencerUI() {
     for (let stepIndex = 0; stepIndex < 16; stepIndex++) {
-      
       const step = this.selectedInstrumentPattern[stepIndex];
       this.updateSequencerStepUI(stepIndex, step);
     }

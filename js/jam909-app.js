@@ -8,7 +8,7 @@ export class App extends JamConnectApp {
     super.registerServiceWorker("../jam909-service-worker.js");
     this.renderDebounceTimers = {};
     
-    this.sequencer = new Jam909Sequencer(this.jcClient, this.audioGraph);
+    this.sequencer = new Jam909Sequencer(this.jcClient, this.audioGraph, this.themeColorName);
   }
 
   createParameterKnob(parameterId, parameterControlMapping) {

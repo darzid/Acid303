@@ -118,28 +118,18 @@
           <div id="sound-hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2 text-center">Drag knobs vertically to adjust parameter (synced live in Jam Sessions)</div>
         </div>
 
-        <div title="SEQUENCER" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
+        <div title="SEQUENCER" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-1">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
       
             <div id="preset-selector" class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <div class="flex flex-col">
-                <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
-                <select id="preset-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
-                </select>
+                <label class="text-[10px] font-bold text-slate-600 uppercase">Preset Patterns</label>
+                <select id="preset-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500"></select>
               </div>
             </div>
-          
           </div>
 
-          <div id="sequencer-grid" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
-            <div class="min-w-[700px]">
-              <!-- Step Indicators (LEDs) -->
-              <div id="grid" class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
-              </div>
-            </div>
-          </div>
-      
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4 mt-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-2">
             <div id="save-preset-dialog" class="preset-dialog flex-wrap rounded">
               Name:
               <input id="preset-name-input">
@@ -176,23 +166,45 @@
             </div>
             
           </div>
-        
-          <div>
-            <div id="piano" class="grid grid-cols-12 sm:grid-cols-12">
-              <button class="piano-note piano-note-white">C</button>
-              <button class="piano-note piano-note-black">C#</button>
-              <button class="piano-note piano-note-white">D</button>
-              <button class="piano-note piano-note-black">D#</button>
-              <button class="piano-note piano-note-white">E</button>
-              <button class="piano-note piano-note-white">F</button>
-              <button class="piano-note piano-note-black">F#</button>
-              <button class="piano-note piano-note-white">G</button>
-              <button class="piano-note piano-note-black">G#</button>
-              <button class="piano-note piano-note-white">A</button>
-              <button class="piano-note piano-note-black">A#</button>
-              <button class="piano-note piano-note-white">B</button>
+       
+          <div id="sequencer-grid" class="bg-slate-900 p-2 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto mb-1">
+            <div class="min-w-[700px]">
+              <!-- Step Indicators (LEDs) -->
+              <div id="grid" class="flex-rows gap-1 mb-1 text-center" style="display: flex; flex-direction: row">
+              </div>
             </div>
-            <button class="synth-btn 2-rest">REST</button>
+          </div>
+      
+          <div>
+            <div class="flex mb-1">
+            	<button id="rec-step-btn" class="px-2 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 mr-1">
+            		<i data-lucide="circle" class="w-4 h-4 fill-rose-800"></i>
+            	</button>
+            	<button id="prev-step-btn" class="px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 mr-1">PREV</button>
+            	<span>Step: <span id="piano-step">1</span></span>
+							<button id="next-step-btn" class="px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 ml-1">NEXT</button>
+            </div>
+            
+	          <div id="piano" class="grid grid-cols-12 sm:grid-cols-12">
+	            <button class="piano-note piano-note-white">C</button>
+	            <button class="piano-note piano-note-black">C#</button>
+	            <button class="piano-note piano-note-white">D</button>
+	            <button class="piano-note piano-note-black">D#</button>
+	            <button class="piano-note piano-note-white">E</button>
+	            <button class="piano-note piano-note-white">F</button>
+	            <button class="piano-note piano-note-black">F#</button>
+	            <button class="piano-note piano-note-white">G</button>
+	            <button class="piano-note piano-note-black">G#</button>
+	            <button class="piano-note piano-note-white">A</button>
+	            <button class="piano-note piano-note-black">A#</button>              
+	            <button class="piano-note piano-note-white">B</button>
+	          </div>
+            
+            <div class="piano-step-buttons flex flex-row flex-start gap-1 mt-1">
+		          <button id="rest-step-btn" class="min-w-[70px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1">REST</button>
+		        	<button id="slide-step-btn" class="min-w-[70px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">SLIDE</button>
+		          <button id="accent-step-btn" class="min-w-[70px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">ACCENT</button>
+		        </div>
           </div>
           
           <div id="sequencer-hints" class="mt-4 flex text-[11px] text-slate-600 font-semibold gap-2">

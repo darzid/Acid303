@@ -90,8 +90,8 @@ var instrumentPatterns = {
 }
 
 class Jam303Sequencer extends SequencerBase {
-  constructor(jcClient, audioGraph) {
-    super(jcClient, audioGraph, DEFAULT_PRESETS);
+  constructor(jcClient, audioGraph, themeColorName) {
+    super(jcClient, audioGraph, themeColorName, DEFAULT_PRESETS);
     
     this.addStepSelect("note", "emerald", NOTES);
     this.addStepSelect("octave", "sky", [4, 3, 2, 1, 0], ["⏫️", "🔼", "⏺", "🔽", "⏬️"]);
@@ -101,6 +101,79 @@ class Jam303Sequencer extends SequencerBase {
     
     this.randomizePatternBtn = document.getElementById('randomize-pattern-btn');
     this.randomizePatternBtn.addEventListener("click", () => this.randomizePattern());
+    
+    this.piano = document.getElementById("piano");
+		this.pianoNoteButtons = this.piano.querySelectorAll("button.piano-note");
+		let octave = 2;
+		this.pianoNoteButtons.forEach(pianoNote => {
+			let noteName = pianoNote.innerText;
+			pianoNote.addEventListener("pointerdown", async () => {
+				let note = `${noteName}${octave}`;
+				//await this.initializeAudio();
+				this.audioGraph.start303Note(note, false, Tone.now());
+				this.stepNoteClicked(note);
+			});
+			pianoNote.addEventListener("pointerup", () => {
+				let note = `${noteName}${octave}`;
+				this.audioGraph.stop303Note(Tone.now());
+			});
+		})
+	
+    this.pianoStep = document.getElementById('piano-step');
+    this.recStepBtn = document.getElementById('rec-step-btn');
+    this.prevStepBtn = document.getElementById('prev-step-btn');
+    this.nextStepBtn = document.getElementById('next-step-btn');
+    this.restStepBtn = document.getElementById('rest-step-btn');
+    this.accentStepBtn = document.getElementById('accent-step-btn');
+    this.slideStepBtn = document.getElementById('slide-step-btn');
+    
+    this.pianoStep.innerText = "0";
+    this.recStepBtn.addEventListener("click", () => this.toggleStepRecord());
+    this.prevStepBtn.addEventListener("click", () => this.previousStep());
+    this.nextStepBtn.addEventListener("click", () => this.nextStep());
+    this.restStepBtn.addEventListener("click", () => this.restStep());
+    this.accentStepBtn.addEventListener("click", () => this.toggleStepAccent());
+    this.slideStepBtn.addEventListener("click", () => this.toggleStepSlide());
+    
+    this.updateButtonState();
+    this.nextStep();
+  }
+  
+  get currentEditStep() { return parseInt(this.pianoStep.innerText); }
+  set currentEditStep(value) { this.pianoStep.innerText = value; }
+  
+  get currentEditStepIndex() { return this.currentEditStep - 1; }
+  
+  get pattern() { return this.instrumentPatterns.tb303; }
+  get currentStep() { return this.pattern[this.currentEditStepIndex]; }
+  get currentStepNote() { return this.currentStep.note; }
+  get currentStepNotePianoButton() { return this.getCurrentStepNotePianoButton(); }
+  
+  get isStepRecording() { return this.recStepBtn.classList.contains("active"); }
+  
+  presetSelected(presetName) {
+    super.presetSelected(presetName);
+    this.updateToggleButtons();
+  }
+  
+  getCurrentStepNotePianoButton() { 
+   // console.log("current step note " + this.currentStepNote);
+    let pianoNoteButton = null;
+    for (let buttonIndex = 0; buttonIndex < this.pianoNoteButtons.length; buttonIndex++) {
+      let pianoNote = this.pianoNoteButtons[buttonIndex];
+      if (this.currentStepNote == pianoNote.innerText)  {
+        pianoNoteButton = pianoNote; 
+        break;
+      }
+    }
+    return pianoNoteButton;
+  }
+  
+  clearStepNotePianoButtons() { 
+    for (let buttonIndex = 0; buttonIndex < this.pianoNoteButtons.length; buttonIndex++) {
+      let pianoNote = this.pianoNoteButtons[buttonIndex];
+      pianoNote.classList.remove("current");
+    }
   }
   
   createEmptyPattern() {
@@ -118,5 +191,117 @@ class Jam303Sequencer extends SequencerBase {
     }));
     this.patternChanged(this.selectedInstrumentName, this.selectedInstrumentPattern, "random");
     this.patternSelect.value = "";
+  }
+  
+  updateSingleStepUI(stepIndex, stepData) {
+    super.updateSingleStepUI(stepIndex, stepData);
+    this.updateToggleButtons();
+  }
+  
+  updateStepButton(step, buttonName, stepButton) {
+    super.updateStepButton(step, buttonName, stepButton);
+    this.updateToggleButtons();
+  }
+ /* clearPreset() {
+    super.clearPreset();
+    this.clearCurrentStepNotePianoButton();
+  }*/
+  
+  toggleStepRecord() {
+    this.recStepBtn.classList.toggle("active");
+    this.updateButtonState();
+    if (this.isStepRecording && Tone.Transport.state != "started") {
+    	this.turnStepLedOff();
+    	this.turnStepLedOn(this.currentEditStepIndex);
+    }
+  }
+  
+  updateButtonState() {
+    this.restStepBtn.disabled = !this.isStepRecording;
+    this.accentStepBtn.disabled = !this.isStepRecording;
+    this.slideStepBtn.disabled = !this.isStepRecording;
+  }
+  
+  updateToggleButtons() {
+  	if (this.isStepRecording) return;
+  	
+    this.accentStepBtn.classList.toggle("active", this.currentStep.accent);
+    this.slideStepBtn.classList.toggle("active", this.currentStep.slide);
+  }
+  
+  previousStep() {
+    this.clearStepNotePianoButtons();
+    
+    if (Tone.Transport.state != 'started')
+    	this.turnStepLedOff();
+    	
+    if (this.currentEditStep > 1) 
+      this.currentEditStep--;
+    else 
+      this.currentEditStep = 16;
+      
+    this.setCurrentStepNotePianoButton();
+    this.updateToggleButtons();
+    if (Tone.Transport.state != 'started')
+    	this.turnStepLedOn(this.currentEditStepIndex);
+  }
+  
+  nextStep() {
+    this.clearStepNotePianoButtons();
+    if (Tone.Transport.state != 'started')
+    	this.turnStepLedOff();
+    	
+    if (this.currentEditStep < 16) 
+      this.currentEditStep++;
+    else 
+      this.currentEditStep = 1;
+    this.setCurrentStepNotePianoButton();
+    this.updateToggleButtons();
+    
+    if (Tone.Transport.state != 'started') {
+    	this.turnStepLedOn(this.currentEditStepIndex);
+    }
+    else
+    	console.log("Tone is running")
+  }
+  
+  clearCurrentStepNotePianoButton() {
+    if (this.currentEditStep > 0 && this.currentStepNotePianoButton)
+      this.currentStepNotePianoButton.classList.remove("current");
+  }
+  
+  setCurrentStepNotePianoButton() {
+    this.currentStepNotePianoButton.classList.add("current");
+  }
+  
+  stepNoteClicked(note) {
+    if (this.isStepRecording) {
+      this.currentStep.octave = parseInt(note.substring(note.length - 1));
+      this.currentStep.note = note.substring(0, note.length - 1);
+      this.currentStep.gate = true;
+      this.currentStep.accent = this.accentStepBtn.classList.contains("active");
+      this.currentStep.slide = this.slideStepBtn.classList.contains("active");
+      this.updateSequencerStepUI(this.currentEditStepIndex, this.currentStep);
+      this.nextStep();
+    }
+  }
+  
+  restStep() {
+    if (this.isStepRecording) {
+      this.currentStep.gate = false;
+      this.nextStep();
+    }
+  }
+  
+  toggleStepAccent() {
+  	this.accentStepBtn.classList.toggle("active");
+    this.currentStep.accent = this.accentStepBtn.classList.contains("active");
+    this.updateSingleStepUI(this.currentEditStepIndex, this.currentStep);
+  }
+  
+  toggleStepSlide() {
+  	this.slideStepBtn.classList.toggle("active");
+    this.currentStep.slide = this.slideStepBtn.classList.contains("active");
+    this.updateSingleStepUI(this.currentEditStepIndex, this.currentStep);
   }
 }

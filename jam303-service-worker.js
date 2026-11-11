@@ -3,7 +3,7 @@ const ASSETS = [
   './',
   
   './css/styles.css',
-  './css/tailwind.css',
+  './css/jam303.css',
   
   './images/favicon.ico',
   './images/favicon-192x192.png',

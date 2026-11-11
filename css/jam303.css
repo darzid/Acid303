@@ -2,6 +2,8 @@
   font-size: smaller;
   text-align: center;
   border-radius: 2pt;
+  align-content: start;
+  display: inline-flex;
 }
 
 .piano-note:active, .piano-note.active {
@@ -15,14 +17,36 @@
   border: 1pt solid black;
 }
 
+.piano-note-white.current {
+  background: rgb(100,150,255);
+}
+
 .piano-note-black {
   height: 18vh;
   background: black;
   color: white;
   border: 1pt solid black;
 }
+.piano-note-black.current {
+  background: rgb(50,100,200);
+}
 
 .piano-rest {
   background: white;
   border: 1pt solid black;
 }
+
+.synth-btn:disabled {
+  color: gray;
+}
+
+.piano-step-buttons2 {
+  align-items: start;
+  vertical-align: top;
+}
+
+.toggle-btn.active {
+  color: white;
+}
+
+.red-border { border: 3pt solid red; }

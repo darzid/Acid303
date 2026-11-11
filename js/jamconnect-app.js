@@ -577,9 +577,6 @@ export class JamConnectApp {
 	}
 	
 	scheduleSequence() {
-	  // Initialization:
-    this.ledElements = Array.from({ length: 16 }, (_, i) => document.getElementById(`step-led-${i}`));
-    this.prevStepIdx = -1;
     
     // Tone.js Repeat Loop — locked to Transport ticks for multi-peer beat alignment
     Tone.Transport.scheduleRepeat((time) => {
@@ -599,17 +596,9 @@ export class JamConnectApp {
 	}
 	
 	drawStep(stepIdx, time) {
-	  // Inside Tone.Draw.schedule():
-	  if (this.prevStepIdx !== -1 && this.ledElements[this.prevStepIdx]) {
-	    this.ledElements[this.prevStepIdx].classList.remove(`bg-${this.themeColorName}-400`, 'scale-125');
-      this.ledElements[this.prevStepIdx].classList.add('bg-slate-950');
-    }
-	  if (this.ledElements[stepIdx]) {
-      this.ledElements[stepIdx].classList.remove('bg-slate-950');
-      this.ledElements[stepIdx].classList.add(`bg-${this.themeColorName}-400`, 'scale-125');
-	  }
-	  this.prevStepIdx = stepIdx;
-        
+		this.sequencer.turnStepLedOff(this.sequencer.prevStepIdx);
+		this.sequencer.turnStepLedOn(stepIdx);
+	  
 	  this.displayStep.textContent = `STEP: ${String(stepIdx + 1).padStart(2, '0')}/16`;
 	  this.displayStep.classList.toggle("highlight", stepIdx == 0);
 	  var timestamp = performance.now();
