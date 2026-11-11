@@ -1,0 +1,23 @@
+.piano-note {
+  font-size: smaller;
+  text-align: center;
+  border-radius: 2pt;
+}
+
+.piano-note:active, .piano-note.active {
+	transform: translateY(2px);
+  box-shadow: 0 1px 0 #64748b, 0 2px 3px rgba(0,0,0,0.3);
+}
+
+.piano-note-white {
+  height: 20vh;
+  background: white;
+  border: 1pt solid black;
+}
+
+.piano-note-black {
+  height: 18vh;
+  background: black;
+  color: white;
+  border: 1pt solid white;
+}

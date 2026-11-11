@@ -185,4 +185,35 @@ export class AudioGraph extends AudioGraphBase {
       console.error("error", err, err.stack)
     }
   }
+  
+  start303Note(noteFreq, accent, time, slide = false) 
+  {
+    try {
+      if (accent) {
+        this.devices.instruments.tb303.volume.setValueAtTime(4, time);
+        this.devices.instruments.tb303.filterEnvelope.octaves = this.params.tb303.envMod.value * 7.5 * this.params.tb303.accent.value;
+        this.devices.instruments.tb303.envelope.decay = this.params.tb303.decay.value * 0.7;
+      } else {
+        this.devices.instruments.tb303.volume.setValueAtTime(0, time);
+        this.devices.instruments.tb303.filterEnvelope.octaves = this.params.tb303.envMod.value * 4.5;
+        this.devices.instruments.tb303.envelope.decay = this.params.tb303.decay.value;
+      }
+      
+      this.devices.instruments.tb303.portamento = slide ? 0.08 : 0;
+      this.devices.instruments.tb303.triggerAttack(noteFreq, time);
+    }
+    catch (err) {
+      console.error("error", err, err.stack)
+    }
+  }
+  
+  stop303Note(time) 
+  {
+    try {
+      this.devices.instruments.tb303.triggerRelease(time);
+    }
+    catch (err) {
+      console.error("error", err, err.stack)
+    }
+  }
 }
