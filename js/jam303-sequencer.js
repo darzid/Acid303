@@ -104,36 +104,40 @@ class Jam303Sequencer extends SequencerBase {
     
     this.piano = document.getElementById("piano");
 		this.pianoNoteButtons = this.piano.querySelectorAll("button.piano-note");
-		let octave = 2;
+		
 		this.pianoNoteButtons.forEach(pianoNote => {
 			let noteName = pianoNote.innerText;
 			pianoNote.addEventListener("pointerdown", async () => {
-				let note = `${noteName}${octave}`;
-				//await this.initializeAudio();
+				let note = `${noteName}${this.currentOctave}`;
+				await this.audioGraph.initializeAudio();
 				this.audioGraph.start303Note(note, false, Tone.now());
 				this.stepNoteClicked(note);
 			});
 			pianoNote.addEventListener("pointerup", () => {
-				let note = `${noteName}${octave}`;
 				this.audioGraph.stop303Note(Tone.now());
 			});
 		})
 	
+		this.currentOctave = 2;
     this.pianoStep = document.getElementById('piano-step');
     this.recStepBtn = document.getElementById('rec-step-btn');
     this.prevStepBtn = document.getElementById('prev-step-btn');
     this.nextStepBtn = document.getElementById('next-step-btn');
-    this.restStepBtn = document.getElementById('rest-step-btn');
-    this.accentStepBtn = document.getElementById('accent-step-btn');
-    this.slideStepBtn = document.getElementById('slide-step-btn');
+    this.restStepToggleBtn = document.getElementById('rest-step-btn');
+    this.accentStepToggleBtn = document.getElementById('accent-step-btn');
+    this.slideStepToggleBtn = document.getElementById('slide-step-btn');
+    this.octaveUpStepToggleBtn = document.getElementById('oct-up-step-btn');
+    this.octaveDownStepToggleBtn = document.getElementById('oct-down-step-btn');
     
     this.pianoStep.innerText = "0";
     this.recStepBtn.addEventListener("click", () => this.toggleStepRecord());
     this.prevStepBtn.addEventListener("click", () => this.previousStep());
     this.nextStepBtn.addEventListener("click", () => this.nextStep());
-    this.restStepBtn.addEventListener("click", () => this.restStep());
-    this.accentStepBtn.addEventListener("click", () => this.toggleStepAccent());
-    this.slideStepBtn.addEventListener("click", () => this.toggleStepSlide());
+    this.restStepToggleBtn.addEventListener("click", () => this.restStep());
+    this.accentStepToggleBtn.addEventListener("click", () => this.toggleStepAccent());
+    this.slideStepToggleBtn.addEventListener("click", () => this.toggleStepSlide());
+    this.octaveUpStepToggleBtn.addEventListener("click", () => this.toggleStepOctaveUp());
+    this.octaveDownStepToggleBtn.addEventListener("click", () => this.toggleStepOctaveDown());
     
     this.updateButtonState();
     this.nextStep();
@@ -150,6 +154,7 @@ class Jam303Sequencer extends SequencerBase {
   get currentStepNotePianoButton() { return this.getCurrentStepNotePianoButton(); }
   
   get isStepRecording() { return this.recStepBtn.classList.contains("active"); }
+  
   
   presetSelected(presetName) {
     super.presetSelected(presetName);
@@ -202,10 +207,6 @@ class Jam303Sequencer extends SequencerBase {
     super.updateStepButton(step, buttonName, stepButton);
     this.updateToggleButtons();
   }
- /* clearPreset() {
-    super.clearPreset();
-    this.clearCurrentStepNotePianoButton();
-  }*/
   
   toggleStepRecord() {
     this.recStepBtn.classList.toggle("active");
@@ -217,16 +218,23 @@ class Jam303Sequencer extends SequencerBase {
   }
   
   updateButtonState() {
-    this.restStepBtn.disabled = !this.isStepRecording;
-    this.accentStepBtn.disabled = !this.isStepRecording;
-    this.slideStepBtn.disabled = !this.isStepRecording;
+    this.restStepToggleBtn.disabled = !this.isStepRecording;
+    this.accentStepToggleBtn.disabled = !this.isStepRecording;
+    this.slideStepToggleBtn.disabled = !this.isStepRecording;
+    this.octaveUpStepToggleBtn.disabled = !this.isStepRecording;
+    this.octaveDownStepToggleBtn.disabled = !this.isStepRecording;
   }
   
   updateToggleButtons() {
   	if (this.isStepRecording) return;
   	
-    this.accentStepBtn.classList.toggle("active", this.currentStep.accent);
-    this.slideStepBtn.classList.toggle("active", this.currentStep.slide);
+  	this.restStepToggleBtn.classList.toggle("active", !this.currentStep.gate);
+    this.accentStepToggleBtn.classList.toggle("active", this.currentStep.accent);
+    this.slideStepToggleBtn.classList.toggle("active", this.currentStep.slide);
+    this.octaveUpStepToggleBtn.classList.toggle("active", this.currentStep.octave >= 3);
+    this.octaveUpStepToggleBtn.innerHTML = (this.currentStep.octave == 4) ? "Oct️⏫️" : "Oct🔺️";
+    this.octaveDownStepToggleBtn.classList.toggle("active", this.currentStep.octave <= 1);
+    this.octaveDownStepToggleBtn.innerHTML = (this.currentStep.octave == 0) ? "Oct️⏬️" : "Oct️🔻";
   }
   
   previousStep() {
@@ -279,8 +287,8 @@ class Jam303Sequencer extends SequencerBase {
       this.currentStep.octave = parseInt(note.substring(note.length - 1));
       this.currentStep.note = note.substring(0, note.length - 1);
       this.currentStep.gate = true;
-      this.currentStep.accent = this.accentStepBtn.classList.contains("active");
-      this.currentStep.slide = this.slideStepBtn.classList.contains("active");
+      this.currentStep.accent = this.accentStepToggleBtn.classList.contains("active");
+      this.currentStep.slide = this.slideStepToggleBtn.classList.contains("active");
       this.updateSequencerStepUI(this.currentEditStepIndex, this.currentStep);
       this.nextStep();
     }
@@ -294,14 +302,58 @@ class Jam303Sequencer extends SequencerBase {
   }
   
   toggleStepAccent() {
-  	this.accentStepBtn.classList.toggle("active");
-    this.currentStep.accent = this.accentStepBtn.classList.contains("active");
+  	this.accentStepToggleBtn.classList.toggle("active");
+    this.currentStep.accent = this.accentStepToggleBtn.classList.contains("active");
     this.updateSingleStepUI(this.currentEditStepIndex, this.currentStep);
   }
   
   toggleStepSlide() {
-  	this.slideStepBtn.classList.toggle("active");
-    this.currentStep.slide = this.slideStepBtn.classList.contains("active");
+  	this.slideStepToggleBtn.classList.toggle("active");
+    this.currentStep.slide = this.slideStepToggleBtn.classList.contains("active");
+    this.updateSingleStepUI(this.currentEditStepIndex, this.currentStep);
+  }
+  
+  toggleStepOctaveUp() {
+  	if (!this.octaveUpStepToggleBtn.classList.contains("active")) {
+  		this.octaveDownStepToggleBtn.classList.remove("active");
+  		this.octaveDownStepToggleBtn.innerHTML = "Oct️🔻";
+  		this.octaveUpStepToggleBtn.classList.add("active");
+  		this.octaveUpStepToggleBtn.innerHTML = "Oct🔺️";
+  		this.currentOctave = 3;
+  	}
+  	else if (this.octaveUpStepToggleBtn.innerHTML == "Oct🔺️") {
+  		this.octaveUpStepToggleBtn.innerHTML = "Oct️⏫️";
+  		this.currentOctave = 4;
+  	}
+  	else {
+  		this.octaveUpStepToggleBtn.classList.remove("active");
+  		this.octaveUpStepToggleBtn.innerHTML = "Oct🔺️";
+  		this.currentOctave = 2;
+  	}
+  	
+    this.currentStep.octave = this.currentOctave;
+    this.updateSingleStepUI(this.currentEditStepIndex, this.currentStep);
+  }
+  
+  toggleStepOctaveDown() {
+  	if (!this.octaveDownStepToggleBtn.classList.contains("active")) {
+  		this.octaveUpStepToggleBtn.classList.remove("active");
+  		this.octaveUpStepToggleBtn.innerHTML = "Oct🔺️";
+  		this.octaveDownStepToggleBtn.classList.add("active");
+  		this.octaveDownStepToggleBtn.innerHTML = "Oct️🔻";
+  		this.currentOctave = 1;
+  	}
+  	else if (this.octaveDownStepToggleBtn.innerHTML == "Oct️🔻") {
+  		this.octaveDownStepToggleBtn.innerHTML = "Oct⏬️";
+  		this.currentOctave = 0;
+  	}
+  	else {
+  		this.octaveDownStepToggleBtn.classList.remove("active");
+  		this.octaveDownStepToggleBtn.innerHTML = "Oct️🔻";
+  		this.currentOctave = 2;
+  	}
+  	
+    this.currentStep.octave = this.currentOctave;
     this.updateSingleStepUI(this.currentEditStepIndex, this.currentStep);
   }
 }

@@ -2,7 +2,7 @@ import { AudioGraphBase } from "./jamconnect-audiograph.js";
 
 export class JamConnectApp {
   ccMap = {};
-  isAudioStarted = false;
+  
   currentStep = 0;
   
   parameterControls = {
@@ -14,6 +14,7 @@ export class JamConnectApp {
   constructor(appName, audioGraph, visualizerStrokeColor = "#22c55e", visualizerBackgroundColor = "#091209", themeColorName = "emerald", enableLogging = false) {
     this.appName = appName;
     this.audioGraph = audioGraph;
+    this.audioGraph.onAudioInitialized = () => this.onAudioInitialized();
     this.audioGraph.toDestination();
     
     this.sequencer = null;
@@ -389,20 +390,12 @@ export class JamConnectApp {
     }
   }
   
-
-  //// ------------------------
-  //// AUDIO METHODS
-  //// ------------------------
-  async initializeAudio() {
-    if (this.isAudioStarted) return;
-    await Tone.start();
-    this.isAudioStarted = true;
-    
-    if (this.placeholder) this.placeholder.style.display = 'none';
+	onAudioInitialized() {
+		if (this.placeholder) this.placeholder.style.display = 'none';
     this.visualizer.isActive = true;
     this.vuMeter.isActive = true;
-  }
-  
+	}
+	
   //// ------------------------
   //// MIDI METHODS
   //// ------------------------
@@ -423,7 +416,7 @@ export class JamConnectApp {
           if (this.midiDot) this.midiDot.className = `w-2 h-2 rounded-full bg-${this.themeColorName}-400 shadow-sm shadow-${this.themeColorName}-400`;
           if (!this.activeMidiInput) {
             this.activeMidiInput = inputs[0];
-            this.activeMidiInput.onmidimessage = (event) => this.handleHardwareMidiMessage(event);
+            this.activeMidiInput.onmidimessage = async (event) => await this.handleHardwareMidiMessage(event);
           }
         } else {
           if (this.midiDot) this.midiDot.className = 'w-2 h-2 rounded-full bg-slate-500';
@@ -436,7 +429,7 @@ export class JamConnectApp {
           if (this.activeMidiInput) this.activeMidiInput.onmidimessage = null;
           
           this.activeMidiInput = midiAccess.inputs.get(this.midiSelect.value) || null;
-          if (this.activeMidiInput) this.activeMidiInput.onmidimessage = (event) => this.handleHardwareMidiMessage(event);
+          if (this.activeMidiInput) this.activeMidiInput.onmidimessage = async (event) => await this.handleHardwareMidiMessage(event);
         });
       }
     
@@ -447,13 +440,13 @@ export class JamConnectApp {
     }
   }
     
-  handleHardwareMidiMessage(event) {
+  async handleHardwareMidiMessage(event) {
     const [status, data1, data2] = event.data;
     const command = status & 0xf0;
     
     // Note On (0x90) with velocity > 0
     if (command === 0x90 && data2 > 0) {
-      this.initializeAudio();
+      await this.audioGraph.initializeAudio();
       const noteName = this.midiNoteToName(data1);
       const velocity = data2 / 127;
       const isAccent = data2 >= 100;
@@ -490,7 +483,7 @@ export class JamConnectApp {
 	  await this.initWebMidi();
 	  
 	  this.playBtn.addEventListener('click', async () => {
-      await this.initializeAudio();
+      await this.audioGraph.initializeAudio();
       await this.jcClient.startTransport();
     });
     
@@ -501,12 +494,12 @@ export class JamConnectApp {
     this.stopBtn.style.display = "none";
     
     this.inviteBtn.addEventListener('click', async () => {
-      await this.initializeAudio();
+      await this.audioGraph.initializeAudio();
       await this.jcClient.invite();
     });
     
     this.joinBtn.addEventListener('click', async () => {
-      await this.initializeAudio();
+      await this.audioGraph.initializeAudio();
       await this.jcClient.join();
     });
     

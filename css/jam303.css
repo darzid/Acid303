@@ -46,7 +46,7 @@
 }
 
 .toggle-btn.active {
-  color: white;
+  color: blue;
 }
 
 .red-border { border: 3pt solid red; }

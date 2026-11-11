@@ -1,6 +1,8 @@
 export class AudioGraphBase {
 	constructor(parameters) {
 		this.params = parameters;
+		this.isAudioStarted = false;
+		this.onAudioInitialized = null;
 		
 		this.devices = {
 			instruments: {},
@@ -23,6 +25,15 @@ export class AudioGraphBase {
 		this.output.toDestination();
 	}
 	
+	async initializeAudio() {
+    if (this.isAudioStarted) return;
+    await Tone.start();
+    this.isAudioStarted = true;
+    
+    if (this.onAudioInitialized)
+			this.onAudioInitialized();
+  }
+  
 	getDeviceByName(name) {
 		let device = this.devices.instruments[name];
 		if (device) return device;

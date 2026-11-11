@@ -142,7 +142,7 @@ export class App extends JamConnectApp {
     document.querySelectorAll('button.jam-pad').forEach((padBtn) => {
       padBtn.addEventListener('pointerdown', async (e) => {
         e.preventDefault();
-        await this.initializeAudio();
+        await this.audioGraph.initializeAudio();
         const inst = padBtn.dataset.padInst;
         if (!inst) return;
         const note = padBtn.dataset.padNote;
