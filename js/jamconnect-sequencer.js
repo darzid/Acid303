@@ -105,7 +105,7 @@ class SequencerBase {
 	get bpm() { return parseInt(Tone.Transport.bpm.value); }
 	set bpm(value) { this.onBpmChangeRequest(value); }
 	
-	get swing() { return Tone.Transport.swing * 100; }
+	get swing() { return parseInt(Tone.Transport.swing * 100); }
 	set swing(value) { this.onSwingChangeRequest(value); }
 	
 	get parameters() { return this.audioGraph.getParameterValues(); }
@@ -134,8 +134,8 @@ class SequencerBase {
 	  	let preset = JSON.parse(JSON.stringify(this.presets[presetName]));
       
       console.log("Preset selected: " + preset);
-      this.swing = preset.swing;
-      this.bpm = preset.bpm;
+      this.swing = parseInt(preset.swing);
+      this.bpm = parseInt(preset.bpm);
       
       Object.keys(preset.parameters).forEach(deviceName => {
 				Object.keys(preset.parameters[deviceName]).forEach(parameterName => {
