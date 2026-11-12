@@ -1,0 +1,662 @@
+{
+  "BD": [
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    }
+  ],
+  "SD": [
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    }
+  ],
+  "CP": [
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    }
+  ],
+  "LT": [
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    }
+  ],
+  "MT": [
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    }
+  ],
+  "HT": [
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    }
+  ],
+  "CH": [
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    }
+  ],
+  "OH": [
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": true,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    }
+  ],
+  "RS": [
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    }
+  ],
+  "RC": [
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    },
+    {
+      "gate": false,
+      "accent": false
+    }
+  ]
+}

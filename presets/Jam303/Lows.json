@@ -1,0 +1,116 @@
+{
+  "tb303": [
+    {
+      "note": "C",
+      "octave": "0",
+      "gate": true,
+      "accent": false,
+      "slide": false
+    },
+    {
+      "note": "C",
+      "octave": "2",
+      "gate": true,
+      "accent": true,
+      "slide": false
+    },
+    {
+      "note": "C",
+      "octave": "1",
+      "gate": true,
+      "accent": false,
+      "slide": false
+    },
+    {
+      "note": "C",
+      "octave": 2,
+      "gate": true,
+      "accent": false,
+      "slide": false
+    },
+    {
+      "note": "C",
+      "octave": "0",
+      "gate": true,
+      "accent": true,
+      "slide": true
+    },
+    {
+      "note": "C",
+      "octave": 2,
+      "gate": true,
+      "accent": false,
+      "slide": false
+    },
+    {
+      "note": "C",
+      "octave": "1",
+      "gate": true,
+      "accent": false,
+      "slide": false
+    },
+    {
+      "note": "D#",
+      "octave": 2,
+      "gate": true,
+      "accent": true,
+      "slide": true
+    },
+    {
+      "note": "C",
+      "octave": "0",
+      "gate": true,
+      "accent": false,
+      "slide": false
+    },
+    {
+      "note": "C",
+      "octave": 2,
+      "gate": true,
+      "accent": false,
+      "slide": false
+    },
+    {
+      "note": "G",
+      "octave": "3",
+      "gate": true,
+      "accent": true,
+      "slide": true
+    },
+    {
+      "note": "G",
+      "octave": "1",
+      "gate": true,
+      "accent": true,
+      "slide": true
+    },
+    {
+      "note": "C",
+      "octave": "0",
+      "gate": true,
+      "accent": false,
+      "slide": false
+    },
+    {
+      "note": "C",
+      "octave": 2,
+      "gate": true,
+      "accent": false,
+      "slide": false
+    },
+    {
+      "note": "C",
+      "octave": "1",
+      "gate": true,
+      "accent": false,
+      "slide": false
+    },
+    {
+      "note": "C",
+      "octave": 2,
+      "gate": true,
+      "accent": false,
+      "slide": false
+    }
+  ]
+}

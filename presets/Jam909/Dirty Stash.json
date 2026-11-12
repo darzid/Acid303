@@ -1,0 +1,746 @@
+{
+  "name": "jam909-Dirty Stash",
+  "bpm": 131.99999999999997,
+  "swing": 18,
+  "patterns": {
+    "BD": [
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      }
+    ],
+    "SD": [
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      }
+    ],
+    "CP": [
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      }
+    ],
+    "LT": [
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": true
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      }
+    ],
+    "MT": [
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": true
+      },
+      {
+        "gate": true,
+        "accent": true
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      }
+    ],
+    "HT": [
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      }
+    ],
+    "CH": [
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": true
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": true
+      },
+      {
+        "gate": true,
+        "accent": true
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": true
+      },
+      {
+        "gate": true,
+        "accent": true
+      }
+    ],
+    "OH": [
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      }
+    ],
+    "RS": [
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": true
+      },
+      {
+        "gate": true,
+        "accent": true
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      }
+    ],
+    "RC": [
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": true,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      },
+      {
+        "gate": false,
+        "accent": false
+      }
+    ]
+  },
+  "parameters": {
+    "reverb": {
+      "preDelay": 0.11466662597656259,
+      "decay": 0.48301162817382787
+    },
+    "distortion": {
+      "distortion": 0.8321774902343749
+    },
+    "BD": {
+      "level": 1,
+      "drive": 0.7838229980468752,
+      "reverb": 0,
+      "decay": 0.5,
+      "tune": 216.96093749999818,
+      "pitchDecay": 0.1
+    },
+    "SD": {
+      "level": 1,
+      "drive": 1,
+      "reverb": 0.5,
+      "decay": 0.5,
+      "tune": 1200
+    },
+    "CP": {
+      "level": 1,
+      "drive": 0.58186669921875,
+      "reverb": 0.6479106445312497,
+      "decay": 0.35603520996093757
+    },
+    "LT": {
+      "level": 1,
+      "drive": 0.6700446777343749,
+      "reverb": 0,
+      "decay": 1,
+      "tune": 0.30022204589843826
+    },
+    "MT": {
+      "level": 1,
+      "drive": 0.3072001953125,
+      "reverb": 0,
+      "decay": 0.3727999755859377,
+      "tune": 0.6
+    },
+    "HT": {
+      "level": 1,
+      "drive": 0,
+      "reverb": 0.5,
+      "decay": 0.7081600585937499,
+      "tune": 0.65
+    },
+    "CH": {
+      "level": 1,
+      "drive": 0.36124450683593745,
+      "reverb": 0.5,
+      "decay": 0.05,
+      "tune": 0
+    },
+    "OH": {
+      "level": 1,
+      "drive": 0.2559997558593749,
+      "reverb": 4.872889404296873,
+      "decay": 0.39472009277343756,
+      "tune": 612.90703125
+    },
+    "RS": {
+      "level": 1,
+      "drive": 0,
+      "reverb": 1,
+      "decay": 0.03,
+      "tune": 1.7053710937497044
+    },
+    "RC": {
+      "level": 1,
+      "drive": 0.38275537109374985,
+      "reverb": 0,
+      "decay": 0.5,
+      "tune": 1.0717336425781243
+    }
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "name": "jam303-Slider",
+  "bpm": 130,
+  "swing": 0,
+  "patterns": {
+    "tb303": [
+      {
+        "note": "G",
+        "octave": 2,
+        "gate": true,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "G",
+        "octave": 2,
+        "gate": true,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "A#",
+        "octave": 3,
+        "gate": true,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "A#",
+        "octave": 3,
+        "gate": true,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "E",
+        "octave": 2,
+        "gate": true,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C#",
+        "octave": 2,
+        "gate": true,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "B",
+        "octave": 4,
+        "gate": true,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "note": "F",
+        "octave": 3,
+        "gate": true,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "note": "F#",
+        "octave": 3,
+        "gate": true,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "note": "G",
+        "octave": 3,
+        "gate": true,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      }
+    ]
+  },
+  "parameters": {
+    "delay": {
+      "enabled": true
+    },
+    "tb303": {
+      "cutoff": 1223.5570556640625,
+      "resonance": 11.701864501953123,
+      "envMod": 0.8389333496093749,
+      "decay": 0.5992536376953125,
+      "accent": 0.8,
+      "drive": 0.35,
+      "waveform": "sawtooth"
+    }
+  }
+}

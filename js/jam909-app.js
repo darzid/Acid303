@@ -8,9 +8,20 @@ export class App extends JamConnectApp {
     super.registerServiceWorker("../jam909-service-worker.js");
     this.renderDebounceTimers = {};
     
-    this.sequencer = new Jam909Sequencer(this.jcClient, this.audioGraph);
+    this.sequencer = new Jam909Sequencer(this.jcClient, this.audioGraph, this.themeColorName);
+    
+    this.mixerToggle = document.getElementById("mixer-toggle");
+    this.nonMixerKnobs = document.querySelectorAll(".non-mixer-knob");
+    this.nonMixerElements = document.querySelectorAll(".non-mixer-element");
+    this.deviceKnobs = document.querySelectorAll(".device-knobs");
+   // this.effectKnobs = document.getElementById("effect-knobs");
+    this.deviceKnobTitleButtons = document.querySelectorAll(".device-knobs-title");
+    this.deviceKnobTitleButtons.forEach(button => button.title = button.innerText);
+    this.mixerToggle.addEventListener("click", () => this.expandCollapseAllDevices());
   }
 
+	get mixerMode() { return this.mixerToggle.checked; }
+	
   createParameterKnob(parameterId, parameterControlMapping) {
     //console.log("jam909App.createParameterKnob")
     let parts = parameterId.split(".");
@@ -21,17 +32,41 @@ export class App extends JamConnectApp {
   }
   
   createKnobHtml(deviceName, parameterName) {
+  	let knobClass = 
+  	  (deviceName == "reverb") ? (parameterName != "decay") ? "non-mixer-knob" : "mixer-knob" :
+  	  (deviceName == "distortion") ? "mixer-knob" :
+  	  (parameterName != "level") ? "non-mixer-knob" : "mixer-knob";
     let html = `
-      <div class="flex flex-col items-center">
-        <span class="text-[10px] font-extrabold uppercase text-slate-700 mb-0.5">${parameterName.toUpperCase()}</span>
+      <div class="device-knob ${knobClass} flex flex-col items-center">
+        <span class="non-mixer-element text-[10px] font-extrabold uppercase text-slate-700 mb-0.5">${parameterName.toUpperCase()}</span>
         <div class="knob-container" id="${deviceName}.${parameterName}" data-value="1">
           <div class="knob-body"></div>
           <div class="knob-cap"></div>
           <div class="knob-indicator"></div>
         </div>
-        <span class="text-[9px] font-mono text-slate-600 mt-0.5 mb-1.5" data-parameter="${deviceName}.${parameterName}">100</span>
+        <span class="non-mixer-element text-[9px] font-mono text-slate-600 mt-0.5 mb-1.5" data-parameter="${deviceName}.${parameterName}">100</span>
       </div>`;
     return html;
+  }
+  
+  expandCollapseAllDevices() {
+    this.deviceKnobs.forEach(container => container.classList.toggle("expanded", !this.mixerToggle.checked));
+    this.deviceKnobTitleButtons.forEach(button => button.innerText = (this.mixerToggle.checked) ? "🔻" +  button.title : button.title);
+    this.nonMixerKnobs.forEach(nonMixerKnob => nonMixerKnob.classList.toggle("hidden", this.mixerToggle.checked));
+    this.nonMixerElements.forEach(nonMixerElement => nonMixerElement.classList.toggle("hidden", this.mixerToggle.checked));
+   // this.effectKnobs.classList.toggle("hidden", this.mixerToggle.checked);
+  }
+  
+  expandCollapseDevice(padBtn) {
+    let parent = padBtn.parentElement;
+    padBtn.innerText = (padBtn.innerText.startsWith("🔻")) ? "🔺️"  + padBtn.title : "🔻" + padBtn.title;
+    let isExpanded = padBtn.innerText.startsWith("🔺️");
+    parent.classList.toggle("expanded", isExpanded);
+    let instrumentNonMixerKnobs = parent.querySelectorAll(".non-mixer-knob");
+    instrumentNonMixerKnobs.forEach(knob => knob.classList.toggle("hidden"));
+    
+    let instrumentNonMixerElements = parent.querySelectorAll(".non-mixer-element");
+    instrumentNonMixerElements.forEach(element => element.classList.toggle("hidden"));
   }
   
   playNote(instrumentName, note, stepData, duration, time) {
@@ -112,8 +147,6 @@ export class App extends JamConnectApp {
     // Initialize Lucide Icons
     lucide.createIcons();
     
-    TabControl.render();
-    
     // Handle Live Pad & Quantized Note Triggers (Local & Remote)
     this.jcClient.connector.onPadTriggered = (instrument, note, velocity = 0.85, scheduledTime = Tone.now(), extra = {}) => {
       //console.log("onPadTriggered, instrument, note, velocity, scheduledTime", instrument, note, velocity, scheduledTime)
@@ -129,9 +162,9 @@ export class App extends JamConnectApp {
           this.sequencer.instrumentPatterns[instrumentName] = JSON.parse(JSON.stringify(newPattern));
           pattern = JSON.parse(JSON.stringify(newPattern));
           if (presetName && patternSelect) patternSelect.value = presetName;
-          this.sequencer.updateSequencerUI();
+          this.sequencer.refresh();
         } else if (typeof stepIndex === 'number' && stepData) {
-          this.sequencer.updateSingleStepUI(stepIndex, stepData);
+          this.sequencer.refreshStep(stepIndex, stepData);
         }
       } finally {
         this.jcClient.isApplyingRemoteUpdate = false;
@@ -141,8 +174,13 @@ export class App extends JamConnectApp {
     // Bind Live Jam Pads in the JAM Tab
     document.querySelectorAll('button.jam-pad').forEach((padBtn) => {
       padBtn.addEventListener('pointerdown', async (e) => {
+      	if (this.tabControl.activeTab == "SOUND" && this.mixerMode) {
+      	  this.expandCollapseDevice(padBtn);
+      		return;
+      	}
+      	
         e.preventDefault();
-        await this.initializeAudio();
+        await this.audioGraph.initializeAudio();
         const inst = padBtn.dataset.padInst;
         if (!inst) return;
         const note = padBtn.dataset.padNote;

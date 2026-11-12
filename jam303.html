@@ -11,6 +11,7 @@
   
   <link rel="stylesheet" href="css/tailwind.css">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/jam303.css">
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
@@ -32,14 +33,14 @@
 <body class="flex flex-col justify-between items-center bg-slate-950">
 
   <!-- Top Title Banner -->
-  <header id="header" class="w-full max-w-6xl flex flex-col sm:flex-row justify-between items-center mb-4">
+  <header id="header" class="w-full max-w-6xl flex flex-col sm:flex-row justify-between items-center mb-2">
     
-    <div id="led-display" class="grid grid-cols-1 lg:grid-cols-16 gap-6 mb-8">
+    <div id="led-display" class="grid grid-cols-1 lg:grid-cols-16 gap-2 mb-2">
       
       <!-- LED Display & Visualizer (4 cols) -->
-      <div class="lg:col-span-4 flex flex-col justify-between bg-slate-950 rounded-xl p-1 border-2 border-slate-700 led-display min-h-[160px]">
+      <div class="lg:col-span-4 flex flex-col justify-between bg-slate-950 rounded-xl p-1 border-2 border-slate-700 led-display min-h-[120px]">
         
-        <div class="flex justify-between items-center border-b border-emerald-950 pb-2">
+        <div class="flex justify-between items-center border-b border-emerald-950 pb-0">
           <div class="flex items-center gap-2">
             <div id="play-led" class="w-3 h-3 rounded-full bg-slate-800 border border-slate-700"></div>
             <span class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">SEQ STATUS</span>
@@ -50,7 +51,7 @@
         </div>
 
         <!-- Oscilloscope / Visualizer Canvas -->
-        <div class="relative w-full h-16 my-2 bg-slate-950 rounded overflow-hidden flex items-center justify-center">
+        <div class="relative w-full h-12 my-2 bg-slate-950 rounded overflow-hidden flex items-center justify-center">
           <canvas id="visualizer-canvas" class="w-full h-full block"></canvas>
           <div id="vis-placeholder" class="absolute inset-0 flex items-center justify-center text-xs text-emerald-900 font-mono pointer-events-none">
             [AUDIO ENGINE INACTIVE]
@@ -117,29 +118,19 @@
           <div id="sound-hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2 text-center">Drag knobs vertically to adjust parameter (synced live in Jam Sessions)</div>
         </div>
 
-        <div title="SEQUENCER" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-2">
+        <div title="SEQUENCER" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-1">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
       
             <div id="preset-selector" class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <div class="flex flex-col">
-                <label class="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Preset Patterns</label>
-                <select id="preset-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500">
-                </select>
+                <label class="text-[10px] font-bold text-slate-600 uppercase">Preset Patterns</label>
+                <select id="preset-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500"></select>
               </div>
             </div>
-          
           </div>
 
-          <div id="sequencer-grid" class="bg-slate-900 p-3 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto">
-            <div class="min-w-[700px]">
-              <!-- Step Indicators (LEDs) -->
-              <div id="grid" class="flex-rows gap-1 mb-3 text-center" style="display: flex; flex-direction: row">
-              </div>
-            </div>
-          </div>
-      
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4 mt-4">
-            <div id="save-preset-dialog" class="flex flex-wrap rounded">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-2">
+            <div id="save-preset-dialog" class="preset-dialog flex-wrap rounded">
               Name:
               <input id="preset-name-input">
               <div class="save-preset-dialog-buttons">
@@ -150,6 +141,10 @@
                   <i data-lucide="X" class="w-4 h-4 text-rose-700"></i>
                 </button>
               </div>
+            </div>
+            
+            <div id="load-preset-dialog" class="preset-dialog flex-wrap rounded">
+              <input id="preset-file-input" type="file" accept=".json">
             </div>
             
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -165,8 +160,53 @@
               <button id="export-preset-btn" title="Export Preset" class="self-end px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
                 <i data-lucide="download" class="w-4 h-4"></i>
               </button>
+              <button id="import-preset-btn" title="Import Preset" class="self-end px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+              </button>
             </div>
             
+          </div>
+       
+          <div id="sequencer-grid" class="bg-slate-900 p-2 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto mb-1">
+            <div class="min-w-[700px]">
+              <!-- Step Indicators (LEDs) -->
+              <div id="grid" class="flex-rows gap-1 mb-1 text-center" style="display: flex; flex-direction: row">
+              </div>
+            </div>
+          </div>
+      
+          <div>
+            <div class="flex mb-1">
+            	<button id="rec-step-btn" class="px-2 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 mr-1">
+            		<i data-lucide="circle" class="w-4 h-4 fill-rose-800"></i>
+            	</button>
+            	<button id="prev-step-btn" class="px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 mr-1">PREV</button>
+            	<span>Step: <span id="piano-step">1</span></span>
+							<button id="next-step-btn" class="px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 ml-1">NEXT</button>
+            </div>
+            
+	          <div id="piano" class="grid grid-cols-12 sm:grid-cols-12">
+	            <button class="piano-note piano-note-white">C</button>
+	            <button class="piano-note piano-note-black">C#</button>
+	            <button class="piano-note piano-note-white">D</button>
+	            <button class="piano-note piano-note-black">D#</button>
+	            <button class="piano-note piano-note-white">E</button>
+	            <button class="piano-note piano-note-white">F</button>
+	            <button class="piano-note piano-note-black">F#</button>
+	            <button class="piano-note piano-note-white">G</button>
+	            <button class="piano-note piano-note-black">G#</button>
+	            <button class="piano-note piano-note-white">A</button>
+	            <button class="piano-note piano-note-black">A#</button>              
+	            <button class="piano-note piano-note-white">B</button>
+	          </div>
+            
+            <div class="piano-step-buttons flex flex-row flex-start gap-1 mt-1">
+		          <button id="rest-step-btn"      class="min-w-[60px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">Rest</button>
+		        	<button id="slide-step-btn"     class="min-w-[60px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">Slide</button>
+		          <button id="accent-step-btn"    class="min-w-[60px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">Accnt</button>
+		          <button id="oct-up-step-btn"    class="min-w-[60px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">Oct🔺️</button>
+		          <button id="oct-down-step-btn"  class="min-w-[60px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">Oct🔻</button>
+		        </div>
           </div>
           
           <div id="sequencer-hints" class="mt-4 flex text-[11px] text-slate-600 font-semibold gap-2">
@@ -174,6 +214,7 @@
             <div class="hint-line"><div class="w-2 h-2 rounded-full bg-amber-500"></div> Accent = Filter Spike + Louder</div>
             <div class="hint-line"><div class="w-2 h-2 rounded-full bg-fuchsia-500"></div> Slide = Portamento Glide</div>
           </div>
+          
         </div>
 
         <div title="JAM" class="tab bg-slate-300/60 rounded-xl p-3 border border-slate-400/80 shadow-inner flex flex-col gap-3 mb-2">

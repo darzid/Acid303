@@ -1,5 +1,9 @@
  class TabControl {
-   static render() {
+ 	constructor() {
+ 		this.activeTab = null;
+ 		
+ 	}
+   render() {
     const tabControl = document.getElementById("tab-control");
     const tabStrip = tabControl.querySelector(".tab-strip")
     const tabContainer = tabControl.querySelector(".tab-container");
@@ -36,6 +40,7 @@
         tab.style.display = "block";
         tab.classList.add("active-tab");
         tabButton.classList.add('active-led');
+        this.activeTab = tab.title;
       });
     });
   }

@@ -1,6 +1,6 @@
 class Jam909Sequencer extends SequencerBase {
-  constructor(jcClient, audioGraph) {
-    super(jcClient, audioGraph);
+  constructor(jcClient, audioGraph, themeColorName) {
+    super(jcClient, audioGraph, themeColorName);
     
     this.addStepButton("gate", "emerald", "GATE", "OFF", "emerald");
     this.addStepButton("accent", "amber", "ACC", "---");

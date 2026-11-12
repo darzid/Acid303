@@ -6,7 +6,9 @@ export class App extends JamConnectApp {
     super("jam303", new AudioGraph(), "#22c55e");
     
     super.registerServiceWorker("../jam303-service-worker.js");
-    this.sequencer = new Jam303Sequencer(this.jcClient, this.audioGraph);
+    this.sequencer = new Jam303Sequencer(this.jcClient, this.audioGraph, this.themeColorName);
+    
+    this.jcClient.connector.onNotePlayed = (appName, instrument, note, velocity, duration, time) => this.jamConnectNotePlayed(appName, instrument, note, velocity, duration, time);
   }
   
   createParameterKnob(parameterId, parameterControlMapping) {
@@ -32,6 +34,12 @@ export class App extends JamConnectApp {
     return html;
   }
   
+  jamConnectNotePlayed(appName, instrument, note, velocity, duration, time) {
+  	if (Tone.Transport.state == 'started' && !this.sequencer.isSequenceEmpty)
+  		return;
+  	this.playNote("tb303", note, { accent: velocity == 1 }, duration, time);
+  }
+  
   playNote(instrumentName, note, stepData, duration, time) {
     this.audioGraph.play303StepNote(note, stepData.accent, stepData.slide, duration, time);
   }
@@ -42,8 +50,6 @@ export class App extends JamConnectApp {
     // Initialize Lucide Icons
     lucide.createIcons();
     
-    TabControl.render();
-    
     // Receive single-step or full-pattern updates from peers
     this.jcClient.connector.onPatternUpdated = (appName, instrumentName, newPattern, stepIndex, stepData, presetName) => {
       this.jcClient.isApplyingRemoteUpdate = true;
@@ -52,11 +58,11 @@ export class App extends JamConnectApp {
           this.sequencer.instrumentPatterns[instrumentName] = JSON.parse(JSON.stringify(newPattern));
           if (this.sequencer.selectedInstrumentName == instrumentName) {
             if (presetName && this.sequencer.patternSelect) this.sequencer.patternSelect.value = presetName;
-            this.sequencer.updateSequencerUI();
+            this.sequencer.refresh();
           }
         } else if (typeof stepIndex === 'number' && stepData) {
           if (this.sequencer.selectedInstrumentName == instrumentName) {
-            this.sequencer.updateSingleStepUI(stepIndex, stepData);
+            this.sequencer.refreshStep(stepIndex, stepData);
           }
         }
       } finally {

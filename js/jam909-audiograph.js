@@ -530,7 +530,7 @@ export class AudioGraph extends AudioGraphBase {
     
     this.devices.effects.distortion = new Tone.Distortion(
     {
-    	distoetion: this.params.distortion.distortion.value,
+    	distortion: this.params.distortion.distortion.value,
       wet: 1,
     }).connect(this.groupBus);
     
@@ -721,6 +721,7 @@ export class AudioGraph extends AudioGraphBase {
       	release: 0.2 },
     });
     BD.note = "C1";
+    BD.padNote = "C2";
     BD.duration = "";
     return BD;
 	}
@@ -730,6 +731,7 @@ export class AudioGraph extends AudioGraphBase {
     SD.bodySynth.detune.value = this.params.SD.tune.value;
     SD.bodySynth.envelope.decay = this.params.SD.decay.value;
     SD.note = "C2";
+    SD.padNote = "C#2";
     SD.duration = "16n";
     return SD;
 	}
@@ -745,6 +747,7 @@ export class AudioGraph extends AudioGraphBase {
       },
     });
     CP.note = "";
+    CP.padNote = "D2";
     CP.duration = "16n";
     return CP;
 	}
@@ -757,6 +760,7 @@ export class AudioGraph extends AudioGraphBase {
         level: this.params.LT.level.value 
     });
     LT.note = "";
+    LT.padNote = "D#2";
     return LT;
 	}
 	
@@ -768,6 +772,7 @@ export class AudioGraph extends AudioGraphBase {
         level: this.params.MT.level.value 
     });
     MT.note = "";
+    MT.padNote = "E2";
     return MT;
 	}
 	
@@ -779,7 +784,18 @@ export class AudioGraph extends AudioGraphBase {
         level: this.params.HT.level.value 
     });
     HT.note = "";
+    HT.padNote = "F2";
     return HT;
+	}
+	
+	createRS() {
+		let RS = new TR909Rimshot();
+    RS.tune = this.params.RS.tune.value;
+    RS.decay = this.params.RS.decay.value;
+    RS.note = "";
+    RS.padNote = "F#2";
+    RS.duration = "";
+    return RS;
 	}
 	
 	createCH() {
@@ -799,6 +815,7 @@ export class AudioGraph extends AudioGraphBase {
       
     });
     CH.note = "G3";
+    CH.padNote = "G2";
 		CH.duration = "";
 		return CH;
 	}
@@ -818,24 +835,18 @@ export class AudioGraph extends AudioGraphBase {
   		octaves: 0.832
     });
     OH.note = "G3";
+    OH.padNote = "G#2";
     OH.duration = "2n";
     return OH;
 	}
 	
-	createRS() {
-		let RS = new TR909Rimshot();
-    RS.tune = this.params.RS.tune.value;
-    RS.decay = this.params.RS.decay.value;
-    RS.note = "";
-    RS.duration = "";
-    return RS;
-	}
 	
 	createRC() {
 		let RC = new TR909Ride();
     RC.tune = this.params.RC.tune.value;
     RC.decay = this.params.RC.decay.value;
     RC.note = "";
+    RC.padNote = "A2";
     RC.duration = "";
     return RC;
 	}
