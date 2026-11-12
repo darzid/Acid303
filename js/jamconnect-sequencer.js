@@ -139,7 +139,12 @@ class SequencerBase {
       
       Object.keys(preset.parameters).forEach(deviceName => {
 				Object.keys(preset.parameters[deviceName]).forEach(parameterName => {
-					this.onParameterChangeRequest(deviceName, parameterName, preset.parameters[deviceName][parameterName]);
+				  try {
+				    this.onParameterChangeRequest(deviceName, parameterName, preset.parameters[deviceName][parameterName]);
+				  }
+					catch (err) {
+					  console.error("Error processing preset parameter " + deviceName + "." + parameterName)
+					}
 				});
 			});
       this.instrumentPatterns = preset.patterns;

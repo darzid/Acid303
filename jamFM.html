@@ -94,10 +94,6 @@
           <span id="swing-val" class="font-mono text-xs font-bold text-slate-900">0%</span>
         </div>
         
-        <div id="delay" class="flex items-center gap-1">
-          <label class="text-xs font-bold text-slate-800">DELAY:</label>
-          <input type="checkbox" id="delay.enabled" checked class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
-        </div>
       </div>
     </div>
     
@@ -107,9 +103,16 @@
       <div class="tab-container">
         <div title="SOUND" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
           
-          <div id="fm-filterType" class="items-center gap-1 p-1 text-center">
-            <button id="lowpass" data-parameter="fm.filterType" data-value="sawtooth" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">LOWPASS</button>
-            <button id="highpass" data-parameter="fm.filterType" data-value="square" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">HIGHPASS</button>
+          <div id="filter-type" class="items-center gap-1 p-1 text-center">
+            <button data-parameter="filter.type" data-value="lowpass" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">LOWPASS</button>
+            <button data-parameter="filter.type" data-value="bandpass" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-900">BANDPASS</button>
+            <button data-parameter="filter.type" data-value="highpass" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">HIGHPASS</button>
+          </div>
+          
+          <div id="filter-rolloff" class="items-center gap-1 p-1 text-center">
+            <button id="rolloff12" data-parameter="filter.rolloff" data-value="-12" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">-12</button>
+            <button id="rolloff24" data-parameter="filter.rolloff" data-value="-24" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">-24</button>
+            <button id="rolloff48" data-parameter="filter.rolloff" data-value="-48" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">-48</button>
           </div>
           
           <div id="rotary-knobs" class="lg:col-span-8 grid grid-cols-3 sm:grid-cols-6 gap-2 items-center text-center">
