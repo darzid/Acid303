@@ -2,6 +2,16 @@ import { AudioGraphBase } from "./jamconnect-audiograph.js";
 
 const parameters = {
   delay: {
+    feedback: {
+			value: 0.5,
+			deviceParameter: "feedback.value",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+		},
     dryWet: {
 			value: 0.5,
 			deviceParameter: "wet.value",
@@ -93,12 +103,14 @@ const parameters = {
 		type: {
       value: "lowpass",
       deviceParameter: "type",
-      options: ["lowpass","bandpass","highpass"],
+      options: ["lowpass","highpass"],
+      optionNames: ["LP", "HP"]
     },
     rolloff: {
       value: -12,
       deviceParameter: "rolloff",
-      options: [-12,-24,-48],
+      options: [-12,-24],
+      optionNames: ["-12", "-24"]
     }
 	},
 	
@@ -145,7 +157,15 @@ const parameters = {
   },
     
   synth: {
-    modAmount: {
+    harmonicity: {
+      value: 1,
+      deviceParameter: "harmonicity.value",
+      range: {
+        min: 1,
+        max: 10
+      }
+    },
+    "mod-amount": {
       value: 0,
       deviceParameter: "modulationIndex.value",
       range: {
@@ -215,7 +235,7 @@ export class AudioGraph extends AudioGraphBase {
     
     this.devices.effects.delay = new Tone.PingPongDelay({
       delayTime: "8n.",
-      feedback: 0.3,
+      feedback: this.params.delay.feedback.value,
       wet: this.params.delay.dryWet.value
     });
     
@@ -232,7 +252,8 @@ export class AudioGraph extends AudioGraphBase {
     });
     
     this.devices.instruments.synth = new Tone.FMSynth({
-      modulationIndex: this.params.synth.modAmount.value,
+      harmonicity: 1.5,
+      modulationIndex: this.params.synth["mod-amount"].value,
       modulationEnvelope: {
         attack: this.params.modEnv.attack.value,
         decay: this.params.modEnv.decay.value,
@@ -251,7 +272,7 @@ export class AudioGraph extends AudioGraphBase {
     this.devices.modules.adsr = this.devices.instruments.synth.envelope;
 
     // Chain 303 Audio Routing
-    this.devices.instruments.synth.chain(this.devices.effects.filter, this.devices.effects.reverb, this.devices.effects.distortion, this.devices.effects.delay, this.groupBus);
+    this.devices.instruments.synth.chain(this.devices.effects.filter, this.devices.effects.distortion, this.devices.effects.delay, this.devices.effects.reverb, this.groupBus);
   }
   
   playNote(note, velocity, slide, duration, time) 

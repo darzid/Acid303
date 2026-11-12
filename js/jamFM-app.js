@@ -12,27 +12,55 @@ export class App extends JamConnectApp {
   }
   
   createParameterKnob(parameterId, parameterControlMapping) {
-    //console.log("jam303App.createParameterKnob")
+    //console.log("jam909App.createParameterKnob")
     let parts = parameterId.split(".");
     let deviceName = parts[0];
     let parameterName = parts[1];
-    let deviceKnobs = document.getElementById("rotary-knobs");
-    deviceKnobs.innerHTML += this.createKnobHtml(deviceName, parameterName);
+    let deviceKnobs = document.getElementById(deviceName + "-knobs");
+    let paramsContainer = deviceKnobs.querySelector(".params-container");
+    paramsContainer.innerHTML += this.createKnobHtml(deviceName, parameterName);
   }
   
   createKnobHtml(deviceName, parameterName) {
     let html = `
-      <div class="flex flex-col items-center">
-        <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-1">${parameterName.toUpperCase()}</span>
-        <div class="knob-container" id="${deviceName}.${parameterName}" data-value="0.4">
+      <div class="min-w-[80px] device-knob flex flex-col items-center">
+        <span class="non-mixer-element text-[11px] font-extrabold uppercase text-slate-700 mb-0.5">${parameterName.toUpperCase()}</span>
+        <div class="knob-container" id="${deviceName}.${parameterName}" data-value="1">
           <div class="knob-body"></div>
           <div class="knob-cap"></div>
           <div class="knob-indicator"></div>
         </div>
-        <span class="text-[10px] font-mono text-slate-600 mt-1" data-parameter="${deviceName}.${parameterName}" >400 Hz</span>
+        <span class="non-mixer-element text-[9px] font-mono text-slate-600 mt-0.5 mb-1.5" data-parameter="${deviceName}.${parameterName}">100</span>
       </div>`;
     return html;
   }
+  
+  createParameterSwitch(parameterId, parameterControlMapping) {
+    //console.log("jam909App.createParameterKnob")
+    let parts = parameterId.split(".");
+    let deviceName = parts[0];
+    let parameterName = parts[1];
+    let deviceKnobs = document.getElementById(deviceName + "-knobs");
+    deviceKnobs.innerHTML += this.createSwitchHtml(deviceName, parameterName, parameterControlMapping.options, parameterControlMapping.optionNames);
+  }
+  
+  createSwitchHtml(deviceName, parameterName, options, optionNames) {
+    let buttonsHtml = "";
+    
+    let index = 0;
+    options.forEach(option => {
+      let activeClass = (index == 0) ? "active-led " : "";
+      buttonsHtml += `<button data-parameter="${deviceName}.${parameterName}" data-value="${option}" class="${activeClass} min-w-[30px] px-0.5 py-1 text-[10px] font-bold rounded synth-btn text-slate-900 mr-1">${optionNames[index]}</button>`;
+      index++;
+    });
+    
+    let html = `<div class="min-w-[80px] device-knob device-switch flex flex-col items-center mb-1">
+        <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-0">${parameterName.toUpperCase()}</span>
+        <div id="${deviceName}.${parameterName}" class="items-center flex flex-row gap-0 p-0 text-center">${buttonsHtml}</div>
+      </div>`;
+    return html;
+  }
+
   
   jamConnectNotePlayed(appName, instrument, note, velocity, duration, time) {
   	if (Tone.Transport.state == 'started' && !this.sequencer.isSequenceEmpty)

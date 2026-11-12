@@ -12,9 +12,9 @@ const ASSETS = [
   './images/share.png',
   
   './js/flags.js',
-  './js/jam303-app.js',
-  './js/jam303-audiograph.js',
-  './js/jam303-sequencer.js',
+  './js/jamFM-app.js',
+  './js/jamFM-audiograph.js',
+  './js/jamFM-sequencer.js',
   './js/jamconnect-audiograph.js',
   './js/jamconnect-app.js',
   './js/jamconnect-sequencer.js',
@@ -27,8 +27,8 @@ const ASSETS = [
   './js/visualizer.js',
   './js/level-meter.js',
   
-  './jam303.html',
-  './jam303-manifest.json'
+  './jamFM.html',
+  './jamFM-manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
@@ -61,7 +61,7 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         return response;
       }).catch(() => {
-        return caches.match('./jam303.html');
+        return caches.match('./jamFM.html');
       });
     })
   );
