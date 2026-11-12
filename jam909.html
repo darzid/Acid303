@@ -32,23 +32,23 @@
 <body class="flex flex-col justify-between items-center bg-stone-950">
 
   <!-- Top Title Banner -->
-  <header id="header" class="w-full max-w-6xl flex flex-col sm:flex-row justify-between items-center mb-4">
+  <header id="header" class="w-full max-w-6xl flex flex-col sm:flex-row justify-between items-center mb-2">
     
-    <div id="led-display" class="grid grid-cols-1 lg:grid-cols-16 gap-6 mb-8">
+    <div id="led-display" class="grid grid-cols-1 lg:grid-cols-16 gap-2 mb-2">
       
       <!-- LED Display & Visualizer (4 cols) -->
-      <div class="w-full max-w-6xl lg:col-span-4 flex flex-col justify-between bg-stone-950 rounded-xl p-1 border-2 border-stone-900 led-display min-h-[160px]">
-        <div class="flex justify-between items-center border-b border-amber-950 pb-2">
+      <div class="w-full max-w-6xl lg:col-span-4 flex flex-col justify-between bg-stone-950 rounded-xl p-1 border-2 border-stone-900 led-display min-h-[120px]">
+        <div class="flex justify-between items-center border-b border-amber-950 pb-0">
           <div class="flex items-center gap-2">
             <div id="play-led" class="w-3 h-3 rounded-full bg-slate-800 border border-slate-700"></div>
             <span class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">SEQ STATUS</span>
             <span id="jam-badge" class="hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-700">LIVE JAM</span>
           </div>
-          <span id="display-tempo" class="led-text text-xl font-bold font-mono">124 BPM</span>
+          <span id="display-tempo" class="led-text text-xl font-bold font-mono">120 BPM</span>
         </div>
 
         <!-- Oscilloscope / Visualizer Canvas -->
-        <div class="relative w-full h-16 my-2 bg-stone-950 rounded overflow-hidden flex items-center justify-center">
+        <div class="relative w-full h-12 my-2 bg-stone-950 rounded overflow-hidden flex items-center justify-center">
           <canvas id="visualizer-canvas" class="w-full h-full block"></canvas>
           <div id="vis-placeholder" class="absolute inset-0 flex items-center justify-center text-xs text-amber-900 font-mono pointer-events-none">
             [AUDIO ENGINE INACTIVE]
@@ -80,13 +80,13 @@
       <div>
         <div id="tempo" class="flex items-center gap-1">
           <label class="text-xs font-bold text-slate-800">TEMPO:</label>
-          <input type="range" id="tempo-slider" min="60" max="180" value="124" class="w-24 accent-slate-800 cursor-pointer">
-          <input type="number" id="tempo-val" readonly="true" class="font-mono text-xs font-bold text-slate-900" min="60" max="180" value="124">
+          <input type="range" id="tempo-slider" min="60" max="180" value="120" class="w-30 h-4 accent-slate-800 cursor-pointer mt-2 mb-2">
+          <input type="number" id="tempo-val" readonly="true" class="font-mono text-xs font-bold text-slate-900" min="60" max="180" value="120">
         </div>
         
         <div id="swing" class="flex items-center gap-1">
           <label class="text-xs font-bold text-slate-800">SWING:</label>
-          <input type="range" id="swing-slider" min="0" max="50" value="0" class="w-24 accent-slate-800 cursor-pointer">
+          <input type="range" id="swing-slider" min="0" max="50" value="0" class="w-30 accent-slate-800 cursor-pointer mt-2 mb-2">
           <span id="swing-val" class="font-mono text-xs font-bold text-slate-900">0%</span>
         </div>
       </div>
@@ -134,57 +134,56 @@
         </div>
 
         <div title="SOUND" class="tab bg-stone-400/60 rounded-xl p-2 border border-stone-700/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
+          <label for="mixer-toggle"><input id="mixer-toggle" type="checkbox"> Minimize</label>
           
-          <div id="rotary-knobs" class="lg:col-span-8 grid grid-cols-3 sm:grid-cols-6 gap-2 items-start text-center">
-            <div id="BD-knobs" class="device-knobs flex flex-col items-center bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-              <button data-pad-inst="BD" data-pad-note="C2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-red-400">KICK</button>
+         <!-- <div id="rotary-knobs" class="lg:col2-span-8 grid grid-cols-3 sm:grid-cols-3 gap-2 items-start text-center flex-wrap">-->
+          <div id="rotary-knobs" class="gap-3 items-start text-center" style="display: grid">
+            <div id="BD-knobs" class="expanded device-knobs flex flex-col items-center bg-slate-300/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="BD" data-pad-note="C2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-red-400">KICK</button>
             </div>
 
-            <div id="SD-knobs" class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-              <button data-pad-inst="SD" data-pad-note="C#2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-rose-300">SNARE</button>
+            <div id="SD-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="SD" data-pad-note="C#2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-rose-300">SNARE</button>
             </div>
             
-            <div id="CP-knobs" class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-              <button data-pad-inst="CP" data-pad-note="D2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-fuchsia-300">CLAP</button>
+            <div id="CP-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="CP" data-pad-note="D2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-fuchsia-300">CLAP</button>
             </div>
           
-
-            <div id="LT-knobs" class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-              <button data-pad-inst="LT" data-pad-note="D#2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-amber-100">LOW TOM</button>
+            <div id="LT-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="LT" data-pad-note="D#2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-amber-100">LOW TOM</button>
             </div>
             
-            <div id="MT-knobs" class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-              <button data-pad-inst="MT" data-pad-note="E2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-amber-200">MID TOM</button>
+            <div id="MT-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="MT" data-pad-note="E2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-amber-200">MID TOM</button>
             </div>
             
-            <div id="HT-knobs" class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-              <button data-pad-inst="HT" data-pad-note="F2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-amber-300">HIGH TOM</button>
+            <div id="HT-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="HT" data-pad-note="F2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-amber-300">HIGH TOM</button>
             </div>
             
-            <div id="RS-knobs" class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-              <button data-pad-inst="RS" data-pad-note="F#2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-amber-400">RIMSHOT</button>
+            <div id="RS-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="RS" data-pad-note="F#2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-amber-400">RIMSHOT</button>
             </div>
             
-            <div id="CH-knobs" class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-              <button data-pad-inst="CH" data-pad-note="G2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-sky-300">CLOSED HAT</button>
+            <div id="CH-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="CH" data-pad-note="G2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-sky-300">CLOSED HAT</button>
             </div>
             
-            <div id="OH-knobs" class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-              <button data-pad-inst="OH" data-pad-note="G#2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-cyan-300">OPEN HAT</button>
+            <div id="OH-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="OH" data-pad-note="G#2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-cyan-300">OPEN HAT</button>
             </div>
             
-            <div id="RC-knobs" class="device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-              <button data-pad-inst="RC" data-pad-note="A2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-blue-300">RIDE</button>
+            <div id="RC-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-300/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner">
+              <button data-pad-inst="RC" data-pad-note="A2" class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-blue-300">RIDE</button>
             </div>
             
-            <div id="effect-knobs">
-              <div id="reverb-knobs" class="effect-knobs flex flex-col items-flex-start bg-slate-400/60 rounded-xl p-2 border border-slate-400/80 shadow-inner mb-2">
-                <div class="device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-green-300">REVERB</div>
-              </div>
+            <div id="reverb-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-400/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner effect-knobs">
+          		<button class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-green-300">REVERB</button>
+            </div>
             
-              <div id="distortion-knobs" class="effect-knobs flex flex-col items-flex-start bg-slate-400/60 rounded-xl p-2 border border-slate-400/80 shadow-inner">
-                <div class="device-knobs-title rounded-lg bg-slate-800 text-[12px] font-extrabold uppercase mb-1 text-green-300">DRIVE</div>
-              </div>
+            <div id="distortion-knobs" class="expanded device-knobs flex flex-col items-flex-start bg-slate-400/60 rounded-xl p-1.5 border border-slate-400/80 shadow-inner effect-knobs">
+              <button class="jam-pad device-knobs-title rounded-lg bg-slate-800 text-[11px] font-extrabold uppercase mb-1 text-green-300">DRIVE</button>
             </div>
           </div>
           

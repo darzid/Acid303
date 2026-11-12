@@ -50,8 +50,6 @@ export class App extends JamConnectApp {
     // Initialize Lucide Icons
     lucide.createIcons();
     
-    TabControl.render();
-    
     // Receive single-step or full-pattern updates from peers
     this.jcClient.connector.onPatternUpdated = (appName, instrumentName, newPattern, stepIndex, stepData, presetName) => {
       this.jcClient.isApplyingRemoteUpdate = true;
@@ -60,11 +58,11 @@ export class App extends JamConnectApp {
           this.sequencer.instrumentPatterns[instrumentName] = JSON.parse(JSON.stringify(newPattern));
           if (this.sequencer.selectedInstrumentName == instrumentName) {
             if (presetName && this.sequencer.patternSelect) this.sequencer.patternSelect.value = presetName;
-            this.sequencer.updateSequencerUI();
+            this.sequencer.refresh();
           }
         } else if (typeof stepIndex === 'number' && stepData) {
           if (this.sequencer.selectedInstrumentName == instrumentName) {
-            this.sequencer.updateSingleStepUI(stepIndex, stepData);
+            this.sequencer.refreshStep(stepIndex, stepData);
           }
         }
       } finally {

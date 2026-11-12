@@ -12,6 +12,10 @@ class SequencerBase {
     this.ledElements = [];
     this.prevStepIdx = -1;
     
+    this.onBpmChangeRequest = null;
+    this.onSwingChangeRequest = null;
+    this.onParameterChangeRequest = null;
+    
     this.selectedInstrumentName = Object.keys(this.audioGraph.devices.instruments)[0];
     
     this.clearPreset(false);
@@ -21,6 +25,7 @@ class SequencerBase {
     if (defaultPresets) {
       Object.keys(defaultPresets).forEach(presetName => {
         this.presets[presetName] = defaultPresets[presetName];
+        this.convertPresetIfNeeded(this.presets, presetName);
       });
     }
     var userPresets = this.loadUserPresets();
@@ -98,6 +103,14 @@ class SequencerBase {
 	get isSingleInstrument() { return this.instrumentCount == 1; }
 	get selectedInstrumentPattern() { return this.instrumentPatterns[this.selectedInstrumentName]; }
 	
+	get bpm() { return parseInt(Tone.Transport.bpm.value); }
+	set bpm(value) { this.onBpmChangeRequest(value); }
+	
+	get swing() { return Tone.Transport.swing * 100; }
+	set swing(value) { this.onSwingChangeRequest(value); }
+	
+	get parameters() { return this.audioGraph.getParameterValues(); }
+
 	isSequenceEmpty() {
 		Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
 			let instrumentPattern = this.instrumentPatterns[instrumentName];
@@ -119,7 +132,18 @@ class SequencerBase {
 	
 	presetSelected(presetName) {
 	  if (this.presets[presetName]) {
-      this.instrumentPatterns = JSON.parse(JSON.stringify(this.presets[presetName]));
+	  	let preset = JSON.parse(JSON.stringify(this.presets[presetName]));
+      
+      console.log("Preset selected: " + preset);
+      this.swing = preset.swing;
+      this.bpm = preset.bpm;
+      
+      Object.keys(preset.parameters).forEach(deviceName => {
+				Object.keys(preset.parameters[deviceName]).forEach(parameterName => {
+					this.onParameterChangeRequest(deviceName, parameterName, preset.parameters[deviceName][parameterName]);
+				});
+			});
+      this.instrumentPatterns = preset.patterns;
       Object.keys(this.audioGraph.devices.instruments).forEach(instrumentName => {
         if (!this.instrumentPatterns[instrumentName]) {
           //console.log("fill empty pattern")
@@ -275,7 +299,7 @@ class SequencerBase {
       else {
         let stepButton = document.createElement('button');
         stepButton.id = `btn-${controlName}-${stepIndex}`;
-        this.updateStepButton(step, controlName, stepButton);
+        this.refreshStepButton(step, controlName, stepButton);
         controlContainer.appendChild(stepButton);
         
         stepButton.addEventListener("click", () => 
@@ -288,27 +312,21 @@ class SequencerBase {
   stepButtonClicked(stepIndex, controlName, stepButton) {
     let step = this.selectedInstrumentPattern[stepIndex];
     step[controlName] = !step[controlName];
-    this.updateStepButton(step, controlName, stepButton);
+    this.refreshStepButton(step, controlName, stepButton);
               
     if (!this.jcClient.isApplyingRemoteUpdate) {
       this.jcClient.connector.sendPatternStepUpdate(this.selectedInstrumentName, stepIndex, this.selectedInstrumentPattern[stepIndex]);
     }
   }
   
-  updateSingleStepUI(stepIndex, stepData) {
-    this.instrumentPatterns[this.selectedInstrumentName][stepIndex] = { ...this.selectedInstrumentPattern[stepIndex], ...stepData };
-    const step = this.selectedInstrumentPattern[stepIndex];
-    this.updateSequencerStepUI(stepIndex, step);
-  }
-  
-  updateSequencerUI() {
+  refresh() {
     for (let stepIndex = 0; stepIndex < 16; stepIndex++) {
       const step = this.selectedInstrumentPattern[stepIndex];
-      this.updateSequencerStepUI(stepIndex, step);
+      this.refreshStep(stepIndex, step);
     }
   }
-  
-  updateSequencerStepUI(stepIndex, step) {
+ 
+  refreshStep(stepIndex, step) {
     Object.keys(this.stepControls).forEach(controlName => {
       const stepControl = this.stepControls[controlName];
       
@@ -319,19 +337,19 @@ class SequencerBase {
       }
       else {
         const stepButton = document.getElementById(`btn-${controlName}-${stepIndex}`);
-        this.updateStepButton(step, controlName, stepButton);
+        this.refreshStepButton(step, controlName, stepButton);
       }
     });
   }
   
-  updateStepButton(step, buttonName, stepButton) {
+  refreshStepButton(step, buttonName, stepButton) {
     stepButton.className = this.getStepButtonClass(buttonName, step[buttonName]);
     stepButton.textContent = this.getStepButtonText(buttonName, step[buttonName]);
   }
   
   patternChanged(instrumentName, pattern, presetOrAction) {
     if (this.selectedInstrumentName == instrumentName) {
-      this.updateSequencerUI();
+      this.refresh();
     }
       
     if (!this.jcClient.isApplyingRemoteUpdate) {
@@ -347,7 +365,16 @@ class SequencerBase {
       
     let userPresets = this.loadUserPresets();
     let isExisting = userPresets[presetName] != null;
-    userPresets[presetName] = this.instrumentPatterns;
+    
+    let preset = { 
+    	name: presetName,
+    	bpm: this.bpm,
+    	swing: this.swing,
+    	patterns: this.instrumentPatterns,
+    	parameters: this.audioGraph.getParameterValues()
+    };
+    
+    userPresets[presetName] = preset;
     this.saveUserPresets(userPresets);
     if (!isExisting) {
       this.presetSelect.innerHTML += `<option selected value="${presetName}">${presetName}</option>`
@@ -358,18 +385,56 @@ class SequencerBase {
   loadUserPresets() {
     let presetJson = localStorage.getItem(this.jcClient.connector.appName + "UserPresets");
     if (!presetJson) return {};
-    let userPresets = JSON.parse(presetJson)
-    if (!userPresets) userPresets = {};
+    let userPresets = JSON.parse(presetJson);
+    if (!userPresets) 
+    	userPresets = {};
+    else {
+    	let presetsConverted = false;
+    	Object.keys(userPresets).forEach(presetName => {
+    		if (this.convertPresetIfNeeded(userPresets, presetName))
+    			presetsConverted = true;
+    	});
+    	if (presetsConverted) {
+    		this.saveUserPresets(userPresets);
+    	}
+    }
     return userPresets;
   }
-    
+  
+  convertPresetIfNeeded(userPresets, presetName) {
+  	let presetConverted = false;
+  	if (!userPresets[presetName].name) {
+    	presetConverted = true;
+    	// Old preset, convert to new format
+    	let presetPatterns = userPresets[presetName];
+    	let convertedPreset = {
+    		name: presetName,
+    		bpm: this.bpm,
+    		swing: this.swing,
+    		patterns: presetPatterns,
+    		parameters: this.audioGraph.getParameterValues()
+    	};
+    	console.log("Converted preset " + presetName + " to new format", convertedPreset);
+    	userPresets[presetName] = convertedPreset;
+    }
+    return presetConverted;
+  }
+  
   saveUserPresets(userPresets) {
     localStorage.setItem(this.jcClient.connector.appName + "UserPresets", JSON.stringify(userPresets));
   }
   
   exportPreset() {
-    const presetJson = JSON.stringify(this.instrumentPatterns);
     let presetName = this.presetSelect.value ? this.jcClient.connector.appName + "-" + this.presetSelect.value : this.jcClient.connector.appName + "-" + "Preset";
+    
+    let preset = {
+    		name: presetName,
+    		bpm: this.bpm,
+    		swing: this.swing,
+    		patterns: this.instrumentPatterns,
+    		parameters: this.audioGraph.getParameterValues()
+    	};
+    const presetJson = JSON.stringify(preset);
     
     if (window.navigator.userAgent.toString().startsWith("Mozilla/5.0 (Linux; Android 16; SM-A556B")) {
       console.log("Preset download", presetJson);
@@ -397,6 +462,7 @@ class SequencerBase {
         let userPresets = this.loadUserPresets();
         let isExisting = userPresets[presetName] != null;
         userPresets[presetName] = preset;
+        this.convertPresetIfNeeded(userPresets, presetName);
         this.saveUserPresets(userPresets);
         this.presets[presetName] = preset;
         if (!isExisting) {

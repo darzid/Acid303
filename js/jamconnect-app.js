@@ -15,9 +15,10 @@ export class JamConnectApp {
     this.appName = appName;
     this.audioGraph = audioGraph;
     this.audioGraph.onAudioInitialized = () => this.onAudioInitialized();
+    
     this.audioGraph.toDestination();
     
-    this.sequencer = null;
+    this._sequencer = null;
     
     this.themeColorName = themeColorName;
     this.displayTempo = document.getElementById('display-tempo');
@@ -44,6 +45,8 @@ export class JamConnectApp {
     this.midiSelect = document.getElementById('midi-input-select');
     this.midiDot = document.getElementById('midi-dot');
     
+    this.tabControl = new TabControl();
+    
     this.activeMidiInput = null;
     this.visualizer = new Visualizer(this.audioGraph.output, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
     this.vuMeter = new LevelMeter(this.audioGraph, "levelmeter-canvas");
@@ -59,6 +62,14 @@ export class JamConnectApp {
     this.prevState = null;
     
     this.createParameterControls();
+  }
+  
+  get sequencer() { return this._sequencer; }
+  set sequencer(value) {
+  	this._sequencer = value;
+  	this._sequencer.onBpmChangeRequest = (bpm) => this.updateBpm(bpm);
+    this._sequencer.onSwingChangeRequest = (swing) => this.updateSwing(swing);
+    this._sequencer.onParameterChangeRequest = (deviceName, parameterName, parameterValue) => this.onParameterChangeRequest(deviceName, parameterName, parameterValue);
   }
   
   registerServiceWorker(path) {
@@ -167,9 +178,22 @@ export class JamConnectApp {
     this.parameterControls.toggles[parameterId] = new Toggle(parameterId, onParamToggleChange, defaultValue);
   }
   
+  onParameterChangeRequest(deviceName, parameterName, parameterValue) {
+  	let parameterId = `${deviceName}.${parameterName}`;
+  	console.log("onParameterChangeRequest " + parameterId)
+  	if (this.parameterControls.knobs[parameterId])
+  		this.parameterControls.knobs[parameterId].value = parameterValue;
+  	else if (this.parameterControls.switches[parameterId])
+  		this.parameterControls.switches[parameterId].value = parameterValue;
+  	else if (this.parameterControls.toggles[parameterId])
+  		this.parameterControls.toggles[parameterId].value = parameterValue;
+  	else {
+  		throw "Cannot find parameter control " + parameterId;
+  	}
+  }
+  
   onParameterChange(parameterId, parameterControlMapping, parameterValue, parameterDisplayValue = null) {
     this.audioGraph.updateParameterValue(parameterId, parameterValue);
-    
     
     if (!this.jcClient.isApplyingRemoteUpdate) {
       this.jcClient.connector.sendDeviceParameterChange(parameterId, parameterValue, parameterValue);
@@ -233,7 +257,7 @@ export class JamConnectApp {
   applyPatternUpdateFromJamConnectSnapshot(appName, snapshotPattern) {
     if (Array.isArray(snapshotPattern) && snapshotPattern.length === 16) {
       this.sequencer.instrumentPatterns = JSON.parse(JSON.stringify(snapshotPattern));
-      this.sequencer.updateSequencerUI();
+      this.sequencer.refresh();
     }
   }
   
@@ -269,14 +293,14 @@ export class JamConnectApp {
     console.log("applyJamConnectPatternUpdate " + instrumentName, pattern, presetName);
     this.sequencer.instrumentPatterns[instrumentName] = JSON.parse(JSON.stringify(pattern));
     if (this.sequencer.selectedInstrumentName == instrumentName)
-      this.sequencer.updateSequencerUI(); 
+      this.sequencer.refresh(); 
   }
   
   applyJamConnectPatternStepUpdate(appName, instrumentName, stepIndex, stepData) {
     console.log("applyJamConnectPatternStepUpdate " + instrumentName, stepIndex, stepData);
     this.sequencer.instrumentPatterns[instrumentName][stepIndex] = stepData;
     if (this.sequencer.selectedInstrumentName == instrumentName)
-      this.sequencer.updateSequencerUI(); 
+      this.sequencer.refresh(); 
   }
   
   // Method to be implemented by each specific JamConnect app,
@@ -320,7 +344,6 @@ export class JamConnectApp {
   //// ------------------------
   updateBpm(bpm) {
     if (bpm == Tone.Transport.bpm.value) return;
-    
     this.tempoSlider.value = bpm;
     this.tempoVal.value = bpm;
     this.displayTempo.textContent = `${bpm} BPM`;
@@ -331,10 +354,10 @@ export class JamConnectApp {
   }
   
   updateSwing(swingPercentage) {
+  	this.swingSlider.value = swingPercentage;
+    this.swingVal.textContent = `${swingPercentage}%`;
     Tone.Transport.swing = swingPercentage / 100;
     Tone.Transport.swingSubdivision = "16n";
-    this.swingSlider.value = swingPercentage;
-    this.swingVal.textContent = `${swingPercentage}%`;
     
     if (!this.jcClient.isApplyingRemoteUpdate)
       this.jcClient.connector.sendMasterSettingUpdate('swing', swingPercentage);
@@ -357,7 +380,6 @@ export class JamConnectApp {
       this.displayStep.classList.remove("highlight");
     }
   }
-  
   
   onStateChanged(state) {
     if (this.prevState && JSON.stringify(this.prevState) == JSON.stringify(state)) {
@@ -394,6 +416,11 @@ export class JamConnectApp {
 		if (this.placeholder) this.placeholder.style.display = 'none';
     this.visualizer.isActive = true;
     this.vuMeter.isActive = true;
+	}
+	
+	
+	onSwingChanged(swing) {
+		
 	}
 	
   //// ------------------------
@@ -479,6 +506,7 @@ export class JamConnectApp {
   //// ------------------------
 	async run() {
 	  this.setupParameterControls();
+	  this.tabControl.render();
 	  
 	  await this.initWebMidi();
 	  
@@ -509,8 +537,7 @@ export class JamConnectApp {
     });
     
     this.tempoSlider.addEventListener('input', (e) => {
-      this.jcClient.bpm = parseInt(e.target.value, 10);
-      this.tempoVal.value = e.target.value;
+    	this.updateBpm(e.target.value);
     });
     
     this.tempoVal.addEventListener('dblclick', (e) => {
@@ -520,8 +547,7 @@ export class JamConnectApp {
       this.tempoVal.readOnly = true;
     });
     this.tempoVal.addEventListener('input', (e) => {
-      this.jcClient.bpm = parseInt(e.target.value, 10);
-      this.tempoSlider.value = e.target.value;
+      this.updateBpm(e.target.value);
     });
   
     this.swingSlider.addEventListener('input', (e) => {

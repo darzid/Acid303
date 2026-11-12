@@ -198,8 +198,8 @@ class Jam303Sequencer extends SequencerBase {
     this.patternSelect.value = "";
   }
   
-  updateSingleStepUI(stepIndex, stepData) {
-    super.updateSingleStepUI(stepIndex, stepData);
+  refreshStep(stepIndex, stepData) {
+    super.refreshStep(stepIndex, stepData);
     this.updateToggleButtons();
   }
   
@@ -289,7 +289,7 @@ class Jam303Sequencer extends SequencerBase {
       this.currentStep.gate = true;
       this.currentStep.accent = this.accentStepToggleBtn.classList.contains("active");
       this.currentStep.slide = this.slideStepToggleBtn.classList.contains("active");
-      this.updateSequencerStepUI(this.currentEditStepIndex, this.currentStep);
+      this.refreshStep(this.currentEditStepIndex, this.currentStep);
       this.nextStep();
     }
   }
@@ -297,6 +297,7 @@ class Jam303Sequencer extends SequencerBase {
   restStep() {
     if (this.isStepRecording) {
       this.currentStep.gate = false;
+      this.refreshStep(this.currentEditStepIndex, this.currentStep);
       this.nextStep();
     }
   }
@@ -304,13 +305,13 @@ class Jam303Sequencer extends SequencerBase {
   toggleStepAccent() {
   	this.accentStepToggleBtn.classList.toggle("active");
     this.currentStep.accent = this.accentStepToggleBtn.classList.contains("active");
-    this.updateSingleStepUI(this.currentEditStepIndex, this.currentStep);
+    this.refreshStep(this.currentEditStepIndex, this.currentStep);
   }
   
   toggleStepSlide() {
   	this.slideStepToggleBtn.classList.toggle("active");
     this.currentStep.slide = this.slideStepToggleBtn.classList.contains("active");
-    this.updateSingleStepUI(this.currentEditStepIndex, this.currentStep);
+    this.refreshStep(this.currentEditStepIndex, this.currentStep);
   }
   
   toggleStepOctaveUp() {
@@ -332,7 +333,7 @@ class Jam303Sequencer extends SequencerBase {
   	}
   	
     this.currentStep.octave = this.currentOctave;
-    this.updateSingleStepUI(this.currentEditStepIndex, this.currentStep);
+    this.refreshStep(this.currentEditStepIndex, this.currentStep);
   }
   
   toggleStepOctaveDown() {
@@ -354,6 +355,6 @@ class Jam303Sequencer extends SequencerBase {
   	}
   	
     this.currentStep.octave = this.currentOctave;
-    this.updateSingleStepUI(this.currentEditStepIndex, this.currentStep);
+    this.refreshStep(this.currentEditStepIndex, this.currentStep);
   }
 }
