@@ -37,6 +37,7 @@ jobs:
           cp index.html manifest.json app.js service-worker.js _site
           cp jam303.html jam303-manifest.json jam303-service-worker.js _site
           cp jam909.html jam909-manifest.json jam909-service-worker.js _site
+          cp jamFM.html jamFM-manifest.json jamFM-service-worker.js _site
           
           mkdir -p _site/css
           cp ./css/*.css _site/css
