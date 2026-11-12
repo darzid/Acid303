@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <title>JAMFM Synthesizer & Sequencer</title>
+  
+  <link rel="manifest" href="./jam303-manifest.json">
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/jam303.css">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+  <script src="js/knob.js"></script>
+  <script src="js/switch.js"></script>
+  <script src="js/toggle.js"></script>
+  <script src="js/jamconnect-sequencer.js"></script>
+  <script src="js/jamFM-sequencer.js"></script>
+  <script src="js/tabcontrol.js"></script>
+  <script src="js/visualizer.js"></script>
+  <script src="js/level-meter.js"></script>
+</head>
+
+<body class="flex flex-col justify-between items-center bg-slate-950">
+
+  <!-- Top Title Banner -->
+  <header id="header" class="w-full max-w-6xl flex flex-col sm:flex-row justify-between items-center mb-2">
+    
+    <div id="led-display" class="grid grid-cols-1 lg:grid-cols-16 gap-2 mb-2">
+      
+      <!-- LED Display & Visualizer (4 cols) -->
+      <div class="lg:col-span-4 flex flex-col justify-between bg-slate-950 rounded-xl p-1 border-2 border-slate-700 led-display min-h-[120px]">
+        
+        <div class="flex justify-between items-center border-b border-emerald-950 pb-0">
+          <div class="flex items-center gap-2">
+            <div id="play-led" class="w-3 h-3 rounded-full bg-slate-800 border border-slate-700"></div>
+            <span class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">SEQ STATUS</span>
+            <span id="jam-badge" class="hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-700">LIVE JAM</span>
+          </div>
+
+          <span id="display-tempo" class="led-text text-xl font-bold font-mono">124 BPM</span>
+        </div>
+
+        <!-- Oscilloscope / Visualizer Canvas -->
+        <div class="relative w-full h-12 my-2 bg-slate-950 rounded overflow-hidden flex items-center justify-center">
+          <canvas id="visualizer-canvas" class="w-full h-full block"></canvas>
+          <div id="vis-placeholder" class="absolute inset-0 flex items-center justify-center text-xs text-emerald-900 font-mono pointer-events-none">
+            [AUDIO ENGINE INACTIVE]
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center text-[10px] text-emerald-600 font-mono">
+          <div>
+            <canvas id="levelmeter-canvas" style="width: 25vw; height: 12px;">
+            </canvas>
+          </div>
+          <span id="display-step">STEP: 01/16</span>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Main Synthesizer Box -->
+  <main class="redbox w-full max-w-6xl brushed-metal rounded-2xl p-2 sm:p-8 border-2 border-slate-400 text-slate-900 shadow-2xl relative my-auto">
+    <div id="transport-bar" class="flex flex-wrap items-center justify-between gap-1 bg-slate-400/40 p-1 rounded-xl border border-slate-400/80 mb-2">
+      
+      <button id="play-btn" class="px-5 py-2.5 synth-btn text-emerald-800 font-black rounded-lg text-sm flex items-center gap-2 hover:bg-white tracking-wide">
+        <i data-lucide="play" class="w-4 h-4 fill-emerald-700"></i> PLAY
+      </button>
+        
+      <button id="stop-btn" class="px-5 py-2.5 synth-btn text-rose-800 font-bold rounded-lg text-sm flex items-center gap-2 hover:bg-white">
+        <i data-lucide="square" class="w-4 h-4 fill-rose-700"></i> STOP
+      </button>
+      
+      <div>
+        <div id="tempo" class="flex items-center gap-1">
+          <label class="text-xs font-bold text-slate-800">TEMPO:</label>
+          <input type="range" id="tempo-slider" min="60" max="180" value="124" class="w-24 accent-slate-800 cursor-pointer">
+          <input type="number" id="tempo-val" readonly="true" class="font-mono text-xs font-bold text-slate-900" min="60" max="180" value="124">
+        </div>
+        
+        <div id="swing" class="flex items-center gap-1">
+          <label class="text-xs font-bold text-slate-800">SWING:</label>
+          <input type="range" id="swing-slider" min="0" max="50" value="0" class="w-24 accent-slate-800 cursor-pointer">
+          <span id="swing-val" class="font-mono text-xs font-bold text-slate-900">0%</span>
+        </div>
+        
+        <div id="delay" class="flex items-center gap-1">
+          <label class="text-xs font-bold text-slate-800">DELAY:</label>
+          <input type="checkbox" id="delay.enabled" checked class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
+        </div>
+      </div>
+    </div>
+    
+    <div id="tab-control">
+      <div class="tab-strip flex items-center gap-1 p-1"></div>
+      
+      <div class="tab-container">
+        <div title="SOUND" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-2 mb-2 items-center">
+          
+          <div id="fm-filterType" class="items-center gap-1 p-1 text-center">
+            <button id="lowpass" data-parameter="fm.filterType" data-value="sawtooth" class="px-2 py-1 text-xs font-bold rounded synth-btn active-led text-slate-900">LOWPASS</button>
+            <button id="highpass" data-parameter="fm.filterType" data-value="square" class="px-2 py-1 text-xs font-bold rounded synth-btn text-slate-700">HIGHPASS</button>
+          </div>
+          
+          <div id="rotary-knobs" class="lg:col-span-8 grid grid-cols-3 sm:grid-cols-6 gap-2 items-center text-center">
+          </div>
+          
+          <div id="sound-hints" class="mt-4 flex flex-wrap justify-between items-center text-[11px] text-slate-600 font-semibold gap-2 text-center">Drag knobs vertically to adjust parameter (synced live in Jam Sessions)</div>
+        </div>
+
+        <div title="SEQUENCER" class="tab bg-slate-300/60 rounded-xl p-2 border border-slate-400/80 shadow-inner grid grid-cols-1 lg:grid-cols-12 gap-6 mb-1">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-4">
+      
+            <div id="preset-selector" class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <div class="flex flex-col">
+                <label class="text-[10px] font-bold text-slate-600 uppercase">Preset Patterns</label>
+                <select id="preset-select" class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-1.5 rounded border border-slate-700 outline-none cursor-pointer focus:border-emerald-500"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-slate-500/40 pb-2">
+            <div id="save-preset-dialog" class="preset-dialog flex-wrap rounded">
+              Name:
+              <input id="preset-name-input">
+              <div class="save-preset-dialog-buttons">
+                <button id="save-preset-ok-btn" title="OK" class="dialog-btn px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-700"></i>
+                </button>
+                <button id="save-preset-cancel-btn" title="OK" class="dialog-btn px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                  <i data-lucide="X" class="w-4 h-4 text-rose-700"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div id="load-preset-dialog" class="preset-dialog flex-wrap rounded">
+              <input id="preset-file-input" type="file" accept=".json">
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <button id="randomize-pattern-btn" title="Randomize Sequence" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="dices" class="w-4 h-4"></i>
+              </button>
+              <button id="clear-pattern-btn" title="Clear Preset" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="square-x" class="w-4 h-4"></i>
+              </button>
+              <button id="save-preset-btn" title="Save Preset" class="self-end px-2 py-2 synth-btn rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="save" class="w-4 h-4"></i>
+              </button>
+              <button id="export-preset-btn" title="Export Preset" class="self-end px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="download" class="w-4 h-4"></i>
+              </button>
+              <button id="import-preset-btn" title="Import Preset" class="self-end px-2 py-2 synth-btn synth-btn-light rounded font-bold text-xs flex items-center gap-1 text-slate-800 hover:bg-slate-100">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+              </button>
+            </div>
+            
+          </div>
+       
+          <div id="sequencer-grid" class="bg-slate-900 p-2 sm:p-5 rounded-xl border-2 border-slate-800 shadow-2xl overflow-x-auto mb-1">
+            <div class="min-w-[700px]">
+              <!-- Step Indicators (LEDs) -->
+              <div id="grid" class="flex-rows gap-1 mb-1 text-center" style="display: flex; flex-direction: row">
+              </div>
+            </div>
+          </div>
+      
+          <div>
+            <div class="flex mb-1">
+            	<button id="rec-step-btn" class="px-2 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 mr-1">
+            		<i data-lucide="circle" class="w-4 h-4 fill-rose-800"></i>
+            	</button>
+            	<button id="prev-step-btn" class="px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 mr-1">PREV</button>
+            	<span>Step: <span id="piano-step">1</span></span>
+							<button id="next-step-btn" class="px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 ml-1">NEXT</button>
+            </div>
+            
+	          <div id="piano" class="grid grid-cols-12 sm:grid-cols-12">
+	            <button class="piano-note piano-note-white">C</button>
+	            <button class="piano-note piano-note-black">C#</button>
+	            <button class="piano-note piano-note-white">D</button>
+	            <button class="piano-note piano-note-black">D#</button>
+	            <button class="piano-note piano-note-white">E</button>
+	            <button class="piano-note piano-note-white">F</button>
+	            <button class="piano-note piano-note-black">F#</button>
+	            <button class="piano-note piano-note-white">G</button>
+	            <button class="piano-note piano-note-black">G#</button>
+	            <button class="piano-note piano-note-white">A</button>
+	            <button class="piano-note piano-note-black">A#</button>              
+	            <button class="piano-note piano-note-white">B</button>
+	          </div>
+            
+            <div class="piano-step-buttons flex flex-row flex-start gap-1 mt-1">
+		          <button id="rest-step-btn"      class="min-w-[60px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">Rest</button>
+		        	<button id="slide-step-btn"     class="min-w-[60px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">Slide</button>
+		          <button id="accent-step-btn"    class="min-w-[60px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">Accnt</button>
+		          <button id="oct-up-step-btn"    class="min-w-[60px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">Oct🔺️</button>
+		          <button id="oct-down-step-btn"  class="min-w-[60px] px-1 py-1.5 synth-btn rounded font-bold text-xs flex mb-1 toggle-btn">Oct🔻</button>
+		        </div>
+          </div>
+          
+          <div id="sequencer-hints" class="mt-4 flex text-[11px] text-slate-600 font-semibold gap-2">
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Gate = Play Note</div>
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-amber-500"></div> Accent = Filter Spike + Louder</div>
+            <div class="hint-line"><div class="w-2 h-2 rounded-full bg-fuchsia-500"></div> Slide = Portamento Glide</div>
+          </div>
+          
+        </div>
+
+        <div title="JAM" class="tab bg-slate-300/60 rounded-xl p-3 border border-slate-400/80 shadow-inner flex flex-col gap-3 mb-2">
+          <div class="flex flex-col w-full gap-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <button id="invite-btn" class="px-4 py-2 synth-btn text-emerald-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+                  <i data-lucide="radio" class="w-4 h-4 fill-emerald-700"></i> INVITE
+                </button>
+                <button id="join-btn" class="px-4 py-2 synth-btn text-emerald-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+                  <i data-lucide="plug-zap" class="w-4 h-4 fill-emerald-700"></i> JOIN
+                </button>
+                <button id="resync-btn" class="px-4 py-2 synth-btn text-emerald-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+                  <i data-lucide="cloud-sync" class="w-4 h-4 fill-emerald-700"></i> RESYNC
+                </button>
+              </div>
+
+              <!-- Web MIDI Status & Selector -->
+              <div class="flex items-center gap-2 bg-slate-900 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700">
+                <span id="midi-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span class="text-[10px] font-mono uppercase text-slate-400">MIDI:</span>
+                <select id="midi-input-select" class="bg-slate-950 text-emerald-400 font-mono text-xs px-2 py-0.5 rounded border border-slate-700 outline-none">
+                  <option value="">No MIDI Device</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- WebRTC Signaling Session & QR / Link Container -->
+            <div id="jamconnect" class="w-full"></div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="mt-4 text-xs text-slate-600 text-center">
+    FM Web Synthesizer Simulator &bull; Built with Tone.js, PeerJS WebRTC &amp; Web MIDI API
+  </footer>
+
+  <script src="https://darzid.github.io/JamConnect/jamconnect.js"></script>
+  <script src="js/jamFM-app.js" type="module"></script>
+</body>
+</html>

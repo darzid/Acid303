@@ -17,7 +17,6 @@ class SequencerBase {
     this.onParameterChangeRequest = null;
     
     this.selectedInstrumentName = Object.keys(this.audioGraph.devices.instruments)[0];
-    
     this.clearPreset(false);
     
     this.presets = {};
@@ -27,7 +26,7 @@ class SequencerBase {
         this.presets[presetName] = defaultPresets[presetName];
         this.convertPresetIfNeeded(this.presets, presetName);
       });
-    }
+    } 
     var userPresets = this.loadUserPresets();
     Object.keys(userPresets).forEach(presetName => {
       this.presets[presetName] = userPresets[presetName];
