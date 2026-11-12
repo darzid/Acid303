@@ -354,7 +354,7 @@ export class JamConnectApp {
   }
   
   updateSwing(swingPercentage) {
-  	this.swingSlider.value = swingPercentage;
+  	this.swingSlider.value = Math.round(swingPercentage);
     this.swingVal.textContent = `${swingPercentage}%`;
     Tone.Transport.swing = swingPercentage / 100;
     Tone.Transport.swingSubdivision = "16n";
