@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>JamMIDI - MIDI internet bridge</title>
+	
+	<style>
+body, html { 
+	width: 100%; 
+	height: 100%; 
+	padding: 2pt; 
+	font-size: 100%;
+}
+	
+.tab-strip .synth-btn.active-led {
+	border-top: 3px solid #228ee5;
+  background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
+}
+
+.tab {
+	min-height: 50vh;
+	display: block;
+}
+
+#midi-devices {
+	border: 1pt solid black;
+	background: rgba(255,255,255, 0.2);
+	width: stretch;
+}
+
+#midi-devices th:first-of-type {
+	border-right: 1pt solid rgba(0,0,0,0.2);
+}
+
+#midi-devices th {
+	background: gray;
+	width: 50%;
+}
+
+#midi-devices td:first-of-type {
+	border-right: 1pt solid rgba(0,0,0,0.2);
+}
+
+#midi-inputs, #midi-outputs {
+	overflow-y: auto;
+	max-height: 50vh;
+	text-align: center;
+}
+
+.toggle-button {
+	width: stretch;
+	padding: 3pt;
+	margin: 3pt;
+	margin-top: 1pt;
+	border-radius: 3pt;
+	font-size: x-small;
+	background: linear-gradient(180deg, #a08080 0%, #cbd5e1 100%);
+	box-shadow: 0 3px 0 #64748b, 0 4px 5px rgba(0,0,0,0.3);
+  transition: all 0.05s ease;
+}
+
+.toggle-button.active, .toggle-button:active {
+	transform: translateY(2px);
+  box-shadow: 0 1px 0 #64748b, 0 2px 3px rgba(0,0,0,0.3);
+  font-weight: bold;
+}
+
+.synth-btn {
+	background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
+	box-shadow: 0 3px 0 #64748b, 0 4px 5px rgba(0,0,0,0.3);
+  transition: all 0.05s ease;
+}
+
+.synth-btn:active, .synth-btn.active {
+	transform: translateY(2px);
+  box-shadow: 0 1px 0 #64748b, 0 2px 3px rgba(0,0,0,0.3);
+}
+
+.synth-btn.active-led {
+  border-top: 3px solid #22c55e;
+  background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
+}
+</style>
+
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdn.jsdelivr.net/npm/webmidi@latest/dist/iife/webmidi.iife.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+	<script src="https://darzid.github.io/JamConnect/jamconnect.js"></script>
+	<script src="js/tabcontrol.js"></script>
+</head>
+
+<body>
+	<h1>JamMIDI</h1>
+	
+	<div id="tab-control">
+  	<div class="tab-strip flex items-center gap-1 p-1"></div>
+      
+    <div class="tab-container">
+    	<div title="MIDI" class="tab bg-slate-300/60 p-2 border border-slate-400/80 shadow-inner gap-2 mb-2 items-center">
+  		
+  			<table id="midi-devices">
+  				<thead>
+  					<tr>
+  						<th width="1*">MIDI inputs</th>
+  						<th width="1*">MIDI outputs</th>
+  					</tr>
+  				</thead>
+  				<tbody>
+  					<tr>
+  						<td><div id="midi-inputs"></div></td>
+  						<td><div id="midi-outputs"></div></td>
+  					</tr>
+  				</tbody>
+  			</table>		
+				<div id="midi-hint"></div>
+	  			
+			</div>
+			
+			<div title="JAM" class="tab">
+				
+				<div class="flex flex-wrap items-center justify-between gap-2">
+						
+					<div class="flex flex-wrap items-center gap-2">
+						<button id="invite-btn" class="px-4 py-2 synth-btn text-amber-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+							<i data-lucide="radio" class="w-4 h-4 fill-amber-700"></i> INVITE
+						</button>
+						<button id="join-btn" class="px-4 py-2 synth-btn text-amber-800 font-black rounded-lg text-xs sm:text-sm flex items-center gap-2 hover:bg-white">
+							<i data-lucide="plug-zap" class="w-4 h-4 fill-amber-700"></i> JOIN
+						</button>
+         	</div>
+          	
+         </div>
+
+         <div id="jamconnect" class="w-full"></div>
+			</div>
+			
+    </div>
+    
+    <script>
+  const tabControl = new TabControl();
+  tabControl.render();
+	
+	let jcClient = null;
+	
+	const midiHint = document.getElementById("midi-hint");
+  
+	const midiDevicesTable = document.getElementById("midi-devices");
+  const midiInputsContainer = document.getElementById("midi-inputs");
+  const midiOutputsContainer = document.getElementById("midi-outputs");
+  const inviteBtn = document.getElementById("invite-btn");
+  const joinBtn = document.getElementById("join-btn");
+  
+  midiHint.innerText = "Retrieving MIDI devices";
+  
+  WebMidi
+    .enable()
+    .then(onEnabled)
+    .catch(err => {
+    	midiHint.style.color = "red";
+    	midiHint.innerHTML = "Failed to retrieve MIDI devices: <br>" + err;
+    });
+
+  // Function triggered when WEBMIDI.js is ready
+  function onEnabled() {
+  	let devicesFound = false;
+  	if (WebMidi.inputs.length > 0) {
+  		devicesFound = true;
+	    WebMidi.inputs.forEach((inputDevice, index) => {
+	    	midiInputsContainer.innerHTML += `<button class="midi-device toggle-button" name="${inputDevice.name}">${index}: ${inputDevice.manufacturer} - ${inputDevice.name}</button>`;
+	    });
+  	}
+  	else { 
+  		//midiInputsContainer.innerHTML += `<button class="midi-device toggle-button" name="MIDI-01">1: Microsoft - MIDI-01</button>`;
+  		midiInputsContainer.innerHTML = "No input devices";
+  	}
+   
+    if (WebMidi.outputs.length > 0) {
+    	devicesFound = true;
+	    WebMidi.outputs.forEach((outputDevice, index) => {
+				midiOutputsContainer.innerHTML += `<button class="midi-device toggle-button" name="${outputDevice.name}">${index}: ${outputDevice.manufacturer} - ${outputDevice.name}</button>`;
+	    });
+    }
+    else {
+    	midiOutputsContainer.innerHTML = "No output devices";
+    }
+    
+    if (devicesFound) {
+    	midiHint.innerText = "Please select the MIDI devices you want to use with JamConnect, and then start or join a JAM session.";
+    	
+    	initJamConnect();
+		  
+	    const midiInputToggleButtons = midiInputsContainer.querySelectorAll(".toggle-button");
+	  	midiInputToggleButtons.forEach(button => {
+	  		button.addEventListener("click", () => {
+	  			button.classList.toggle("active");
+	  			if (button.classList.contains("active")) {
+	  				const inputDevice = WebMidi.getInputByName(button.name);
+	  				inputDevice.addListener("noteon", sendMidiNoteOn);
+	  				inputDevice.addListener("noteoff", sendMidiNoteOff);
+	  				inputDevice.addListener("controlchange", sendMidiControlChange);
+	  			}
+	  		});
+	  	});
+	  	
+	  	const midiOutputToggleButtons = midiOutputsContainer.querySelectorAll(".toggle-button");
+	  	midiOutputToggleButtons.forEach(button => button.addEventListener("click", () => button.classList.toggle("active")));
+	  	
+    }
+    else {
+    	midiHint.innerText = "No MIDI devices found";
+    }
+  }
+  
+  function initJamConnect() {
+  	jcClient = new JamConnectClient("jamMIDI", document.getElementById("jamconnect"), true);
+    inviteBtn.addEventListener('click', async () => {
+	  	await jcClient.invite();
+	  });
+	  joinBtn.addEventListener('click', async () => {
+	  	await jcClient.join();
+	  });
+		jcClient.connector.onMidiNoteOn = onReceiveMidiNoteOn;
+	  jcClient.connector.onMidiNoteOff = onReceiveMidiNoteOff;
+	  jcClient.connector.onMidiControlChange = onReceiveMidiControlChange;
+  }
+  
+  function sendMidiNoteOn(e) {
+  	jcClient.sendMidiNoteOn(e.message.channel, e.note.identifier, e.note.rawAttack);
+  }
+  
+  function sendMidiNoteOn(e) {
+  	jcClient.sendMidiNoteOff(e.message.channel, e.note.identifier);
+  }
+  
+  function sendMidiControlChange(e) {
+  	jcClient.sendMidiControlChange(e.message.channel, e.controller.number, e.controller.name, e.value);
+  }
+  
+  function onReceiveMidiNoteOn(appName, channel, note, velocity, time) {
+  	let selectedMidiOutputDeviceButtons = midiOutputsContainer.querySelectorAll(".toggle-button.active");
+  	selectedMidiOutputDeviceButtons.forEach(button => {
+  		const outputDevice = WebMidi.getOutputByName(button.name);
+  		let channel = outputDevice.channels[channel];
+  		channel.playNote(note, { rawAttack: velocity });
+  	});
+  }
+  
+  function onReceiveMidiNoteOff(appName, channel, note, time) {
+  	let selectedMidiOutputDeviceButtons = midiOutputsContainer.querySelectorAll(".toggle-button.active");
+  	selectedMidiOutputDeviceButtons.forEach(button => {
+  		const outputDevice = WebMidi.getOutputByName(button.name);
+  		let channel = outputDevice.channels[channel];
+  		channel.stopNote(note);
+  	});
+  }
+  
+  function onReceiveMidiControlChange(appName, channel, controlNumber, controlName, value, time) {
+  	let selectedMidiOutputDeviceButtons = midiOutputsContainer.querySelectorAll(".toggle-button.active");
+  	selectedMidiOutputDeviceButtons.forEach(button => {
+  		const outputDevice = WebMidi.getOutputByName(button.name);
+  		let channel = outputDevice.channels[channel];
+  		channel.sendControlChange(controlNumber, value);
+  	});
+  }
+</script>
+</body>
+
+</html>
