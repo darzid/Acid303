@@ -1,116 +1,135 @@
 {
-  "tb303": [
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": true,
-      "accent": false,
-      "slide": false
+  "name": "jam303-Emotional Acid",
+  "bpm": 120,
+  "swing": 0,
+  "patterns": {
+    "tb303": [
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": true,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": true,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": true,
+        "accent": true,
+        "slide": false
+      },
+      {
+        "note": "A#",
+        "octave": 2,
+        "gate": true,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": false,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "note": "C",
+        "octave": 2,
+        "gate": true,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "note": "G",
+        "octave": "3",
+        "gate": true,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "note": "G",
+        "octave": "1",
+        "gate": true,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "note": "C",
+        "octave": "3",
+        "gate": true,
+        "accent": true,
+        "slide": true
+      },
+      {
+        "note": "F#",
+        "octave": "1",
+        "gate": true,
+        "accent": false,
+        "slide": false
+      }
+    ]
+  },
+  "parameters": {
+    "delay": {
+      "enabled": true
     },
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": false,
-      "accent": false,
-      "slide": false
-    },
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": false,
-      "accent": false,
-      "slide": false
-    },
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": true,
-      "accent": false,
-      "slide": false
-    },
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": false,
-      "accent": false,
-      "slide": false
-    },
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": false,
-      "accent": false,
-      "slide": false
-    },
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": true,
-      "accent": true,
-      "slide": false
-    },
-    {
-      "note": "A#",
-      "octave": 2,
-      "gate": true,
-      "accent": false,
-      "slide": true
-    },
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": false,
-      "accent": false,
-      "slide": false
-    },
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": false,
-      "accent": false,
-      "slide": false
-    },
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": false,
-      "accent": false,
-      "slide": false
-    },
-    {
-      "note": "C",
-      "octave": 2,
-      "gate": true,
-      "accent": false,
-      "slide": true
-    },
-    {
-      "note": "G",
-      "octave": "3",
-      "gate": true,
-      "accent": false,
-      "slide": true
-    },
-    {
-      "note": "G",
-      "octave": "1",
-      "gate": true,
-      "accent": false,
-      "slide": true
-    },
-    {
-      "note": "C",
-      "octave": "3",
-      "gate": true,
-      "accent": true,
-      "slide": true
-    },
-    {
-      "note": "F#",
-      "octave": "1",
-      "gate": true,
-      "accent": false,
-      "slide": false
+    "tb303": {
+      "cutoff": 400,
+      "resonance": 7,
+      "envMod": 0.6,
+      "decay": 0.3,
+      "accent": 0.8,
+      "drive": 0.35,
+      "waveform": "sawtooth"
     }
-  ]
+  }
 }

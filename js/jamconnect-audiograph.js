@@ -6,6 +6,7 @@ export class AudioGraphBase {
 		
 		this.devices = {
 			instruments: {},
+			modules: {},
 			effects: {}
 		};
 		
@@ -36,6 +37,8 @@ export class AudioGraphBase {
   
 	getDeviceByName(name) {
 		let device = this.devices.instruments[name];
+		if (device) return device;
+		device = this.devices.modules[name];
 		if (device) return device;
 		device = this.devices.effects[name];
 		if (device) return device;
