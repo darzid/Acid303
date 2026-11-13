@@ -24,3 +24,54 @@
   box-shadow: 0 0 5px #f8bd38;
 }
 #display-tempo { color: rgb(252,211,77); text-shadow: 0 0 8px rgba(252, 212, 74, 0.7); }
+
+.piano-note {
+  font-size: smaller;
+  text-align: center;
+  border-radius: 2pt;
+  align-content: start;
+  display: inline-flex;
+}
+
+.piano-note:active, .piano-note.active {
+	transform: translateY(2px);
+  box-shadow: 0 1px 0 #64748b, 0 2px 3px rgba(0,0,0,0.3);
+}
+
+.piano-note-white {
+  height: 20vh;
+  background: white;
+  border: 1pt solid black;
+}
+
+.piano-note-white.current {
+  background: rgb(100,150,255);
+}
+
+.piano-note-black {
+  height: 18vh;
+  background: black;
+  color: white;
+  border: 1pt solid black;
+}
+.piano-note-black.current {
+  background: rgb(50,100,200);
+}
+
+.piano-rest {
+  background: white;
+  border: 1pt solid black;
+}
+
+.synth-btn:disabled {
+  color: gray;
+}
+
+.piano-step-buttons2 {
+  align-items: start;
+  vertical-align: top;
+}
+
+.toggle-btn.active {
+  color: blue;
+}
