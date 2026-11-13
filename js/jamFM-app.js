@@ -5,7 +5,7 @@ export class App extends JamConnectApp {
   constructor() {
     super("jamFM", new AudioGraph(), "#22c55e");
     
-    //super.registerServiceWorker("../jamFM-service-worker.js");
+    super.registerServiceWorker("../jamFM-service-worker.js");
     this.sequencer = new JamFMSequencer(this.jcClient, this.audioGraph, this.themeColorName);
     
     this.jcClient.connector.onMidiNoteOn = (appName, channel, note, velocity, time) => this.onReceiveMidiNoteOn(appName, channel, note, velocity, time);
