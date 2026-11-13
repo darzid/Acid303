@@ -5,10 +5,12 @@ export class App extends JamConnectApp {
   constructor() {
     super("jamFM", new AudioGraph(), "#22c55e");
     
-    //super.registerServiceWorker("../jamFM-service-worker.js");
+    super.registerServiceWorker("../jamFM-service-worker.js");
     this.sequencer = new JamFMSequencer(this.jcClient, this.audioGraph, this.themeColorName);
     
-    this.jcClient.connector.onNotePlayed = (appName, instrument, note, velocity, duration, time) => this.jamConnectNotePlayed(appName, instrument, note, velocity, duration, time);
+    this.jcClient.connector.onMidiNoteOn = (appName, channel, note, velocity, time) => this.onReceiveMidiNoteOn(appName, channel, note, velocity, time);
+    this.jcClient.connector.onMidiNoteOff = (appName, channel, note, time) => this.onReceiveMidiNoteOff(appName, channel, note, time);
+    this.jcClient.connector.onMidiControlChange = (appName, channel, controlName, velocity, time) => this.onReceiveMidiControlChange(appName, channel, note, velocity, time);
   }
   
   createParameterKnob(parameterId, parameterControlMapping) {
@@ -24,7 +26,7 @@ export class App extends JamConnectApp {
   createKnobHtml(deviceName, parameterName) {
     let html = `
       <div class="min-w-[80px] device-knob flex flex-col items-center">
-        <span class="non-mixer-element text-[11px] font-extrabold uppercase text-slate-700 mb-0.5">${parameterName.toUpperCase()}</span>
+        <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-0.5">${parameterName.toUpperCase()}</span>
         <div class="knob-container" id="${deviceName}.${parameterName}" data-value="1">
           <div class="knob-body"></div>
           <div class="knob-cap"></div>
@@ -41,7 +43,8 @@ export class App extends JamConnectApp {
     let deviceName = parts[0];
     let parameterName = parts[1];
     let deviceKnobs = document.getElementById(deviceName + "-knobs");
-    deviceKnobs.innerHTML += this.createSwitchHtml(deviceName, parameterName, parameterControlMapping.options, parameterControlMapping.optionNames);
+    let paramsContainer = deviceKnobs.querySelector(".params-container");
+    paramsContainer.innerHTML += this.createSwitchHtml(deviceName, parameterName, parameterControlMapping.options, parameterControlMapping.optionNames);
   }
   
   createSwitchHtml(deviceName, parameterName, options, optionNames) {
@@ -54,13 +57,44 @@ export class App extends JamConnectApp {
       index++;
     });
     
-    let html = `<div class="min-w-[80px] device-knob device-switch flex flex-col items-center mb-1">
+    //<div id="${deviceName}.${parameterName}" class="flex flex-row gap-0 p-0 text-center">${buttonsHtml}</div>
+    let html = `<div class="min-w-[70px] device-switch flex flex-col mb-1 flex-start">
         <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-0">${parameterName.toUpperCase()}</span>
-        <div id="${deviceName}.${parameterName}" class="items-center flex flex-row gap-0 p-0 text-center">${buttonsHtml}</div>
-      </div>`;
+        <div id="${deviceName}.${parameterName}" class="text-center">${buttonsHtml}</div></div>`;
     return html;
   }
 
+  onReceiveMidiNoteOn(appName, channel, note, velocity, time) {
+    if (appName != "jamMIDI") return;
+    
+  	console.log("onReceiveMidiNoteOn " + note, appName, channel, velocity);
+  	this.audioGraph.startNote(note, velocity / 127, time);
+  }
+  
+  onReceiveMidiNoteOff(appName, channel, note, time) {
+    if (appName != "jamMIDI") return;
+    
+  	console.log("onReceiveMidiNoteOff " + note, appName, channel, time);
+  	this.audioGraph.stopNote(time);
+  }
+  
+  onReceiveMidiControlChange(appName, channel, controlNumber, controlName, value, time) {
+    if (appName != "jamMIDI") return;
+    
+  	console.log("onReceiveMidiControlChange " + controlName + " -> " + value, appName, channel, controlNumber);
+  	let parameterId = this.audioGraph.getMidiControlParameter(controlNumber);
+  	if (parameterId) {
+  	  this.jcClient.isApplyingRemoteUpdate = true;
+      try {
+    	  const normalizedValue = value / 127;
+        const rangedValue = this.audioGraph.convertNormalizedValue(parameterId, normalizedValue);
+        this.applyDeviceParameterChange(appName, parameterId, rangedValue);
+      }
+      finally {
+        this.jcClient.isApplyingRemoteUpdate = false;
+      }
+  	}
+  }
   
   jamConnectNotePlayed(appName, instrument, note, velocity, duration, time) {
   	if (Tone.Transport.state == 'started' && !this.sequencer.isSequenceEmpty)

@@ -12,7 +12,7 @@ const parameters = {
     cutoff: {
       value: 400,
       deviceParameter: "filterEnvelope.baseFrequency",
-      midiControlMapping: [1, 74],
+      midiControlMapping: 74,
       range: {
         min: 100,
         max: 8000,
@@ -22,7 +22,7 @@ const parameters = {
     resonance: {
       value: 7,
       deviceParameter: "filter.Q.value",
-      midiControlMapping: [71],
+      midiControlMapping: 71,
       range: {
         min: 1,
         max: 20,
@@ -31,7 +31,7 @@ const parameters = {
     envMod: {
       value: 0.6,
       deviceParameter: "envMod",
-      midiControlMapping: [16, 73],
+      midiControlMapping: 1,
       range: {
         min: 0,
         max: 1,
@@ -42,7 +42,7 @@ const parameters = {
     decay: {
       value: 0.3,
       deviceParameter: "decay",
-      midiControlMapping: [72, 75],
+      midiControlMapping: 80,
       range: {
         min: 0.1,
         max: 1.2,
@@ -53,7 +53,7 @@ const parameters = {
     accent: {
       value: 0.8,
       deviceParameter: "accent",
-      midiControlMapping: [76],
+      midiControlMapping: 11,
       range: {
         min: 0,
         max: 1,
@@ -64,7 +64,7 @@ const parameters = {
     drive: {
       value: 0.35,
       deviceParameter: "drive",
-      midiControlMapping: [77],
+      midiControlMapping: 77,
       range: {
         min: 0,
         max: 1,
@@ -75,6 +75,7 @@ const parameters = {
     waveform: {
       value: "sawtooth",
       deviceParameter: "oscillator.type",
+      midiControlMapping: 83,
       options: ["sawtooth","square"],
     }
   }

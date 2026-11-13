@@ -9,7 +9,8 @@ export class App extends JamConnectApp {
     this.renderDebounceTimers = {};
     
     this.sequencer = new Jam909Sequencer(this.jcClient, this.audioGraph, this.themeColorName);
-    
+    this.jcClient.connector.onMidiNoteOn = (appName, channel, note, velocity, time) => this.onReceiveMidiNoteOn(appName, channel, note, velocity, time);
+    this.jcClient.connector.onMidiControlChange = (appName, channel, controlName, velocity, time) => this.onReceiveMidiControlChange(appName, channel, note, velocity, time);
     this.mixerToggle = document.getElementById("mixer-toggle");
     this.nonMixerKnobs = document.querySelectorAll(".non-mixer-knob");
     this.nonMixerElements = document.querySelectorAll(".non-mixer-element");
@@ -67,6 +68,27 @@ export class App extends JamConnectApp {
     
     let instrumentNonMixerElements = parent.querySelectorAll(".non-mixer-element");
     instrumentNonMixerElements.forEach(element => element.classList.toggle("hidden"));
+  }
+  
+  onReceiveMidiNoteOn(appName, channel, note, velocity, time) {
+    if (appName != "jamMIDI") return;
+    
+  	console.log("onReceiveMidiNoteOn " + note, appName, channel, velocity);
+  	Object.keys(this.audioGraph.devices.instruments).forEach(name => {
+  	  if (this.audioGraph.devices.instruments[name].padNote == note) {
+  	    console.log("playing drum " + name);
+  	    this.playDrum(name, Tone.now(), { accent: velocity > 120 });
+  	  }
+  	  else {
+  	    console.log("No drum found for note " + note)
+  	  }
+  	})
+  }
+  
+  onReceiveMidiControlChange(appName, channel, controlNumber, controlName, value, time) {
+    if (appName != "jamMIDI") return;
+    
+  	console.log("onReceiveMidiControlChange " + controlName + " -> " + value, appName, channel, controlNumber);
   }
   
   playNote(instrumentName, note, stepData, duration, time) {

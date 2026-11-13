@@ -1,8 +1,8 @@
 {
-  "name": "Jam303",
-  "short_name": "Jam303 by Darzid",
-  "description": "JamConnect 303",
-  "start_url": "./jam303.html",
+  "name": "JamFM",
+  "short_name": "JamFM by Darzid",
+  "description": "JamConnect FM",
+  "start_url": "./jamFM.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1c1c1c",

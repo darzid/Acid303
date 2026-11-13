@@ -15,6 +15,7 @@ const parameters = {
     dryWet: {
 			value: 0.5,
 			deviceParameter: "wet.value",
+			midiControlMapping: 13,
 			range: {
 				min: 0,
 				max: 1,
@@ -48,6 +49,7 @@ const parameters = {
 		dryWet: {
 			value: 0.5,
 			deviceParameter: "wet.value",
+			midiControlMapping: 91,
 			range: {
 				min: 0,
 				max: 1,
@@ -61,6 +63,7 @@ const parameters = {
 		distortion: {
 			value: 0,
 			deviceParameter: "distortion",
+			midiControlMapping: 12,
 			range: {
 				min: 0,
 				max: 1,
@@ -81,10 +84,17 @@ const parameters = {
 	},
 	
 	filter: {
+	  type: {
+      value: "lowpass",
+      deviceParameter: "type",
+      options: ["lowpass","highpass"],
+      optionNames: ["LP", "HP"]
+    },
+    
 	  cutoff: {
       value: 400,
       deviceParameter: "frequency.value",
-      midiControlMapping: [1, 74],
+      midiControlMapping: 74,
       range: {
         min: 100,
         max: 8000,
@@ -94,24 +104,19 @@ const parameters = {
     resonance: {
       value: 7,
       deviceParameter: "Q.value",
-      midiControlMapping: [71],
+      midiControlMapping: 71,
       range: {
         min: 1,
         max: 20,
       },
-    },
-		type: {
-      value: "lowpass",
-      deviceParameter: "type",
-      options: ["lowpass","highpass"],
-      optionNames: ["LP", "HP"]
     },
     rolloff: {
       value: -12,
       deviceParameter: "rolloff",
       options: [-12,-24],
       optionNames: ["-12", "-24"]
-    }
+    },
+
 	},
 	
   modEnv: {
@@ -160,6 +165,7 @@ const parameters = {
     harmonicity: {
       value: 1,
       deviceParameter: "harmonicity.value",
+      midiControlMapping: 70,
       range: {
         min: 1,
         max: 10
@@ -168,6 +174,7 @@ const parameters = {
     "mod-amount": {
       value: 0,
       deviceParameter: "modulationIndex.value",
+      midiControlMapping: 1,
       range: {
         min: 0,
         max: 10
@@ -179,7 +186,7 @@ const parameters = {
     attack: {
       value: 0.2,
       deviceParameter: "attack",
-      midiControlMapping: [72, 75],
+      midiControlMapping: 73,
       range: {
         min: 0.01,
         max: 1,
@@ -190,7 +197,7 @@ const parameters = {
     decay: {
       value: 0.5,
       deviceParameter: "decay",
-      midiControlMapping: [72, 75],
+      midiControlMapping: 80,
       range: {
         min: 0.1,
         max: 1.2,
@@ -201,6 +208,7 @@ const parameters = {
     sustain: {
       value: 0.5,
       deviceParameter: "sustain",
+      midiControlMapping: 64,
       range: {
         min: 0,
         max: 1,
@@ -210,6 +218,7 @@ const parameters = {
     release: {
       value: 0.5,
       deviceParameter: "release",
+      midiControlMapping: 72,
       range: {
         min: 0.1,
         max: 1.2,
