@@ -536,7 +536,7 @@ export class JamConnectApp {
       console.log("resync sent")
     });
     
-    this.tempoSlider.addEventListener('input', (e) => {
+    this.tempoSlider.addEventListener('change', (e) => {
     	this.updateBpm(e.target.value);
     });
     

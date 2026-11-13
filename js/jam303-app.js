@@ -8,7 +8,8 @@ export class App extends JamConnectApp {
     super.registerServiceWorker("../jam303-service-worker.js");
     this.sequencer = new Jam303Sequencer(this.jcClient, this.audioGraph, this.themeColorName);
     
-    this.jcClient.connector.onNotePlayed = (appName, instrument, note, velocity, duration, time) => this.jamConnectNotePlayed(appName, instrument, note, velocity, duration, time);
+    this.jcClient.connector.onMidiNoteOn = (appName, channel, note, velocity, time) => this.onReceiveMidiNoteOn(appName, channel, note, velocity, time);
+    this.jcClient.connector.onMidiControlChange = (appName, channel, controlNumber, controlName, value, time) => this.onReceiveMidiControlChange(appName, channel, controlNumber, controlName, value, time);
   }
   
   createParameterKnob(parameterId, parameterControlMapping) {
@@ -38,6 +39,31 @@ export class App extends JamConnectApp {
   	if (Tone.Transport.state == 'started' && !this.sequencer.isSequenceEmpty)
   		return;
   	this.playNote("tb303", note, { accent: velocity == 1 }, duration, time);
+  }
+  
+  onReceiveMidiNoteOn(appName, channel, note, velocity, time) {
+    if (appName != "jamMIDI") return;
+    
+  	console.log("onReceiveMidiNoteOn " + note, appName, channel, velocity);
+  	this.audioGraph.play303StepNote(note, velocity > 120, false, "16n", Tone.now());
+  }
+  
+  onReceiveMidiControlChange(appName, channel, controlNumber, controlName, value, time) {
+    if (appName != "jamMIDI") return;
+    
+  	console.log("onReceiveMidiControlChange " + controlName + " -> " + value, appName, channel, controlNumber);
+  	let parameterId = this.audioGraph.getMidiControlParameter(controlNumber);
+  	if (parameterId) {
+  	  this.jcClient.isApplyingRemoteUpdate = true;
+      try {
+    	  const normalizedValue = value / 127;
+        const rangedValue = this.audioGraph.convertNormalizedValue(parameterId, normalizedValue);
+        this.applyDeviceParameterChange(appName, parameterId, rangedValue);
+      }
+      finally {
+        this.jcClient.isApplyingRemoteUpdate = false;
+      }
+  	}
   }
   
   playNote(instrumentName, note, stepData, duration, time) {

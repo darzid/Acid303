@@ -10,6 +10,7 @@ export class App extends JamConnectApp {
     
     this.sequencer = new Jam909Sequencer(this.jcClient, this.audioGraph, this.themeColorName);
     this.jcClient.connector.onMidiNoteOn = (appName, channel, note, velocity, time) => this.onReceiveMidiNoteOn(appName, channel, note, velocity, time);
+    this.jcClient.connector.onMidiControlChange = (appName, channel, controlName, velocity, time) => this.onReceiveMidiControlChange(appName, channel, note, velocity, time);
     this.mixerToggle = document.getElementById("mixer-toggle");
     this.nonMixerKnobs = document.querySelectorAll(".non-mixer-knob");
     this.nonMixerElements = document.querySelectorAll(".non-mixer-element");
@@ -70,6 +71,8 @@ export class App extends JamConnectApp {
   }
   
   onReceiveMidiNoteOn(appName, channel, note, velocity, time) {
+    if (appName != "jamMIDI") return;
+    
   	console.log("onReceiveMidiNoteOn " + note, appName, channel, velocity);
   	Object.keys(this.audioGraph.devices.instruments).forEach(name => {
   	  if (this.audioGraph.devices.instruments[name].padNote == note) {
@@ -83,14 +86,9 @@ export class App extends JamConnectApp {
   }
   
   onReceiveMidiControlChange(appName, channel, controlNumber, controlName, value, time) {
-  	midiLog.innerHTML += "<br>onReceiveMidiControlChange " + controlName + " -> " + value;
+    if (appName != "jamMIDI") return;
+    
   	console.log("onReceiveMidiControlChange " + controlName + " -> " + value, appName, channel, controlNumber);
-  	let selectedMidiOutputDeviceButtons = midiOutputsContainer.querySelectorAll(".toggle-button.active");
-  	selectedMidiOutputDeviceButtons.forEach(button => {
-  		const outputDevice = WebMidi.getOutputByName(button.name);
-  		let channel = outputDevice.channels[channel];
-  		channel.sendControlChange(controlNumber, value);
-  	});
   }
   
   playNote(instrumentName, note, stepData, duration, time) {

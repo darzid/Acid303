@@ -86,7 +86,7 @@ export class AudioGraphBase {
 	getMidiControlParameter(midiCc) {
 		Object.keys(this.params).forEach(deviceName => {
 			Object.keys(this.params[deviceName]).forEach(parameterName => {
-				if (this.params[deviceName][parameterName].midiControlMapping && this.params[deviceName][parameterName].midiControlMapping.includes(midiCc))
+				if (this.params[deviceName][parameterName].midiControlMapping && this.params[deviceName][parameterName].midiControlMapping == midiCc)
 					return `${deviceName}.${parameterName}`;
 			});
 		});

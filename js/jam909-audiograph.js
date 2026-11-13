@@ -19,13 +19,15 @@ const parameters = {
 		decay: {
 			value: 0.25,
 			deviceParameter: "decay",
+			midiControlMapping: 91,
 			range: {
 				min: 0.001,
 				max: 1,
 				displayValueMultiplier: 1000,
 				displayValueUnit: "ms"
 			}
-		}
+		},
+	
 	},
 	distortion: {
 		distortion: {
@@ -525,7 +527,7 @@ export class AudioGraph extends AudioGraphBase {
     {
     	preDelay: this.params.reverb.preDelay.value,
   		decay: this.params.reverb.decay.value,
-      wet: 1,
+
     }).connect(this.groupBus);
     
     this.devices.effects.distortion = new Tone.Distortion(
