@@ -142,7 +142,7 @@ body, html {
 			
     </div>
     
-    <script>
+    <script type="module">
   const tabControl = new TabControl();
   tabControl.render();
 	
@@ -158,6 +158,8 @@ body, html {
   
   midiHint.innerText = "Retrieving MIDI devices";
   
+  await initJamConnect();
+		  
   WebMidi
     .enable()
     .then(onEnabled)
@@ -193,8 +195,7 @@ body, html {
     if (devicesFound) {
     	midiHint.innerText = "Please select the MIDI devices you want to use with JamConnect, and then start or join a JAM session.";
     	
-    	initJamConnect();
-		  
+    	
 	    const midiInputToggleButtons = midiInputsContainer.querySelectorAll(".toggle-button");
 	  	midiInputToggleButtons.forEach(button => {
 	  		button.addEventListener("click", () => {
@@ -217,7 +218,7 @@ body, html {
     }
   }
   
-  function initJamConnect() {
+  async function initJamConnect() {
   	jcClient = new JamConnectClient("jamMIDI", document.getElementById("jamconnect"), true);
     inviteBtn.addEventListener('click', async () => {
 	  	await jcClient.invite();
@@ -234,7 +235,7 @@ body, html {
   	jcClient.sendMidiNoteOn(e.message.channel, e.note.identifier, e.note.rawAttack);
   }
   
-  function sendMidiNoteOn(e) {
+  function sendMidiNoteOff(e) {
   	jcClient.sendMidiNoteOff(e.message.channel, e.note.identifier);
   }
   
@@ -243,6 +244,7 @@ body, html {
   }
   
   function onReceiveMidiNoteOn(appName, channel, note, velocity, time) {
+  	console.log("onReceiveMidiNoteOn " + note, appName, channel, velocity);
   	let selectedMidiOutputDeviceButtons = midiOutputsContainer.querySelectorAll(".toggle-button.active");
   	selectedMidiOutputDeviceButtons.forEach(button => {
   		const outputDevice = WebMidi.getOutputByName(button.name);
@@ -252,6 +254,7 @@ body, html {
   }
   
   function onReceiveMidiNoteOff(appName, channel, note, time) {
+  	console.log("onReceiveMidiNoteOff " + note, appName, channel);
   	let selectedMidiOutputDeviceButtons = midiOutputsContainer.querySelectorAll(".toggle-button.active");
   	selectedMidiOutputDeviceButtons.forEach(button => {
   		const outputDevice = WebMidi.getOutputByName(button.name);
@@ -261,6 +264,7 @@ body, html {
   }
   
   function onReceiveMidiControlChange(appName, channel, controlNumber, controlName, value, time) {
+  	console.log("onReceiveMidiControlChange " + controlName + " -> " + value, appName, channel, controlNumber);
   	let selectedMidiOutputDeviceButtons = midiOutputsContainer.querySelectorAll(".toggle-button.active");
   	selectedMidiOutputDeviceButtons.forEach(button => {
   		const outputDevice = WebMidi.getOutputByName(button.name);
