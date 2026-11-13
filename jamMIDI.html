@@ -82,6 +82,12 @@ body, html {
   border-top: 3px solid #22c55e;
   background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
 }
+
+#midi-log {
+	overflow-y: auto;
+	max-height: 40vh;
+	border: 2pt solid black;
+}
 </style>
 
 	<script src="https://cdn.tailwindcss.com"></script>
@@ -119,7 +125,8 @@ body, html {
   				</tbody>
   			</table>		
 				<div id="midi-hint"></div>
-	  			
+	  		
+	  		<div id="midi-log"></div>
 			</div>
 			
 			<div title="JAM" class="tab">
@@ -140,6 +147,7 @@ body, html {
          <div id="jamconnect" class="w-full"></div>
 			</div>
 			
+
     </div>
     
     <script type="module">
@@ -149,6 +157,7 @@ body, html {
 	let jcClient = null;
 	
 	const midiHint = document.getElementById("midi-hint");
+  const midiLog= document.getElementById("midi-log");
   
 	const midiDevicesTable = document.getElementById("midi-devices");
   const midiInputsContainer = document.getElementById("midi-inputs");
@@ -232,18 +241,22 @@ body, html {
   }
   
   function sendMidiNoteOn(e) {
-  	jcClient.sendMidiNoteOn(e.message.channel, e.note.identifier, e.note.rawAttack);
+  	midiLog.innerHTML += "<br>sendMidiNoteOn " + e.note.identifier;
+  	jcClient.connector.sendMidiNoteOn(e.message.channel, e.note.identifier, e.note.rawAttack);
   }
   
   function sendMidiNoteOff(e) {
-  	jcClient.sendMidiNoteOff(e.message.channel, e.note.identifier);
+  	midiLog.innerHTML += "<br>sendMidiNoteOff " + e.note.identifier;
+  	jcClient.connector.sendMidiNoteOff(e.message.channel, e.note.identifier);
   }
   
   function sendMidiControlChange(e) {
-  	jcClient.sendMidiControlChange(e.message.channel, e.controller.number, e.controller.name, e.value);
+  	midiLog.innerHTML += "<br>sendMidiControlChange " + e.controller.name;
+  	jcClient.connector.sendMidiControlChange(e.message.channel, e.controller.number, e.controller.name, e.value);
   }
   
   function onReceiveMidiNoteOn(appName, channel, note, velocity, time) {
+  	midiLog.innerHTML += "<br>onReceiveMidiNoteOn " + note;
   	console.log("onReceiveMidiNoteOn " + note, appName, channel, velocity);
   	let selectedMidiOutputDeviceButtons = midiOutputsContainer.querySelectorAll(".toggle-button.active");
   	selectedMidiOutputDeviceButtons.forEach(button => {
@@ -254,6 +267,7 @@ body, html {
   }
   
   function onReceiveMidiNoteOff(appName, channel, note, time) {
+  	midiLog.innerHTML += "<br>onReceiveMidiNoteOff " + note;
   	console.log("onReceiveMidiNoteOff " + note, appName, channel);
   	let selectedMidiOutputDeviceButtons = midiOutputsContainer.querySelectorAll(".toggle-button.active");
   	selectedMidiOutputDeviceButtons.forEach(button => {
@@ -264,6 +278,7 @@ body, html {
   }
   
   function onReceiveMidiControlChange(appName, channel, controlNumber, controlName, value, time) {
+  	midiLog.innerHTML += "<br>onReceiveMidiControlChange " + controlName + " -> " + value;
   	console.log("onReceiveMidiControlChange " + controlName + " -> " + value, appName, channel, controlNumber);
   	let selectedMidiOutputDeviceButtons = midiOutputsContainer.querySelectorAll(".toggle-button.active");
   	selectedMidiOutputDeviceButtons.forEach(button => {
