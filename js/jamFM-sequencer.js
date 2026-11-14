@@ -31,7 +31,7 @@ class JamFMSequencer extends SequencerBase {
     this.addStepSelect("note", "emerald", NOTES);
     this.addStepSelect("octave", "sky", [5, 4, 3, 2, 1], ["⏫️", "🔼", "⏺", "🔽", "⏬️"]);
     this.addStepButton("gate", "emerald", "GATE", "OFF");
-    this.addStepButton("slide", "fuchsia", "SLD", "---");
+    this.addStepSelect("duration", "sky", ["32n", "16n", "16n.", "8n", "8n.", "4n", "2n"]);
     
     this.randomizePatternBtn = document.getElementById('randomize-pattern-btn');
     this.randomizePatternBtn.addEventListener("click", () => this.randomizePattern());
@@ -116,7 +116,7 @@ class JamFMSequencer extends SequencerBase {
   }
   
   createEmptyPattern() {
-    return Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, velocity: 0.8, slide: false }));
+    return Array(16).fill(null).map(() => ({ note: 'C', octave: 2, gate: false, velocity: 0.8, duration: "16n" }));
   }
   
   randomizePattern() {
@@ -126,7 +126,7 @@ class JamFMSequencer extends SequencerBase {
       octave: Math.random() > 0.6 ? 3 : (Math.random() > 0.3 ? 2 : 1),
       gate: Math.random() > 0.25,
       velocity: Math.random() > 0.65,
-      slide: Math.random() > 0.70
+      duration: "16n"
     }));
     this.patternChanged(this.selectedInstrumentName, this.selectedInstrumentPattern, "random");
     this.patternSelect.value = "";
@@ -222,7 +222,7 @@ class JamFMSequencer extends SequencerBase {
       this.currentStep.note = note.substring(0, note.length - 1);
       this.currentStep.gate = true;
       this.currentStep.velocity = this.accentStepToggleBtn.classList.contains("active") ? 1.0 : 0.8;
-      this.currentStep.slide = this.slideStepToggleBtn.classList.contains("active");
+      this.currentStep.duration = "16n";
       this.refreshStep(this.currentEditStepIndex, this.currentStep);
       this.nextStep();
     }

@@ -138,7 +138,7 @@ export class JamConnectApp {
         if (parameterControlMapping.range) 
           this.setupParameterKnob(parameterId, parameterControlMapping, defaultValue);
         else if (parameterControlMapping.options)
-          this.setupParameterSwitch(parameterId, parameterControlMapping, defaultValue);
+          this.setupParameterSwitch(parameterId, parameterControlMapping, parameterControlMapping.value);
         else if (parameterControlMapping.boolean == true)
           this.setupParameterToggle(parameterId, parameterControlMapping, defaultValue);
         else

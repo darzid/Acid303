@@ -2,6 +2,12 @@ import { AudioGraphBase } from "./jamconnect-audiograph.js";
 
 const parameters = {
   delay: {
+  	time: {
+			value: "8n.",
+			deviceParameter: "delayTime.value",
+			options: ['16n.','16n', '8n.', '8n', '4n.','4n'],
+			optionNames: ["1/16t", "1/16", "1/8t", "1/8", "1/4t", "1/4"]
+		},
     feedback: {
 			value: 0.5,
 			deviceParameter: "feedback.value",
@@ -22,7 +28,8 @@ const parameters = {
 				displayValueMultiplier: 100,
 				displayValueUnit: "%"
 			}
-		}
+		},
+		
   },
   
   chorus: {
@@ -294,74 +301,6 @@ const parameters = {
   }
 }
 
-export class StereoChorus {
-	constructor(options = {}) {
-		this._input = new Tone.Gain();
-		this._input.channelInterpretation = "speakers";
-		console.log("StereoChorus")
-		this._chorusL = new Tone.Chorus({options});
-		this._chorusR = new Tone.Chorus({options});
-		
-		this._input.connect(this._chorusL);
-		this._input.connect(this._chorusR);
-		
-		this._frequency = new Tone.Signal();
-		this._frequency.connect(this._chorusL.frequency);
-		this._frequency.connect(this._chorusR.frequency);
-		
-		/*this._depth = new Tone.Signal();
-		console.log("StereoChorus2a")
-		this._depth.connect(this._chorusL.depth);
-		console.log("StereoChorus3")
-		this._depth.connect(this._chorusR.depth);*/
-		
-		this._feedback = new Tone.Signal();
-		this._feedback.connect(this._chorusL.feedback);
-	//	this._feedback.connect(this._chorusR.feedback);
-		
-		console.log("StereoChorus3")
-		
-		this._output = new Tone.Split(2);
-		this._chorusL.connect(this._output, 0, 0);
-		this._chorusR.connect(this._output);
-		
-		console.log("StereoChorus4")
-	}
-	
-	get frequency() { return this._frequency; }
-	get depth() { return this._chorusL.depth; }
-	set depth(value) {
-		this._chorusL.depth = value;
-		this._chorusR.depth = value;
-	}
-	
-	get feedback() { return this._feedback; }
-	get wet() { return this._chorusL.wet; }
-	set wet(value) {
-		this._chorusL.wet = value;
-		this._chorusR.wet = value; 
-		
-	}
-	get input() { return this._input; }
-	get output() { return this._output; }
-	
-	connect(destination) {
-		this.output.connect(destination, 0, 0);
-		this.output.connect(destination, 1, 1);
-		
-		console.log("StereoChorus connected to ", destination);
-	}
-	
-	start() {
-		this._chorusL.start();
-		this._chorusR.start();
-	}
-	
-	toDestination() {
-		this.connect(Tone.Master);
-	}
-}
-
 export class AudioGraph extends AudioGraphBase {
   constructor() 
   {
@@ -377,10 +316,6 @@ export class AudioGraph extends AudioGraphBase {
         sustain: this.params.modEnv.sustain.value,
         release: this.params.modEnv.release.value,
       },
-   /*   modulation: {
-        type: "custom",
-        partials: [1,2,4]
-      },*/
       envelope: {
         attack: this.params.adsr.attack.value,
         decay: this.params.adsr.decay.value,
@@ -393,8 +328,7 @@ export class AudioGraph extends AudioGraphBase {
       width: this.params.widener.width.value,
       wet: this.params.widener.dryWet.value
     });
-    this.devices.instruments.synth.connect(this.devices.effects.widener);
-  	
+    
     this.devices.effects.filter = new Tone.Filter({
       frequency: this.params.filter.cutoff.value,
       Q: this.params.filter.resonance.value,
@@ -406,13 +340,7 @@ export class AudioGraph extends AudioGraphBase {
       distortion: this.params.distortion.distortion.value,
       wet: this.params.distortion.dryWet.value,
     });
-    
-    this.devices.instruments.synth.chain(
-    	this.devices.effects.widener,
-    	this.devices.effects.filter,
-    	this.devices.effects.distortion);
-    	
-    // MONO TO STEREO DEVICE
+   
     this.devices.effects.chorus = new Tone.Chorus({
       frequency: this.params.chorus.rate.value,
       depth: this.params.chorus.depth.value,
@@ -420,45 +348,31 @@ export class AudioGraph extends AudioGraphBase {
       wet: this.params.chorus.dryWet.value
     });
     this.devices.effects.chorus.start();
-    console.log(this.devices.effects.chorus)
-    this.devices.effects.distortion.connect(this.devices.effects.chorus);
     
-    // STEREO DEVICES
     this.devices.effects.delay = new Tone.PingPongDelay({
-      delayTime: "8n.",
+      delayTime: this.params.delay.time.value,
       feedback: this.params.delay.feedback.value,
       wet: this.params.delay.dryWet.value
     });
-    console.log("test")
-    this.devices.effects.chorus.connect(this.devices.effects.delay);
     
-    this.devices.effects.reverb = new Tone.Reverb(
-    {
+    this.devices.effects.reverb = new Tone.Reverb({	
     	preDelay: this.params.reverb.preDelay.value,
   		decay: this.params.reverb.decay.value,
       wet: this.params.reverb.dryWet.value,
     });
-    this.devices.effects.delay.connect(this.devices.effects.reverb);
     
-    this.devices.effects.widener = new Tone.StereoWidener({
-      width: this.params.widener.width.value,
-      wet: this.params.widener.dryWet.value
-    });
-    
-    this.devices.effects.reverb.connect(this.groupBus.input);
-    
-  /*
-  console.log("reverb", this.devices.effects.reverb)
-    this.devices.effects.reverb.connect(this.devices.effects.widener);
-    console.log("widener", this.devices.effects.widener)
-  	this.devices.effects.widener.connect(this.groupBus);
-  	//this.devices.effects.widener.connect(this.groupBus, 1, 1);
-  	*/
+    this.devices.instruments.synth.chain(
+    	this.devices.effects.widener,
+    	this.devices.effects.filter,
+    	this.devices.effects.distortion,
+    	this.devices.effects.chorus,
+    	this.devices.effects.delay,
+    	this.devices.effects.reverb,
+    	this.groupBus.input
+    );
   	
     this.devices.modules.modEnv = this.devices.instruments.synth.modulationEnvelope;
     this.devices.modules.adsr = this.devices.instruments.synth.envelope;
-    
-    console.log("test3")
   }
   
   playNote(note, velocity, slide, duration, time) 
