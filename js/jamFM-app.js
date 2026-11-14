@@ -58,7 +58,7 @@ export class App extends JamConnectApp {
     });
     
     //<div id="${deviceName}.${parameterName}" class="flex flex-row gap-0 p-0 text-center">${buttonsHtml}</div>
-    let html = `<div class="min-w-[70px] device-switch flex flex-col mb-1 flex-start">
+    let html = `<div class="min-w-[70px] max-w-[130px] device-switch flex flex-col mb-1 flex-start">
         <span class="text-[11px] font-extrabold uppercase text-slate-700 mb-0">${parameterName.toUpperCase()}</span>
         <div id="${deviceName}.${parameterName}" class="text-center">${buttonsHtml}</div></div>`;
     return html;
