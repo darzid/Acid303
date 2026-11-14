@@ -75,7 +75,7 @@ export class TR909Snare {
 	
 	// Koppel direct aan de eindbestemming (speakers)
 	toDestination() {
-		this.output.toDestination();
+		//this.output.toDestination();
 		return this;
 	}
 	

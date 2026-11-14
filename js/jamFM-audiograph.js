@@ -2,6 +2,12 @@ import { AudioGraphBase } from "./jamconnect-audiograph.js";
 
 const parameters = {
   delay: {
+  	time: {
+			value: "8n.",
+			deviceParameter: "delayTime.value",
+			options: ['16n','16n.', '8n', '8n.', '4n', '4n.', '2n', '1n'],
+			optionNames: ["1/16", "1/16t", "1/8", "1/8t", "1/4", "1/4t", "1/2", "1/1"]
+		},
     feedback: {
 			value: 0.5,
 			deviceParameter: "feedback.value",
@@ -10,6 +16,48 @@ const parameters = {
 				max: 1,
 				displayValueMultiplier: 100,
 				displayValueUnit: "%"
+			}
+		},
+    dryWet: {
+			value: 0.5,
+			deviceParameter: "wet.value",
+			midiControlMapping: 13,
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+		},
+		
+  },
+  
+  chorus: {
+    rate: {
+			value: 0.01,
+			deviceParameter: "frequency.value",
+			range: {
+				min: 0,
+				max: 5,
+				displayValueUnit: "Hz"
+			}
+		},
+    feedback: {
+			value: 0.5,
+			deviceParameter: "feedback.value",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+		},
+		depth: {
+			value: 0.5,
+			deviceParameter: "depth",
+			range: {
+				min: 0,
+				max: 5,
 			}
 		},
     dryWet: {
@@ -72,7 +120,7 @@ const parameters = {
 			}
 		},
 		dryWet: {
-			value: 0.5,
+			value: 0.25,
 			deviceParameter: "wet.value",
 			range: {
 				min: 0,
@@ -81,6 +129,29 @@ const parameters = {
 				displayValueUnit: "%"
 			}
 		}
+	},
+	
+	widener: {
+	  width: {
+			value: 0.5,
+			deviceParameter: "width.value",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+	  },
+	  dryWet: {
+			value: 0.5,
+			deviceParameter: "wet.value",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+	  }
 	},
 	
 	filter: {
@@ -96,8 +167,8 @@ const parameters = {
       deviceParameter: "frequency.value",
       midiControlMapping: 74,
       range: {
-        min: 100,
-        max: 8000,
+        min: 250,
+        max: 2800,
         displayValueUnit: "Hz"
       }
     },
@@ -168,7 +239,7 @@ const parameters = {
       midiControlMapping: 70,
       range: {
         min: 1,
-        max: 10
+        max: 6
       }
     },
     "mod-amount": {
@@ -177,7 +248,7 @@ const parameters = {
       midiControlMapping: 1,
       range: {
         min: 0,
-        max: 10
+        max: 12
       }
     },
   },
@@ -235,33 +306,9 @@ export class AudioGraph extends AudioGraphBase {
   {
     super(parameters);
   
-    this.devices.effects.filter = new Tone.Filter({
-      frequency: this.params.filter.cutoff.value,
-      Q: this.params.filter.resonance.value,
-      type: this.params.filter.type.value,
-      rolloff: this.params.filter.rolloff.value,
-    });
-    
-    this.devices.effects.delay = new Tone.PingPongDelay({
-      delayTime: "8n.",
-      feedback: this.params.delay.feedback.value,
-      wet: this.params.delay.dryWet.value
-    });
-    
-    this.devices.effects.reverb = new Tone.Reverb(
-    {
-    	preDelay: this.params.reverb.preDelay.value,
-  		decay: this.params.reverb.decay.value,
-      wet: this.params.reverb.dryWet.value,
-    });
-    
-    this.devices.effects.distortion = new Tone.Distortion({
-      distortion: this.params.distortion.distortion.value,
-      wet: this.params.distortion.dryWet.value,
-    });
-    
-    this.devices.instruments.synth = new Tone.FMSynth({
-      harmonicity: 1.5,
+  	// MONO devices
+  	this.devices.instruments.synth = new Tone.FMSynth({
+      harmonicity: this.params.synth.harmonicity.value,
       modulationIndex: this.params.synth["mod-amount"].value,
       modulationEnvelope: {
         attack: this.params.modEnv.attack.value,
@@ -277,11 +324,55 @@ export class AudioGraph extends AudioGraphBase {
       },
     });
     
+    this.devices.effects.widener = new Tone.StereoWidener({
+      width: this.params.widener.width.value,
+      wet: this.params.widener.dryWet.value
+    });
+    
+    this.devices.effects.filter = new Tone.Filter({
+      frequency: this.params.filter.cutoff.value,
+      Q: this.params.filter.resonance.value,
+      type: this.params.filter.type.value,
+      rolloff: this.params.filter.rolloff.value,
+    });
+    
+    this.devices.effects.distortion = new Tone.Distortion({
+      distortion: this.params.distortion.distortion.value,
+      wet: this.params.distortion.dryWet.value,
+    });
+   
+    this.devices.effects.chorus = new Tone.Chorus({
+      frequency: this.params.chorus.rate.value,
+      depth: this.params.chorus.depth.value,
+      feedback: this.params.chorus.feedback.value,
+      wet: this.params.chorus.dryWet.value
+    });
+    this.devices.effects.chorus.start();
+    
+    this.devices.effects.delay = new Tone.PingPongDelay({
+      delayTime: this.params.delay.time.value,
+      feedback: this.params.delay.feedback.value,
+      wet: this.params.delay.dryWet.value
+    });
+    
+    this.devices.effects.reverb = new Tone.Reverb({	
+    	preDelay: this.params.reverb.preDelay.value,
+  		decay: this.params.reverb.decay.value,
+      wet: this.params.reverb.dryWet.value,
+    });
+    
+    this.devices.instruments.synth.chain(
+    	this.devices.effects.widener,
+    	this.devices.effects.filter,
+    	this.devices.effects.distortion,
+    	this.devices.effects.chorus,
+    	this.devices.effects.delay,
+    	this.devices.effects.reverb,
+    	this.groupBus.input
+    );
+  	
     this.devices.modules.modEnv = this.devices.instruments.synth.modulationEnvelope;
     this.devices.modules.adsr = this.devices.instruments.synth.envelope;
-
-    // Chain 303 Audio Routing
-    this.devices.instruments.synth.chain(this.devices.effects.filter, this.devices.effects.distortion, this.devices.effects.delay, this.devices.effects.reverb, this.groupBus);
   }
   
   playNote(note, velocity, slide, duration, time) 

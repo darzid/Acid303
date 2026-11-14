@@ -19,12 +19,14 @@ class Switch {
 		if (value == this.value) return;
 		
 		let switchButton = document.querySelector(`button[data-parameter="${this.id}"][data-value="${value}"]`);
+		if (!switchButton) console.warn(`Missing switch for ${this.id}.${value}`, this);
 		this.activateSwitchButton(switchButton);
 		this.onChange(value);
 	}
 	
 	activateSwitchButton(switchButton) {
-		this.activeSwitch?.classList.remove("active-led");
+		if (this.activeSwitch)
+			this.activeSwitch.classList.remove("active-led");
 		switchButton.classList.add("active-led");
 	}
 }

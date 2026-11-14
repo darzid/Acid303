@@ -103,7 +103,7 @@ export class App extends JamConnectApp {
   }
   
   playNote(instrumentName, note, stepData, duration, time) {
-    this.audioGraph.playNote(note, stepData.velocity, stepData.slide, duration, time);
+    this.audioGraph.playNote(note, stepData.velocity, stepData.slide, stepData.duration, time);
   }
   
   run() {

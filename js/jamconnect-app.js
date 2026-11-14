@@ -16,8 +16,10 @@ export class JamConnectApp {
     this.audioGraph = audioGraph;
     this.audioGraph.onAudioInitialized = () => this.onAudioInitialized();
     
+    console.log(Tone.Master)
     this.audioGraph.toDestination();
-    
+    //Tone.Master, 0, 0);
+    console.log("connected")
     this._sequencer = null;
     
     this.themeColorName = themeColorName;
@@ -136,7 +138,7 @@ export class JamConnectApp {
         if (parameterControlMapping.range) 
           this.setupParameterKnob(parameterId, parameterControlMapping, defaultValue);
         else if (parameterControlMapping.options)
-          this.setupParameterSwitch(parameterId, parameterControlMapping, defaultValue);
+          this.setupParameterSwitch(parameterId, parameterControlMapping, parameterControlMapping.value);
         else if (parameterControlMapping.boolean == true)
           this.setupParameterToggle(parameterId, parameterControlMapping, defaultValue);
         else
