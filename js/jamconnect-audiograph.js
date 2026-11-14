@@ -1,3 +1,4 @@
+
 export class AudioGraphBase {
 	constructor(parameters) {
 		this.params = parameters;
@@ -13,16 +14,29 @@ export class AudioGraphBase {
 		this.deviceGains = {
 		};
 		
-		this.groupBus = new Tone.Channel();
+		this.groupBus = new Tone.Split(2);
+		this.merge = new Tone.Merge();
+		this.groupBus.connect(this.merge, 0, 0);
+		this.groupBus.connect(this.merge, 1, 1);
+		
+		//this.groupBus= new Tone.Channel();
+		//this.groupBus.channelInterpretation = "speakers";
+	//	this.groupBus.connect(this.groupBusChannel);
+		
+		console.log("groupbus outputs", this.groupBus.numberOfOutputs);
+//		console.log("groupbus channel outputs", this.groupBusChannel.numberOfOutputs);
 	}
 	
-	get output() { return this.groupBus.output; }
+	
+	get output() { return this.merge; }
 	
 	connect(destination) {
 		this.output.connect(destination);
 	}
 	
 	toDestination() {
+		
+		
 		this.output.toDestination();
 	}
 	
@@ -42,7 +56,7 @@ export class AudioGraphBase {
 		if (device) return device;
 		device = this.devices.effects[name];
 		if (device) return device;
-		throw `No device found with name ${name}`
+		throw `No device found with name ${name}`;
 	}
 	
 	getParameterValues() {

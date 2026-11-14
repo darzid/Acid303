@@ -16,8 +16,10 @@ export class JamConnectApp {
     this.audioGraph = audioGraph;
     this.audioGraph.onAudioInitialized = () => this.onAudioInitialized();
     
+    console.log(Tone.Master)
     this.audioGraph.toDestination();
-    
+    //Tone.Master, 0, 0);
+    console.log("connected")
     this._sequencer = null;
     
     this.themeColorName = themeColorName;

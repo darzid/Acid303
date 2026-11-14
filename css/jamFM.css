@@ -18,7 +18,13 @@
 .device-knobs .synth-btn { margin-top: 0px; }
 
 .device-knobs-title { width: stretch; margin: 0; text-shadow: 0.03em 0.02em 0.05em black; 
-background-image: linear-gradient(120deg, rgba(0,0,0,0.3), rgba(0,0,0,0.8),  rgba(0,0,0,0.5) 90%);}
+  background-image: linear-gradient(120deg, rgba(0,0,0,0.3), rgba(0,0,0,0.8),  rgba(0,0,0,0.5) 90%);
+}
+
+.device-knobs-title.effect {
+  background-image: linear-gradient(120deg, rgba(40,40,120,0.3), rgba(40,40,120,0.8),  rgba(40,40,120,0.5) 90%);
+}
+
 .knob-container { position: relative; width: 56px; height: 56px; flex: 0 0 auto; cursor: ns-resize; touch-action: none; user-select: none;}
 .knob-indicator { position: absolute; top: 6px; left: 50%;
   background: #f8bd38;
