@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
+</head>
+
+<body>
+	<button id="StartBtn">Start</button>
+	<button id="StopBtn">Stop</button>
+	<script type="module" src="./js/devices/Vocoder.js"></script>
+	<script type="module">
+import { Vocoder } from "./js/devices/Vocoder.js";
+
+const voiceSampler = new Tone.Player("./samples/military-soldier-vocal-turn-the-mic-on.wav");
+
+const vocoder = new Vocoder();
+vocoder.modulator = voiceSampler;
+vocoder.toDestination();
+
+const loop = new Tone.Loop((time) => {
+	voiceSampler.start(time);
+	
+	vocoder.detune.setValueAtTime(0, time);
+	vocoder.detune.rampTo(600, time + "0.25m");
+  vocoder.triggerAttackRelease("C2", "1m", time);
+  
+}, "1m").start(0);
+
+const startButton = document.getElementById("StartBtn");
+const stopButton = document.getElementById("StopBtn");
+stopButton.disabled = true;
+
+startButton.addEventListener("click", async () => {
+	await Tone.start();
+	startButton.disabled = true;
+	stopButton.disabled = false;
+	Tone.Transport.start();
+});
+
+stopButton.addEventListener("click", () => {
+	Tone.Transport.stop();
+	startButton.disabled = false;
+	stopButton.disabled = true;
+});
+	</script>
+</body>
+
+</html>
