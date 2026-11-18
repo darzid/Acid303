@@ -18,7 +18,8 @@
 		<canvas id="visualizer" style="width: 90vw"></canvas>
 	</div>
 
-	<script type="module" src="./js/devices/VoiceToMidi.js"></script>
+  <span id="peak-info" style="display: none">Note: <span id="peak-note"></span> (<span id="peak-frequency"></span>Hz), level: <span id="peak-level"></span></span>
+	<!--<script type="module" src="./js/devices/VoiceToMidi.js"></script>-->
 	<script type="module">
 import { VoiceToMidi } from "./js/devices/VoiceToMidi.js";
 import { Visualizer } from "./js/visualizer.js";
