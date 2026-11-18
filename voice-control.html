@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.22/Tone.js"></script>
+</head>
+
+<body>
+	<button id="StartBtn">Start</button>
+	<button id="StopBtn">Stop</button>
+
+	<canvas id="level-meter" style="height: 20pt"></canvas>
+	<canvas id="visualizer"></canvas>
+	
+	<script src="./js/Visualizer.js"></script>
+	<script src="./js/Level-meter.js"></script>
+	<script type="module" src="./js/devices/Vocoder.js"></script>
+	<script type="module">
+import { Vocoder } from "./js/devices/Vocoder.js";
+const synth = new Tone.Synth({oscillator: { type: "sawtooth"}});
+synth.toDestination();
+const mic = new Tone.UserMedia();
+
+const meter = new Tone.Meter();
+mic.connect(meter);
+const pitchFft = new Tone.FFT({size: 1024, normalRange: true, smoothing: 0.0});  
+mic.connect(pitchFft);
+
+const levelMeter = new LevelMeter(mic, "level-meter");
+const visualizer = new Visualizer(mic, "visualizer");
+
+const peakFrequency = document.getElementById("peakFrequency");
+const historyLog = document.getElementById("midiNoteHistoryLog");
+const startButton = document.getElementById("StartBtn");
+const stopButton = document.getElementById("StopBtn");
+stopButton.disabled = true;
+
+startButton.addEventListener("click", async () => {
+	await Tone.start();
+	startButton.disabled = true;
+	stopButton.disabled = false;
+	visualizer.isActive = true;
+	levelMeter.isActive = true;
+	
+	mic.open().then(() => analyse());
+});
+
+stopButton.addEventListener("click", () => {
+	mic.close();
+	visualizer.isActive = false;
+	levelMeter.isActive = false;
+	startButton.disabled = false;
+	stopButton.disabled = true;
+});
+
+const SILENCE = -30;
+var previousLevel = SILENCE;
+var startNote = null;
+var detune = 0;
+
+function analyse() {
+	const level = meter.getValue();
+	const note = getNote();
+	if (previousLevel <= SILENCE && level > SILENCE) {
+		let velocity = (level + 30) / 10;
+		startNote = note;
+		synth.triggerAttack(note, velocity);
+		console.log(`Start note ${note}, level=${level}, velocity=${velocity}`);
+	} else if (level <= SILENCE && previousLevel > SILENCE) {
+		console.log("Stop note");
+		synth.triggerRelease();
+	} else {
+		if (note != startNote) {
+			detune = (note - startNote) * 100;
+			synth.detune.rampTo(detune);
+			//console.log("Detune: " + detune)
+		}
+		else {
+			synth.detune.rampTo(0);
+			//console.log("Detune: " + 0)
+		}
+	}
+	previousLevel = level;
+	
+	if (startButton.disabled)
+		window.setTimeout(() => analyse(), 10);
+}
+
+function getNote() {
+	const fftValues = pitchFft.getValue();
+	const freqBands = fftValues.length;
+	let highestValue = null;
+	let highestValueFrequency= null;
+	
+  for (let i = 0; i < freqBands; i++) {
+    const magnitude = fftValues[i]; // Float between 0 and 1
+    if (!highestValue || magnitude > highestValue) {
+    	highestValue = magnitude;
+    	highestValueFrequency = pitchFft.getFrequencyOfIndex(i);
+    }
+	}
+	
+	let note = Tone.Frequency(highestValueFrequency).toMidi();
+	//if (note > 60) return (60 - (note - 60));
+	return note;
+}
+	</script>
+</body>
+
+</html>
