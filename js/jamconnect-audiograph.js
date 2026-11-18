@@ -19,14 +19,8 @@ export class AudioGraphBase {
 		this.groupBus.connect(this.merge, 0, 0);
 		this.groupBus.connect(this.merge, 1, 1);
 		
-		//this.groupBus= new Tone.Channel();
-		//this.groupBus.channelInterpretation = "speakers";
-	//	this.groupBus.connect(this.groupBusChannel);
-		
 		console.log("groupbus outputs", this.groupBus.numberOfOutputs);
-//		console.log("groupbus channel outputs", this.groupBusChannel.numberOfOutputs);
 	}
-	
 	
 	get output() { return this.merge; }
 	
@@ -35,8 +29,6 @@ export class AudioGraphBase {
 	}
 	
 	toDestination() {
-		
-		
 		this.output.toDestination();
 	}
 	
@@ -57,6 +49,11 @@ export class AudioGraphBase {
 		device = this.devices.effects[name];
 		if (device) return device;
 		throw `No device found with name ${name}`;
+	}
+	
+	getInstrumentByMidiChannel(midiChannel) {
+	  let instrumentName = Object.keys(this.devices.instruments)[midiChannel - 1];
+	  return this.devices.instruments[instrumentName];
 	}
 	
 	getParameterValues() {
@@ -121,7 +118,24 @@ export class AudioGraphBase {
 			return normalizedValue;
 	}
 	
-	
+	onMidiNoteOn(channel, note, velocity, time) {
+  	console.log("onMidiNoteOn " + note, channel, velocity, time);
+  	let instrument = this.getInstrumentByMidiChannel(channel);
+  	instrument.triggerAttack(note, velocity, time);
+  }
+  
+  onMidiNoteOff(channel, note, time) {
+  	console.log("onMidiNoteOff " + note, channel, time);
+  	let instrument = this.getInstrumentByMidiChannel(channel);
+  	instrument.triggerRelease(note, time);
+  }
+  
+  onMidiControlChange(channel, controlNumber, controlName, value, time) {
+  	console.log("onReceiveMidiControlChange " + controlName + " -> " + value, channel, controlNumber);
+  	let instrumentControl = this.getMidiControlParameter(controlNumber);
+  	instrumentControl.value = value;
+  }
+  
 	static createDeviceGain(groupBus, device, level, effectDevice = null, effectLevel = 0) {
 		let deviceGain = new Tone.Gain(level);
 		device.connect(deviceGain);

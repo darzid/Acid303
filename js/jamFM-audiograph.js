@@ -295,7 +295,7 @@ const parameters = {
 	},
 }
 
-export class AudioGraph extends AudioGraphBase {
+export class JamFMAudioGraph extends AudioGraphBase {
   constructor() 
   {
     super(parameters);

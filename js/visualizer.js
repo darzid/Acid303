@@ -1,27 +1,22 @@
+import { VisualizerBase } from "./visualizer-base.js";
+
 const VisualizerType = {
 	Oscilloscope: "Oscilloscope",
 	SpectrumAnalyser: "SpectrumAnalyser"
 }
 	
-class Visualizer {
-	_oscillatorFrequency = 2048;
-	_spectrumBars = 16;
-	_spectrumBarSpacing = 2;
+export class Visualizer extends VisualizerBase {
+	constructor(input, canvasElementId, options = {}) {
+	  super(input, canvasElementId, options);
+	  
+		this.strokeColor = options.strokeColor || "#22c55e";
 	
-	constructor(input, canvasElementId, strokeColor = "#22c55e", bgColor = "#091209", type = VisualizerType.Oscilloscope) {
-		this._input = input;
+		this._oscillatorFrequency = options.oscillatorFrequency || 2048;
+		this._spectrumBars = options.spectrumBars || 16;
+		this._spectrumBarSpacing = options.spectrumBarSpacing || 2;
+		this.type = options.type || VisualizerType.Oscilloscope;
 		
-		this.strokeColor = strokeColor;
-		this.bgColor = bgColor;
-		
-		this.canvas = document.getElementById(canvasElementId);
-		this.canvas.addEventListener("dblclick", () => this.toggleType());
-		this.ctx = this.canvas.getContext('2d');
-		this.resizeCanvas();
-		window.addEventListener('resize', () => this.resizeCanvas());
-		
-		this._isActive = false;
-		this.type = type;
+		this.canvas.addEventListener("dblclick",() => this.toggleType());
 	}
 	
 	get type() { return this._type; }
@@ -32,16 +27,6 @@ class Visualizer {
 		this._type = value;
 		this.createAnalyser();
 	}
-	
-	get isActive() { return this._isActive; }
-	set isActive(value) { 
-		this._isActive = value;
-		if (this._isActive) {
-			this.drawVisualizer();
-		}
-	}
-	
-	get isPlaying() { return this._isPlaying; }
 	
 	toggleType() {
 		if (this.type == VisualizerType.Oscilloscope)
@@ -57,7 +42,7 @@ class Visualizer {
 			
 		let volumeBoost = (this._type == VisualizerType.SpectrumAnalyser) ? 10 : 1;
 		let gain = new Tone.Gain(volumeBoost);
-		this._input.connect(gain);
+		this.input.connect(gain);
 		gain.connect(this.waveAnalyser);
 		
 		if (this._type == VisualizerType.Oscilloscope) {
@@ -71,28 +56,12 @@ class Visualizer {
 		}
 	}
 	
-	resizeCanvas() {
-		this.canvas.width = this.canvas.parentElement.clientWidth;
-		this.canvas.height = this.canvas.parentElement.clientHeight;
-	}
-	
-	drawVisualizer() {
-		if (!this.isActive) return;
-		
-		this.clearCanvas();
-		
+	draw() {
 		const values = this.waveAnalyser.getValue();
 		if (this.type == VisualizerType.Oscilloscope)
 			this.drawOscillator(values);
 		else
 			this.drawSpectrum(values);
-			
-		requestAnimationFrame(() => this.drawVisualizer());
-	}
-	
-	clearCanvas() {
-		this.ctx.fillStyle = this.bgColor;
-		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	}
 	
 	drawOscillator(values) {

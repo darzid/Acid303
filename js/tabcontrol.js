@@ -1,9 +1,9 @@
- class TabControl {
+export class TabControl {
  	constructor() {
  		this.activeTab = null;
- 		
  	}
-   render() {
+  
+  render() {
     const tabControl = document.getElementById("tab-control");
     const tabStrip = tabControl.querySelector(".tab-strip")
     const tabContainer = tabControl.querySelector(".tab-container");

@@ -1,11 +1,11 @@
-class Jam909Sequencer extends SequencerBase {
+import { SequencerBase } from "./jamconnect-sequencer.js"
+
+export class Jam909Sequencer extends SequencerBase {
   constructor(jcClient, audioGraph, themeColorName) {
     super(jcClient, audioGraph, themeColorName);
     
     this.addStepButton("gate", "emerald", "GATE", "OFF", "emerald");
     this.addStepButton("accent", "amber", "ACC", "---");
-    
-    
   }
   
   createEmptyPattern() {

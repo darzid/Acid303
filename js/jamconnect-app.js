@@ -1,4 +1,7 @@
 import { AudioGraphBase } from "./jamconnect-audiograph.js";
+import { Visualizer } from "./visualizer.js";
+import { LevelMeter } from "./level-meter.js";
+import { TabControl } from "./tabcontrol.js";
 
 export class JamConnectApp {
   ccMap = {};
@@ -50,7 +53,7 @@ export class JamConnectApp {
     this.tabControl = new TabControl();
     
     this.activeMidiInput = null;
-    this.visualizer = new Visualizer(this.audioGraph.output, "visualizer-canvas", visualizerStrokeColor, visualizerBackgroundColor);
+    this.visualizer = new Visualizer(this.audioGraph.output, "visualizer-canvas", { strokeColor: visualizerStrokeColor, bgColor: visualizerBackgroundColor});
     this.vuMeter = new LevelMeter(this.audioGraph, "levelmeter-canvas");
     
     this.jcClient = new JamConnectClient(appName, document.getElementById("jamconnect"), true);
@@ -416,10 +419,9 @@ export class JamConnectApp {
   
 	onAudioInitialized() {
 		if (this.placeholder) this.placeholder.style.display = 'none';
-    this.visualizer.isActive = true;
-    this.vuMeter.isActive = true;
+    this.visualizer.start();
+    this.vuMeter.start();
 	}
-	
 	
 	onSwingChanged(swing) {
 		

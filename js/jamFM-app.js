@@ -1,9 +1,10 @@
-import { AudioGraph } from "./jamFM-audiograph.js";
+import { JamFMAudioGraph } from "./jamFM-audiograph.js";
+import { JamFMSequencer } from "./jamFM-sequencer.js";
 import { JamConnectApp } from "./jamconnect-app.js";
 
-export class App extends JamConnectApp {
+export class JamFMApp extends JamConnectApp {
   constructor() {
-    super("jamFM", new AudioGraph(), "#22c55e");
+    super("jamFM", new JamFMAudioGraph(), "#22c55e");
     
     super.registerServiceWorker("../jamFM-service-worker.js");
     this.sequencer = new JamFMSequencer(this.jcClient, this.audioGraph, this.themeColorName);
@@ -134,5 +135,5 @@ export class App extends JamConnectApp {
   }
 }
 
-const app = new App();
+const app = new JamFMApp();
 app.run();

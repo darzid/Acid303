@@ -1,9 +1,10 @@
-import { AudioGraph } from "./jam909-audiograph.js";
+import { Jam909AudioGraph } from "./jam909-audiograph.js";
+import { Jam909Sequencer } from "./jam909-sequencer.js"
 import { JamConnectApp } from "./jamconnect-app.js";
 
-export class App extends JamConnectApp {
+export class Jam909App extends JamConnectApp {
   constructor() {
-    super("jam909", new AudioGraph(), "#de9e09", "#100B09", "amber");
+    super("jam909", new Jam909AudioGraph(), "#de9e09", "#100B09", "amber");
 
     super.registerServiceWorker("../jam909-service-worker.js");
     this.renderDebounceTimers = {};
@@ -214,5 +215,5 @@ export class App extends JamConnectApp {
   }
 }
 
-const app = new App();
+const app = new Jam909App();
 app.run();

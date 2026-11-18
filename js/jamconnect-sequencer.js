@@ -1,4 +1,4 @@
-class SequencerBase {
+export class SequencerBase {
 	constructor(jcClient, audioGraph, themeColorName, defaultPresets = null) {
 		this.jcClient = jcClient;
 		this.audioGraph = audioGraph;

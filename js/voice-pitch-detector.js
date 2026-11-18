@@ -1,0 +1,81 @@
+import { EventObjectBase } from "./event-object.js";
+
+export class VoicePitchDetector extends EventObjectBase {
+	_startNote = null;
+	_startFreq = null;
+	_prevNote = null;
+	_rafId = null;
+	_isPlaying = false;
+	
+	constructor() {
+		super();
+		
+		this._mic = new Tone.UserMedia();
+		this._fft = new Tone.FFT({size: 8192, normalRange: true}); //{size: 1024, normalRange: true, smoothing: 0.0});  
+		this._mic.connect(this._fft);
+	}
+	
+	get mic() { return this._mic; }
+	
+	start() {
+		console.log("detector start")
+		this._mic.open().then(() => this.getFftSnapshot());
+	}
+	
+	stop() {
+		cancelAnimationFrame(this._rafId);
+		this._mic.close();
+	}
+	
+	getFftSnapshot() {
+		const fftValues = this._fft.getValue();
+		const freqBands = fftValues.length;
+		
+		let fftSnapshot = { freqLevels: {}};
+		let peakFound = false;
+		let peakLevel = 0;
+		let peakFrequency = null;
+	  for (let i = 0; i < freqBands; i++) {
+	    const magnitude = fftValues[i]; // Float between 0 and 1
+	    const level = Math.round(magnitude * 100) / 100;
+	    if (level > 0) {
+	    	const frequency = this._fft.getFrequencyOfIndex(i);
+	    	fftSnapshot.freqLevels[frequency] = level;
+	    	if (level > peakLevel) {
+	    		peakFrequency = frequency;
+	    		peakLevel = level;
+	    	}
+	    	peakFound = true;
+	    }
+		}
+		
+		if (peakFound) {
+		  let peakNote = Tone.Frequency(peakFrequency).toNote();
+			
+			if (!this._isPlaying) {
+			  this._isPlaying = true;
+			  this._startFreq = peakFrequency;
+			  this._startNote = Tone.Frequency(peakFrequency).toMidi();
+			  this._fireEvent("onVoiceDetected", { frequency: peakFrequency, velocity: peakLevel * 10, note: peakNote });
+			}
+			else {
+			  let note = Tone.Frequency(peakFrequency).toMidi();
+			  if (note != this._prevNote) {
+			  	var detune = 1200 * Math.log2(peakFrequency / this._startFreq);
+					//detune = Math.round(detune * 100) / 100;
+  				//var detune = (note - this._startNote) * 100;
+  				this._prevNote = note;
+  				this._fireEvent("onVoicePitchChangeDetected", { frequency: peakFrequency, detune, velocity: peakLevel * 10, note: peakNote });
+			  }
+			}
+		}
+		else {
+			this._isPlaying = false;
+			this._fireEvent("onSilenceDetected");
+		}
+		
+		this._rafId = requestAnimationFrame(() => this.getFftSnapshot());
+	}
+}
+
+
