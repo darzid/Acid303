@@ -18,18 +18,41 @@
 		<canvas id="visualizer" style="width: 90vw"></canvas>
 	</div>
 
-  <span id="peak-info" style="display: none">Note: <span id="peak-note"></span> (<span id="peak-frequency"></span>Hz), level: <span id="peak-level"></span></span>
-	<!--<script type="module" src="./js/devices/VoiceToMidi.js"></script>-->
+  <span id="peak-info" style="display: none"><span id="change-type"></span> Note: <span id="peak-note"></span> (<span id="peak-frequency"></span>Hz), level: <span id="peak-level"></span></span>
 	<script type="module">
 import { VoiceToMidi } from "./js/devices/VoiceToMidi.js";
 import { Visualizer } from "./js/visualizer.js";
 import { LevelMeter } from "./js/level-meter.js";
 
+const peakInfoElement = document.getElementById("peak-info");
+const changeTypeElement = document.getElementById("change-type");
+const peakFrequencyElement = document.getElementById("peak-frequency");
+const peakLevelElement = document.getElementById("peak-level");
+const peakNoteElement = document.getElementById("peak-note");
+		
 const synth = new Tone.Synth({oscillator: { type: "sawtooth"}});
 synth.toDestination();
 
 const voiceToMidi = new VoiceToMidi();
 voiceToMidi.instrument = synth;
+voiceToMidi.onVoiceDetected = (frequency, level, note) => {
+  changeTypeElement.innerText = "Start ";
+  peakFrequencyElement.innerText = frequency.toFixed(3);
+  peakLevelElement.innerText = level;
+	peakNoteElement.innerText = note;
+	peakInfoElement.style.display = "inline";
+}
+voiceToMidi.onVoicePitchChangeDetected = (frequency, level, note) => {
+  changeTypeElement.innerText = "Pitch ";
+  peakFrequencyElement.innerText = frequency.toFixed(3);
+  peakLevelElement.innerText = level;
+	peakNoteElement.innerText = note;
+	peakInfoElement.style.display = "inline";
+}
+voiceToMidi.onSilenceDetected = () => {
+  peakInfoElement.style.display = "none";
+}
+			
 const visualizer = new Visualizer(voiceToMidi.mic, "visualizer", { type: "SpectrumAnalyser" });
 const levelMeter = new LevelMeter(voiceToMidi.mic, "level-meter", { direction: "Vertical"});
 
