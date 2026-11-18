@@ -20,7 +20,7 @@
 
   <span id="peak-info" style="display: none"><span id="change-type"></span> Note: <span id="peak-note"></span> (<span id="peak-frequency"></span>Hz), level: <span id="peak-level"></span></span>
 	<script type="module">
-import { VoiceToMidi } from "./js/devices/VoiceToMidi.js";
+import { VoiceInstrumentPlayer } from "./js/voice-instrument-player.js";
 import { Visualizer } from "./js/visualizer.js";
 import { LevelMeter } from "./js/level-meter.js";
 
@@ -33,28 +33,27 @@ const peakNoteElement = document.getElementById("peak-note");
 const synth = new Tone.Synth({oscillator: { type: "sawtooth"}});
 synth.toDestination();
 
-const voiceToMidi = new VoiceToMidi();
-voiceToMidi.instrument = synth;
-voiceToMidi.onVoiceDetected = (frequency, level, note) => {
+const voiceInstrumentPlayer = new VoiceInstrumentPlayer(synth);
+voiceInstrumentPlayer.voicePitchDetector.addEventListener("onVoiceDetected", (data) => {
   changeTypeElement.innerText = "Start ";
-  peakFrequencyElement.innerText = frequency.toFixed(3);
-  peakLevelElement.innerText = level;
-	peakNoteElement.innerText = note;
+  peakFrequencyElement.innerText = data.frequency.toFixed(3);
+  peakLevelElement.innerText = data.velocity;
+	peakNoteElement.innerText = data.note;
 	peakInfoElement.style.display = "inline";
-}
-voiceToMidi.onVoicePitchChangeDetected = (frequency, level, note) => {
+});
+voiceInstrumentPlayer.voicePitchDetector.addEventListener("onVoicePitchChangeDetected", (data) => {
   changeTypeElement.innerText = "Pitch ";
-  peakFrequencyElement.innerText = frequency.toFixed(3);
-  peakLevelElement.innerText = level;
-	peakNoteElement.innerText = note;
+  peakFrequencyElement.innerText = data.frequency.toFixed(3) ;
+  peakLevelElement.innerText = data.velocity;
+	peakNoteElement.innerText = data.note + " [" + data.detune.toFixed(3) + " ct]";
 	peakInfoElement.style.display = "inline";
-}
-voiceToMidi.onSilenceDetected = () => {
-  peakInfoElement.style.display = "none";
-}
+});
+voiceInstrumentPlayer.voicePitchDetector.addEventListener("onSilenceDetected", (data) => 
+  peakInfoElement.style.display = "none"
+);
 			
-const visualizer = new Visualizer(voiceToMidi.mic, "visualizer", { type: "SpectrumAnalyser" });
-const levelMeter = new LevelMeter(voiceToMidi.mic, "level-meter", { direction: "Vertical"});
+const visualizer = new Visualizer(voiceInstrumentPlayer.voicePitchDetector.mic, "visualizer", { type: "SpectrumAnalyser" });
+const levelMeter = new LevelMeter(voiceInstrumentPlayer.voicePitchDetector.mic, "level-meter", { direction: "Vertical"});
 
 const startButton = document.getElementById("StartBtn");
 const stopButton = document.getElementById("StopBtn");
@@ -66,11 +65,11 @@ startButton.addEventListener("click", async () => {
 	stopButton.disabled = false;
 	visualizer.start();
 	levelMeter.start();
-	voiceToMidi.start();
+	voiceInstrumentPlayer.start();
 });
 
 stopButton.addEventListener("click", () => {
-	voiceToMidi.stop();
+	voiceInstrumentPlayer.stop();
 	visualizer.stop();
 	levelMeter.stop();
 	startButton.disabled = false;
