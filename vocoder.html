@@ -12,42 +12,20 @@
 <body>
 	<button id="StartBtn">Start</button>
 	<button id="StopBtn">Stop</button>
-	<span id="peakFrequency"></span>
-	<div id="midiNoteHistoryLog" style="max-height: 200px; overflow-y: auto"></div>
 	<canvas id="visualizer"></canvas>
-	
-	<script type="module" src="./js/devices/Vocoder.js"></script>
 	<script type="module">
 import { Vocoder } from "./js/devices/Vocoder.js";
+import { VoiceInstrumentPlayer } from "./js/voice-instrument-player.js";
 import { Visualizer } from "./js/Visualizer.js";
 
-const voiceSampler = new Tone.Player("./samples/military-soldier-vocal-turn-the-mic-on.wav");
-const mic = new Tone.UserMedia();
-const pitchFft = new Tone.FFT();        
-mic.connect(pitchFft);
-const visualizer = new Visualizer(mic, "visualizer");
-
 const vocoder = new Vocoder();
-vocoder.modulator = mic;
+const voiceInstrumentPlayer = new VoiceInstrumentPlayer(vocoder.carrier);
+vocoder.modulator = voiceInstrumentPlayer.voicePitchDetector.mic;
 vocoder.toDestination();
 
-var transpose = 0;
-var midiNote = null;
-
-var midiNoteHistory = [];
-
-const loop = new Tone.Loop((time) => {
-	voiceSampler.start(time);
-	//vocoder.detune.setValueAtTime(previousTranspose, 0);
-	vocoder.detune.setValueAtTime(transpose / 10, time);
-	//vocoder.detune.setValueAtTime(0, time);
-	//vocoder.detune.rampTo(600, time + "0.25m");
-  vocoder.triggerAttackRelease("C2", "1m", time);
-  
-}, "1m").start(0);
+const visualizer = new Visualizer(voiceInstrumentPlayer.voicePitchDetector.mic, "visualizer");
 
 const peakFrequency = document.getElementById("peakFrequency");
-const historyLog = document.getElementById("midiNoteHistoryLog");
 const startButton = document.getElementById("StartBtn");
 const stopButton = document.getElementById("StopBtn");
 stopButton.disabled = true;
@@ -59,58 +37,16 @@ startButton.addEventListener("click", async () => {
 	startButton.disabled = true;
 	stopButton.disabled = false;
 	visualizer.start();
-	
-	transpose = 0;
-	midiNoteHistory = [];
-	historyLog.innerHTML = "";
-
-	mic.open().then(() => {
-		analyse();
-		Tone.Transport.start();
-	});
+  voiceInstrumentPlayer.start();
 });
 
 stopButton.addEventListener("click", () => {
-	cancelAnimationFrame(rafId);
 	visualizer.stop();
-	Tone.Transport.stop();
-	mic.close();
+	voiceInstrumentPlayer.stop();
 	
 	startButton.disabled = false;
 	stopButton.disabled = true;
 });
-
-
-function analyse() {
-	const values = pitchFft.getValue();
-	const freqBands = values.length;
-	let highestValue = null;
-	let highestValueFrequency= null;
-
-	let oldMidiNote = midiNote;
-	
-  for (let i = 0; i < freqBands; i++) {
-    const magnitude = values[i]; // Float between 0 and 1
-    if (!highestValue || magnitude > highestValue) {
-    	highestValue = magnitude;
-    	highestValueFrequency = pitchFft.getFrequencyOfIndex(i);
-    }
-	}
-	
-	let note = Tone.Frequency(highestValueFrequency).toNote();
-	
-	let newMidiNote = Tone.Frequency(highestValueFrequency).toMidi();
-	if (newMidiNote != midiNote) {
-		midiNote = newMidiNote;
-		midiNoteHistory.push(midiNote);
-		historyLog.innerHTML += midiNote + ", ";
-		transpose = (midiNote - oldMidiNote) * 100;
-	}
-
-	peakFrequency.innerText = `${highestValueFrequency} - ${note} [${transpose}]`;
-	
-	rafId = requestAnimationFrame(() => analyse());
-}
 	</script>
 </body>
 

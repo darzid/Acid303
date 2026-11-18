@@ -30,8 +30,15 @@ const peakFrequencyElement = document.getElementById("peak-frequency");
 const peakLevelElement = document.getElementById("peak-level");
 const peakNoteElement = document.getElementById("peak-note");
 		
-const synth = new Tone.Synth({oscillator: { type: "sawtooth"}});
-synth.toDestination();
+const synth = new Tone.Synth({portamento: "0.5s", oscillator: { type: "sawtooth"}});
+const filter = new Tone.Filter({type: "lowpass", frequency: 500});
+const delay = new Tone.PingPongDelay({delayTime: "8n.",
+  feedback: 0.3,
+  wet: 0.0
+});
+synth.connect(filter);
+filter.connect(delay);
+delay.toDestination();
 
 const voiceInstrumentPlayer = new VoiceInstrumentPlayer(synth);
 voiceInstrumentPlayer.voicePitchDetector.addEventListener("onVoiceDetected", (data) => {

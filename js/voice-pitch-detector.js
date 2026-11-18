@@ -62,6 +62,8 @@ export class VoicePitchDetector extends EventObjectBase {
 			  let note = Tone.Frequency(peakFrequency).toMidi();
 			  if (note != this._prevNote) {
 			  	var detune = 1200 * Math.log2(peakFrequency / this._startFreq);
+					//detune = Math.round(detune * 100) / 100;
+  				//var detune = (note - this._startNote) * 100;
   				this._prevNote = note;
   				this._fireEvent("onVoicePitchChangeDetected", { frequency: peakFrequency, detune, velocity: peakLevel * 10, note: peakNote });
 			  }
