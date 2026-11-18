@@ -29,11 +29,14 @@ export class VoiceToMidi {
 	}
 	
 	detect() {
+	  const note = this.detectNote();
 		const level = this._meter.getValue();
 	
 		if (this._previousLevel <= this._silence && level > this._silence) {
 			let velocity = (level + 30) / 10;
-			this._startNote = this.detectNote();
+			this._startNote = note;
+			this._instrument.detune.cancelScheduledValues();
+			this._instrument.detune.setValueAtTime(0, 0);
 			this._instrument.triggerAttack(this._startNote, velocity);
 		} 
 		else if (level <= this._silence && this._previousLevel > this._silence) {
@@ -62,7 +65,7 @@ export class VoiceToMidi {
 		
 	  for (let i = 0; i < freqBands; i++) {
 	    const magnitude = fftValues[i]; // Float between 0 and 1
-	    if (!highestValue || magnitude > highestValue) {
+	    if (!highestValue || magnitude >= highestValue) {
 	    	highestValue = magnitude;
 	    	highestValueFrequency = this._fft.getFrequencyOfIndex(i);
 	    }
