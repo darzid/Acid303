@@ -1,1 +1,1 @@
-# Acid303
+# JamConnect Demo Apps
