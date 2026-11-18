@@ -1,6 +1,7 @@
 import { AudioGraphBase } from "./jamconnect-audiograph.js";
 import { Visualizer } from "./visualizer.js";
 import { LevelMeter } from "./level-meter.js";
+import { TabControl } from "./tabcontrol.js";
 
 export class JamConnectApp {
   ccMap = {};

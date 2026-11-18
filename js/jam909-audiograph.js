@@ -518,8 +518,7 @@ const parameters = {
 	},
 };
 
-
-export class AudioGraph extends AudioGraphBase {
+export class Jam909AudioGraph extends AudioGraphBase {
   constructor() {
     super(parameters)
     
@@ -540,42 +539,42 @@ export class AudioGraph extends AudioGraphBase {
     this.deviceGains.BD = AudioGraphBase.createDeviceGain(
     	this.groupBus, this.devices.instruments.BD, this.params.BD.level.value, 
     	this.devices.effects.reverb, this.params.BD.reverb.value);
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.BD, this.deviceGains.BD,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.BD, this.deviceGains.BD,
     	this.devices.effects.distortion, this.params.BD.drive.value);
     
     this.devices.instruments.SD = this.createSD();
     this.deviceGains.SD = AudioGraphBase.createDeviceGain(this.groupBus, this.devices.instruments.SD, this.params.SD.level.value, this.devices.effects.reverb, this.params.SD.reverb.value);
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.SD, this.deviceGains.SD,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.SD, this.deviceGains.SD,
     	this.devices.effects.distortion, this.params.SD.drive.value);
     	
     this.devices.instruments.CP = this.createCP();
     this.deviceGains.CP = AudioGraphBase.createDeviceGain(this.groupBus, this.devices.instruments.CP, this.params.CP.level.value, this.devices.effects.reverb, this.params.CP.reverb.value);
-  	AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.CP, this.deviceGains.CP,
+  	AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.CP, this.deviceGains.CP,
 			this.devices.effects.distortion, this.params.CP.drive.value);
 			
   	    	this.devices.instruments.LT = this.createLT();
     this.devices.instruments.LT.connect(this.groupBus);
     this.deviceGains.LT = this.devices.instruments.LT.output;
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.LT, this.deviceGains.LT,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.LT, this.deviceGains.LT,
     	this.devices.effects.reverb, this.params.LT.reverb.value);
   
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.LT, this.deviceGains.LT,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.LT, this.deviceGains.LT,
 			this.devices.effects.distortion, this.params.LT.drive.value);
 			
     this.devices.instruments.MT = this.createMT();
     this.devices.instruments.MT.connect(this.groupBus);
     this.deviceGains.MT = this.devices.instruments.MT.output;
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.MT, this.deviceGains.MT,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.MT, this.deviceGains.MT,
     	this.devices.effects.reverb, this.params.MT.reverb.value);
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.MT, this.deviceGains.MT,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.MT, this.deviceGains.MT,
 			this.devices.effects.distortion, this.params.MT.drive.value);
 			
     this.devices.instruments.HT = this.createHT();
     this.devices.instruments.HT.connect(this.groupBus);
     this.deviceGains.HT = this.devices.instruments.HT.output;
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.HT, this.deviceGains.HT,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.HT, this.deviceGains.HT,
     	this.devices.effects.reverb, this.params.HT.reverb.value);
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.HT, this.deviceGains.HT,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.HT, this.deviceGains.HT,
 			this.devices.effects.distortion, this.params.HT.drive.value);
 			
     
@@ -583,28 +582,28 @@ export class AudioGraph extends AudioGraphBase {
     this.deviceGains.CH = AudioGraphBase.createDeviceGain(
     	this.groupBus, this.devices.instruments.CH, this.params.CH.level.value, 
     	this.devices.effects.reverb, this.params.CH.reverb.value);
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.CH, this.deviceGains.CH,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.CH, this.deviceGains.CH,
 			this.devices.effects.distortion, this.params.CH.drive.value);
 			
     this.devices.instruments.OH = this.createOH();
     this.deviceGains.OH = AudioGraphBase.createDeviceGain(
     	this.groupBus, this.devices.instruments.OH, this.params.OH.level.value, 
     	this.devices.effects.reverb, this.params.OH.reverb.value);
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.OH, this.deviceGains.OH,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.OH, this.deviceGains.OH,
 			this.devices.effects.distortion, this.params.OH.drive.value);
 		
 		this.devices.instruments.RS = this.createRS();
     this.deviceGains.RS = AudioGraphBase.createDeviceGain(
     	this.groupBus, this.devices.instruments.RS, this.params.RS.level.value, 
     	this.devices.effects.reverb, this.params.RS.reverb.value);
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.RS, this.deviceGains.RS,
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.RS, this.deviceGains.RS,
 			this.devices.effects.distortion, this.params.RS.drive.value);
 		
 		this.devices.instruments.RC = this.createRC();
     this.deviceGains.RC = AudioGraphBase.createDeviceGain(
     	this.groupBus, this.devices.instruments.RC, this.params.RC.level.value, 
     	this.devices.effects.reverb, this.params.RC.reverb.value);
-    AudioGraph.createDeviceSend(this.groupBus, this.devices.instruments.RC, 
+    AudioGraphBase.createDeviceSend(this.groupBus, this.devices.instruments.RC, 
     this.deviceGains.RC,
 			this.devices.effects.distortion, this.params.RC.drive.value);
 			

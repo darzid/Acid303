@@ -1,3 +1,5 @@
+import { SequencerBase } from "./jamconnect-sequencer.js"
+
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 const DEFAULT_PRESETS = {
@@ -22,7 +24,7 @@ const DEFAULT_PRESETS = {
     ]
   }
 }
-class JamFMSequencer extends SequencerBase {
+export class JamFMSequencer extends SequencerBase {
   constructor(jcClient, audioGraph, themeColorName, DEFAULT_PRESETS) {
     super(jcClient, audioGraph, themeColorName);
     

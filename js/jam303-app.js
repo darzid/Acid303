@@ -1,9 +1,10 @@
-import { AudioGraph } from "./jam303-audiograph.js";
+import { Jam303AudioGraph } from "./jam303-audiograph.js";
+import { Jam303Sequencer } from "./jam303-sequencer.js";
 import { JamConnectApp } from "./jamconnect-app.js";
 
-export class App extends JamConnectApp {
+export class Jam303App extends JamConnectApp {
   constructor() {
-    super("jam303", new AudioGraph(), "#22c55e");
+    super("jam303", new Jam303AudioGraph(), "#22c55e");
     
     super.registerServiceWorker("../jam303-service-worker.js");
     this.sequencer = new Jam303Sequencer(this.jcClient, this.audioGraph, this.themeColorName);
@@ -98,5 +99,5 @@ export class App extends JamConnectApp {
   }
 }
 
-const app = new App();
+const app = new Jam303App();
 app.run();

@@ -1,3 +1,5 @@
+import { SequencerBase } from "./jamconnect-sequencer.js"
+
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 // Preset Acid Patterns
@@ -89,7 +91,7 @@ var instrumentPatterns = {
   tb303: JSON.parse(JSON.stringify(DEFAULT_PRESETS["Phuture Acid"].tb303))
 }
 
-class Jam303Sequencer extends SequencerBase {
+export class Jam303Sequencer extends SequencerBase {
   constructor(jcClient, audioGraph, themeColorName) {
     super(jcClient, audioGraph, themeColorName, DEFAULT_PRESETS);
     
