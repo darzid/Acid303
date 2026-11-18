@@ -16,10 +16,10 @@
 	<div id="midiNoteHistoryLog" style="max-height: 200px; overflow-y: auto"></div>
 	<canvas id="visualizer"></canvas>
 	
-	<script src="./js/Visualizer.js"></script>
 	<script type="module" src="./js/devices/Vocoder.js"></script>
 	<script type="module">
 import { Vocoder } from "./js/devices/Vocoder.js";
+import { Visualizer } from "./js/Visualizer.js";
 
 const voiceSampler = new Tone.Player("./samples/military-soldier-vocal-turn-the-mic-on.wav");
 const mic = new Tone.UserMedia();
@@ -30,6 +30,11 @@ const visualizer = new Visualizer(mic, "visualizer");
 const vocoder = new Vocoder();
 vocoder.modulator = mic;
 vocoder.toDestination();
+
+var transpose = 0;
+var midiNote = null;
+
+var midiNoteHistory = [];
 
 const loop = new Tone.Loop((time) => {
 	voiceSampler.start(time);
@@ -47,39 +52,34 @@ const startButton = document.getElementById("StartBtn");
 const stopButton = document.getElementById("StopBtn");
 stopButton.disabled = true;
 
-var isRunning = false;
+var rafId = null; 
 
 startButton.addEventListener("click", async () => {
 	await Tone.start();
 	startButton.disabled = true;
 	stopButton.disabled = false;
-	visualizer.isActive = true;
+	visualizer.start();
 	
 	transpose = 0;
 	midiNoteHistory = [];
 	historyLog.innerHTML = "";
-	analyse();
+
 	mic.open().then(() => {
-		//analyse();
+		analyse();
 		Tone.Transport.start();
-		isRunning = true;
-		//analyse();
-	}
-	);
+	});
 });
 
 stopButton.addEventListener("click", () => {
-	isRunning = false;
+	cancelAnimationFrame(rafId);
+	visualizer.stop();
 	Tone.Transport.stop();
 	mic.close();
-	visualizer.isActive = false;
+	
 	startButton.disabled = false;
 	stopButton.disabled = true;
 });
 
-var midiNote = null;
-var transpose = 0;
-var midiNoteHistory = [];
 
 function analyse() {
 	const values = pitchFft.getValue();
@@ -109,8 +109,7 @@ function analyse() {
 
 	peakFrequency.innerText = `${highestValueFrequency} - ${note} [${transpose}]`;
 	
-	if (startButton.disabled)
-		window.setTimeout(() => analyse(), 500);
+	rafId = requestAnimationFrame(() => analyse());
 }
 	</script>
 </body>
