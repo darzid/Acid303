@@ -6,7 +6,9 @@ export class Action {
     this.actionStatus = this.actionContainer.querySelector(".action-status");
     this.actionStatus.style.display = "none";
     this.actionOutputElements = this.actionContainer.querySelectorAll(".action-output");
-    this.actionOutputElements.forEach(element => element.style.display = "none")
+    this.actionOutputElements.forEach(element => 
+      element.style.opacity = "0.1"
+    )
     this.actionMethod = actionMethod;
   }
   
@@ -51,7 +53,7 @@ export class Action {
         this.actionStatus.innerText = "";
         this.actionStatus.style.display = "none";
       }, 5000);
-    this.actionOutputElements.forEach(element => element.style.display = "block")
+    this.actionOutputElements.forEach(element => element.style.opacity = "1")
   }
   
   _showError(description, error) {

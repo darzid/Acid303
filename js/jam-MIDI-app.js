@@ -57,21 +57,12 @@ export class JamMidiApp {
         this.midiInputsContainer.innerHTML += `<button class="midi-device toggle-button" name="${inputDevice.name}">${index}: ${inputDevice.manufacturer} - ${inputDevice.name}</button>`;
       });
     }
-    else {
-      //this.midiInputsContainer.innerHTML += `<button class="midi-device toggle-button" name="MIDI-01">1: Microsoft - MIDI-01</button>`;
-      //this.midiInputsContainer.innerText = "None";
-      this.midiInputsContainer.innerHTML += "<div>None</div>";
-      console.log(this.midiInputsContainer);
-    }
     
     if (WebMidi.outputs.length > 0) {
       devicesFound = true;
       WebMidi.outputs.forEach((outputDevice, index) => {
         this.midiOutputsContainer.innerHTML += `<button class="midi-device toggle-button" name="${outputDevice.name}">${index}: ${outputDevice.manufacturer} - ${outputDevice.name}</button>`;
       });
-    }
-    else {
-      this.midiOutputsContainer.innerHTML += "<div>None</div>";
     }
     
     if (devicesFound) {
