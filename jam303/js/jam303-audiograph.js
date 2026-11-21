@@ -1,4 +1,4 @@
-import { AudioGraphBase } from "/js/jamconnect-audiograph.js";
+import { AudioGraphBase } from "../../js/jamconnect-audiograph.js";
 
 const parameters = {
   delay: {

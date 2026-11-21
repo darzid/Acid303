@@ -1,6 +1,6 @@
 import { Jam303AudioGraph } from "./jam303-audiograph.js";
 import { Jam303Sequencer } from "./jam303-sequencer.js";
-import { JamConnectApp } from "/js/jamconnect-app.js";
+import { JamConnectApp } from "../../js/jamconnect-app.js";
 
 export class Jam303App extends JamConnectApp {
   constructor() {
