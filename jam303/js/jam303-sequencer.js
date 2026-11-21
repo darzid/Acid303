@@ -1,4 +1,4 @@
-import { SequencerBase } from "/js/jamconnect-sequencer.js"
+import { SequencerBase } from "../../js/jamconnect-sequencer.js"
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
