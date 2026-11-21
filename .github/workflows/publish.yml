@@ -36,19 +36,19 @@ jobs:
           mkdir -p _site
           
           mkdir -p _site/jam909
-          cp -r ./jam909 _site/jam909
+          cp -r ./jam909/* _site/jam909
           
           mkdir -p _site/jam303
-          cp -r ./jam303 _site/jam303
+          cp -r ./jam303/* _site/jam303
 
           mkdir -p _site/jamFM
-          cp -r ./jamFM _site/jamFM
+          cp -r ./jamFM/* _site/jamFM
           
           mkdir -p _site/jamMIDI
-          cp -r ./jamMIDI _site/jamMIDI
+          cp -r ./jamMIDI/* _site/jamMIDI
           
           mkdir -p _site/jamVoice
-          cp -r ./jamVoice _site/jamVoice
+          cp -r ./jamVoice/* _site/jamVoice
           
           cp index.html jamconnect-manifest.json jamconnect-app.js jamconnect-service-worker.js _site
           
