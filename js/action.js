@@ -42,12 +42,17 @@ export class Action {
   
   _showDescription() {
     this.actionStatus.style.display = "block";
+    this.actionStatus.style.textAlign = "center";
+    this.actionStatus.style.margin = "2pt";
     this.actionStatus.innerText = this.actionDesciption;
     console.log(`Executing "${this.actionDescription}"`);
   }
   
   _showSucceededAndHide() {
-    this.actionStatus.style.color = "green";
+    this.actionStatus.style.backgroundColor = "darkgreen";
+    this.actionStatus.style.border = "1pt solid green"
+    this.actionStatus.style.color = "white";
+    
     this.actionStatus.innerText = `${this.actionDescription} succeeded`;
       window.setTimeout(() => {
         this.actionStatus.innerText = "";
@@ -57,7 +62,10 @@ export class Action {
   }
   
   _showError(description, error) {
-    this.actionStatus.style.color = "darkred";
+    this.actionStatus.style.backgroundColor = "darkred";
+    this.actionStatus.style.border = "1pt solid red";
+    this.actionStatus.style.color = "white";
+    
     this.actionStatus.innerHTML = `${description} failed<br>${error}`;
     
     console.error(`${description} failed!`, error, error.stack);
