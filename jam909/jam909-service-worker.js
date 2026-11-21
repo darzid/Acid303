@@ -1,0 +1,67 @@
+const CACHE_NAME = 'Jam909-v1.0.3';
+const ASSETS = [
+  './',
+  
+  '/css/styles.css',
+  '/images/favicon.ico',
+  '/images/copy.png',
+  '/images/share.png',
+  '/js/jamconnect-audiograph.js',
+  '/js/jamconnect-app.js',
+  '/js/jamconnect-sequencer.js',
+  '/js/controls/knob.js',
+  '/js/controls/switch.js',
+  '/js/controls/toggle.js',
+  '/js/server.js',
+  '/js/controls/tabcontrol.js',
+  '/js/qrcodemanager.js',
+  '/js/controls/visualizer.js',
+  '/js/controls/level-meter.js',
+  
+  './css/jam909.css',
+  './js/devices/TR909Toms.js',
+  './js/devices/TR909Snare.js',
+  './js/devices/TR909Rimshot.js',
+  './js/jam909-app.js',
+  './js/jam909-audiograph.js',
+  './js/jam909-sequencer.js',
+  './jam909.html',
+  './jam909-manifest.json'
+];
+
+//ggggggg
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+
+      return fetch(event.request).then((response) => {
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+        return response;
+      }).catch(() => {
+        return caches.match('./jam909.html');
+      });
+    })
+  );
+});

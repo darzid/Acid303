@@ -77,11 +77,11 @@ export class JamConnectApp {
     this._sequencer.onParameterChangeRequest = (deviceName, parameterName, parameterValue) => this.onParameterChangeRequest(deviceName, parameterName, parameterValue);
   }
   
-  registerServiceWorker(path) {
+  registerServiceWorker(path, scope) {
     if (location.origin !== "file://") {
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
-          .register(path, { scope: "/" })
+          .register(path, { scope: scope})
           .then((registration) => {
             this.swRegistration = registration;
             // registration worked
