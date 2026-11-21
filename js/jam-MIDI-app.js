@@ -22,8 +22,11 @@ export class JamMidiApp {
   }
   
   async initialize() {
-    await this.initJamConnectAction.executeAsync();
-    await this.initMidiAction.executeAsync();
+    var result = await this.initJamConnectAction.executeAsync();
+    if (!result.succeeded) return;
+    
+    result = await this.initMidiAction.executeAsync();
+    if (!result.succeeded) return;
   }
   
   async initJamConnect() {

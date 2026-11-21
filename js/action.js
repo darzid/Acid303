@@ -6,6 +6,7 @@ export class Action {
     this.actionStatus = this.actionContainer.querySelector(".action-status");
     this.actionStatus.style.display = "none";
     this.actionOutputElements = this.actionContainer.querySelectorAll(".action-output");
+    this.actionOutputElements.forEach(element => element.style.display = "none")
     this.actionMethod = actionMethod;
   }
   
@@ -44,18 +45,19 @@ export class Action {
   }
   
   _showSucceededAndHide() {
-    this.actionStatus.style.color = "darkgreen";
+    this.actionStatus.style.color = "green";
     this.actionStatus.innerText = `${this.actionDescription} succeeded`;
       window.setTimeout(() => {
         this.actionStatus.innerText = "";
         this.actionStatus.style.display = "none";
       }, 5000);
+    this.actionOutputElements.forEach(element => element.style.display = "block")
   }
   
   _showError(description, error) {
     this.actionStatus.style.color = "darkred";
-    this.actionStatus.innerHTML = `${description} failed! <br>${error}`;
-    this.actionOutputElements.forEach(element => element.style.display = "none")
+    this.actionStatus.innerHTML = `${description} failed<br>${error}`;
+    
     console.error(`${description} failed!`, error, error.stack);
   }
 }
