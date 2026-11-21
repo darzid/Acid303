@@ -35,6 +35,13 @@ jobs:
         run: |
           mkdir -p _site
           
+          cp index.html jamconnect-manifest.json jamconnect-app.js jamconnect-service-worker.js _site
+          mkdir -p _site/css
+          cp -r ./css/* _site/css
+          
+          mkdir -p _site/js
+          cp -r ./js/* _site/js
+          
           mkdir -p _site/jam909
           cp -r ./jam909/* _site/jam909
           
@@ -50,7 +57,7 @@ jobs:
           mkdir -p _site/jamVoice
           cp -r ./jamVoice/* _site/jamVoice
           
-          cp index.html jamconnect-manifest.json jamconnect-app.js jamconnect-service-worker.js _site
+
           
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
