@@ -1,5 +1,5 @@
-import { TabControl } from "/js/controls/tabcontrol.js";
-import { Action } from "/js/action.js";
+import { TabControl } from "../../js/controls/tabcontrol.js";
+import { Action } from "../../js/action.js";
 
 export class JamMidiApp {
   constructor() {
