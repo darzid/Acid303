@@ -1,6 +1,6 @@
 import { JamFMAudioGraph } from "./jamFM-audiograph.js";
 import { JamFMSequencer } from "./jamFM-sequencer.js";
-import { JamConnectApp } from "/js/jamconnect-app.js";
+import { JamConnectApp } from "../../js/jamconnect-app.js";
 
 export class JamFMApp extends JamConnectApp {
   constructor() {
