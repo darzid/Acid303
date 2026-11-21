@@ -34,23 +34,23 @@ jobs:
       - name: Copy files
         run: |
           mkdir -p _site
-          cp index.html manifest.json app.js service-worker.js _site
-          cp jam303.html jam303-manifest.json jam303-service-worker.js _site
-          cp jam909.html jam909-manifest.json jam909-service-worker.js _site
-          cp jamFM.html jamFM-manifest.json jamFM-service-worker.js _site
-          cp jamMIDI.html _site
           
-          mkdir -p _site/css
-          cp ./css/*.css _site/css
+          mkdir -p _site/jam909
+          cp -r ./jam909 _site/jam909
           
-          mkdir -p _site/images
-          cp ./images/*.* _site/images
+          mkdir -p _site/jam303
+          cp -r ./jam303 _site/jam303
+
+          mkdir -p _site/jamFM
+          cp -r ./jamFM _site/jamFM
           
-          mkdir -p _site/js
-          cp ./js/*.js _site/js
+          mkdir -p _site/jamMIDI
+          cp -r ./jamMIDI _site/jamMIDI
           
-          mkdir -p _site/js/devices
-          cp ./js/devices/*.js _site/js/devices
+          mkdir -p _site/jamVoice
+          cp -r ./jamVoice _site/jamVoice
+          
+          cp index.html jamconnect-manifest.json jamconnect-app.js jamconnect-service-worker.js _site
           
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

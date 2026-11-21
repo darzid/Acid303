@@ -1,0 +1,66 @@
+body, html { 
+	padding: 2pt; 
+	vertical-align: top;
+	color: white;
+}
+
+h1 {
+  color: white;
+}
+#tab-control {
+  vertical-align: top;
+}
+
+.tab {
+	min-height: 50vh;
+	display: block;
+}
+
+#midi-devices {
+	border: 1pt solid black;
+	background: rgba(255,255,255, 0.2);
+	width: stretch;
+}
+
+#midi-devices th:first-of-type {
+	border-right: 1pt solid rgba(0,0,0,0.2);
+}
+
+#midi-devices th {
+	background: gray;
+	width: 50%;
+}
+
+#midi-devices td:first-of-type {
+	border-right: 1pt solid rgba(0,0,0,0.2);
+}
+
+#midi-inputs, #midi-outputs {
+	overflow-y: auto;
+	max-height: 50vh;
+	text-align: center;
+}
+
+.toggle-button {
+	width: stretch;
+	padding: 3pt;
+	margin: 3pt;
+	margin-top: 1pt;
+	border-radius: 3pt;
+	font-size: x-small;
+	background: linear-gradient(180deg, #a08080 0%, #cbd5e1 100%);
+	box-shadow: 0 3px 0 #64748b, 0 4px 5px rgba(0,0,0,0.3);
+  transition: all 0.05s ease;
+}
+
+.toggle-button.active, .toggle-button:active {
+	transform: translateY(2px);
+  box-shadow: 0 1px 0 #64748b, 0 2px 3px rgba(0,0,0,0.3);
+  font-weight: bold;
+}
+
+#midi-log {
+	overflow-y: auto;
+	max-height: 40vh;
+	border: 2pt solid black;
+}

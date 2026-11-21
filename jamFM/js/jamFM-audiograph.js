@@ -1,0 +1,394 @@
+import { AudioGraphBase } from "/js/jamconnect-audiograph.js";
+
+const parameters = {
+	synth: {
+    harmonicity: {
+      value: 1,
+      deviceParameter: "harmonicity.value",
+      midiControlMapping: 70,
+      range: {
+        min: 1,
+        max: 6
+      }
+    },
+    "mod-amount": {
+      value: 0,
+      deviceParameter: "modulationIndex.value",
+      midiControlMapping: 1,
+      range: {
+        min: 0,
+        max: 12
+      }
+    },
+  },
+  
+  adsr: {
+    attack: {
+      value: 0.2,
+      deviceParameter: "attack",
+      midiControlMapping: 73,
+      range: {
+        min: 0.01,
+        max: 1,
+        displayValueMultiplier: 1000,
+        displayValueUnit: "ms"
+      }
+    },
+    decay: {
+      value: 0.5,
+      deviceParameter: "decay",
+      midiControlMapping: 80,
+      range: {
+        min: 0.1,
+        max: 1.2,
+        displayValueMultiplier: 1000,
+        displayValueUnit: "ms"
+      }
+    },
+    sustain: {
+      value: 0.5,
+      deviceParameter: "sustain",
+      midiControlMapping: 64,
+      range: {
+        min: 0,
+        max: 1,
+        displayValueUnit: "db"
+      }
+    },
+    release: {
+      value: 0.5,
+      deviceParameter: "release",
+      midiControlMapping: 72,
+      range: {
+        min: 0.1,
+        max: 1.2,
+        displayValueMultiplier: 1000,
+        displayValueUnit: "ms"
+      }
+    },
+    
+  },
+  
+  modEnv: {
+    attack: {
+      value: 0.2,
+      deviceParameter: "attack",
+      range: {
+        min: 0.01,
+        max: 1,
+        displayValueMultiplier: 1000,
+        displayValueUnit: "ms"
+      }
+    },
+    decay: {
+      value: 0.5,
+      deviceParameter: "decay",
+      range: {
+        min: 0.1,
+        max: 1.2,
+        displayValueMultiplier: 1000,
+        displayValueUnit: "ms"
+      }
+    },
+    sustain: {
+      value: 0.5,
+      deviceParameter: "sustain",
+      range: {
+        min: 0,
+        max: 1,
+        displayValueUnit: "db"
+      }
+    },
+    release: {
+      value: 0.5,
+      deviceParameter: "release",
+      range: {
+        min: 0.1,
+        max: 1.2,
+        displayValueMultiplier: 1000,
+        displayValueUnit: "ms"
+      }
+    },
+  },
+  
+  filter: {
+	  type: {
+      value: "lowpass",
+      deviceParameter: "type",
+      options: ["lowpass","highpass"],
+      optionNames: ["LP", "HP"]
+    },
+	  cutoff: {
+      value: 400,
+      deviceParameter: "frequency.value",
+      midiControlMapping: 74,
+      range: {
+        min: 250,
+        max: 2800,
+        displayValueUnit: "Hz"
+      }
+    },
+    resonance: {
+      value: 7,
+      deviceParameter: "Q.value",
+      midiControlMapping: 71,
+      range: {
+        min: 1,
+        max: 20,
+      },
+    },
+    rolloff: {
+      value: -12,
+      deviceParameter: "rolloff",
+      options: [-12,-24],
+      optionNames: ["-12", "-24"]
+    },
+	},
+	
+	filterLfo: {
+		amount: {
+    	value: 0.5,
+      deviceParameter: "amplitude.value",
+      range: {
+        min: 0,
+        max: 1,
+        displayValueMultiplier: 100,
+        displayValueUnit: "%"
+      }
+    },
+		rate: {
+    	value: "2n.",
+      deviceParameter: "frequency.value",
+      options: [    '16n.' , '16n',  '8n.',  '8n',  '4n.',  '4n',  '2n.',  '2n',  '1n'],
+			optionNames: ["1/16t", "1/16", "1/8t", "1/8", "1/4t", "1/4", "1/2t", "1/2", "1/1"],
+    },
+	},
+	
+	distortion: {
+		distortion: {
+			value: 0,
+			deviceParameter: "distortion",
+			midiControlMapping: 12,
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+		},
+		dryWet: {
+			value: 0.25,
+			deviceParameter: "wet.value",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+		}
+	},
+	
+	chorus: {
+    rate: {
+			value: 0.01,
+			deviceParameter: "frequency.value",
+			range: {
+				min: 0,
+				max: 5,
+				displayValueUnit: "Hz"
+			}
+		},
+    feedback: {
+			value: 0.5,
+			deviceParameter: "feedback.value",
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+		},
+		depth: {
+			value: 0.5,
+			deviceParameter: "depth",
+			range: {
+				min: 0,
+				max: 5,
+			}
+		},
+    dryWet: {
+			value: 0.5,
+			deviceParameter: "wet.value",
+			midiControlMapping: 13,
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+		}
+  },
+  
+  delay: {
+  	time: {
+			value: "8n.",
+			deviceParameter: "delayTime.value",
+			options:     ['16n.' , '16n',  '8n.',  '8n',  '4n.',  '4n',  '2n.',  '2n',  "1n"],
+			optionNames: ["1/16t", "1/16", "1/8t", "1/8", "1/4t", "1/4", "1/2t", "1/2", "1/1"]
+		},
+    feedback: {
+			value: 0.5,
+			deviceParameter: "feedback.value",
+			range: {
+				min: 0,
+				max: 0.95,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+		},
+    dryWet: {
+			value: 0.5,
+			deviceParameter: "wet.value",
+			midiControlMapping: 13,
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+		},
+		
+  },
+  
+  reverb: {
+		preDelay: {
+			value: 0,
+			deviceParameter: "preDelay",
+			range: {
+				min: 0,
+				max: 0.2,
+				displayValueMultiplier: 1000,
+				displayValueUnit: "ms"
+			}
+		},
+		decay: {
+			value: 0.25,
+			deviceParameter: "decay",
+			range: {
+				min: 0.001,
+				max: 1,
+				displayValueMultiplier: 1000,
+				displayValueUnit: "ms"
+			}
+		},
+		dryWet: {
+			value: 0.5,
+			deviceParameter: "wet.value",
+			midiControlMapping: 91,
+			range: {
+				min: 0,
+				max: 1,
+				displayValueMultiplier: 100,
+				displayValueUnit: "%"
+			}
+		}
+	},
+}
+
+export class JamFMAudioGraph extends AudioGraphBase {
+  constructor() 
+  {
+    super(parameters);
+  
+  	// MONO devices
+  	this.devices.instruments.synth = new Tone.FMSynth({
+      harmonicity: this.params.synth.harmonicity.value,
+      modulationIndex: this.params.synth["mod-amount"].value,
+      modulationEnvelope: {
+        attack: this.params.modEnv.attack.value,
+        decay: this.params.modEnv.decay.value,
+        sustain: this.params.modEnv.sustain.value,
+        release: this.params.modEnv.release.value,
+      },
+      envelope: {
+        attack: this.params.adsr.attack.value,
+        decay: this.params.adsr.decay.value,
+        sustain: this.params.adsr.sustain.value,
+        release: this.params.adsr.release.value,
+      },
+    });
+    
+    this.devices.modules.filter = new Tone.Filter({
+    	frequency: this.params.filter.cutoff.value,
+    	Q: this.params.filter.resonance.value,
+      type: this.params.filter.type.value,
+      rolloff: this.params.filter.rolloff.value,
+    });
+    
+    this.devices.modules.filterLfo = new Tone.LFO(
+    	this.params.filterLfo.rate.value,
+      this.params.filter.cutoff.range.min,
+      this.params.filter.cutoff.range.max,
+    );
+    
+    console.log("filterLfo", this.devices.modules.filterLfo)
+    //this.devices.modules.filterLfo.depth.value = this.params.filterLfo.depth.value;
+    this.devices.modules.filterLfo.amplitude.value = this.params.filterLfo.amount.value;
+    this.devices.modules.filterLfo.connect(this.devices.modules.filter.frequency);
+    this.devices.modules.filterLfo.start();
+    
+    this.devices.effects.distortion = new Tone.Distortion({
+      distortion: this.params.distortion.distortion.value,
+      wet: this.params.distortion.dryWet.value,
+    });
+   
+    this.devices.effects.chorus = new Tone.Chorus({
+      frequency: this.params.chorus.rate.value,
+      depth: this.params.chorus.depth.value,
+      feedback: this.params.chorus.feedback.value,
+      wet: this.params.chorus.dryWet.value
+    });
+    this.devices.effects.chorus.start();
+    
+    this.devices.effects.delay = new Tone.PingPongDelay({
+      delayTime: this.params.delay.time.value,
+      feedback: this.params.delay.feedback.value,
+      wet: this.params.delay.dryWet.value
+    });
+    
+    this.devices.effects.reverb = new Tone.Reverb({	
+    	preDelay: this.params.reverb.preDelay.value,
+  		decay: this.params.reverb.decay.value,
+      wet: this.params.reverb.dryWet.value,
+    });
+    
+    this.devices.instruments.synth.chain(
+    	this.devices.modules.filter,
+    	this.devices.effects.distortion,
+    	this.devices.effects.chorus,
+    	this.devices.effects.delay,
+    	this.devices.effects.reverb,
+    	this.groupBus.input
+    );
+  	console.log("test")
+    this.devices.modules.adsr = this.devices.instruments.synth.envelope;
+    this.devices.modules.modEnv = this.devices.instruments.synth.modulationEnvelope;
+  }
+  
+  playNote(note, velocity, slide, duration, time) 
+  {
+    this.devices.instruments.synth.portamento = slide ? 0.08 : 0;
+    this.devices.instruments.synth.triggerAttackRelease(note, duration, time, velocity);
+  }
+  
+  startNote(note, velocity, time, slide = false) 
+  {
+    this.devices.instruments.synth.portamento = slide ? 0.08 : 0;
+    this.devices.instruments.synth.triggerAttack(note, time, velocity);
+  }
+  
+  stopNote(time) 
+  {
+    this.devices.instruments.synth.triggerRelease(time);
+  }
+}

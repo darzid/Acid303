@@ -1,7 +1,7 @@
 import { AudioGraphBase } from "./jamconnect-audiograph.js";
-import { Visualizer } from "./visualizer.js";
-import { LevelMeter } from "./level-meter.js";
-import { TabControl } from "./tabcontrol.js";
+import { Visualizer } from "./controls/visualizer.js";
+import { LevelMeter } from "./controls/level-meter.js";
+import { TabControl } from "./controls/tabcontrol.js";
 
 export class JamConnectApp {
   ccMap = {};
@@ -77,11 +77,11 @@ export class JamConnectApp {
     this._sequencer.onParameterChangeRequest = (deviceName, parameterName, parameterValue) => this.onParameterChangeRequest(deviceName, parameterName, parameterValue);
   }
   
-  registerServiceWorker(path) {
+  registerServiceWorker(path, scope) {
     if (location.origin !== "file://") {
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
-          .register(path, { scope: "/" })
+          .register(path, { scope: scope})
           .then((registration) => {
             this.swRegistration = registration;
             // registration worked
