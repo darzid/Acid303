@@ -1,4 +1,4 @@
-import { AudioGraphBase } from "/js/jamconnect-audiograph.js";
+import { AudioGraphBase } from "../../js/jamconnect-audiograph.js";
 import { TR909Snare } from "./devices/TR909Snare.js";
 import { TR909Rimshot } from "./devices/TR909Rimshot.js";
 import { TR909Ride } from "./devices/TR909Ride.js";

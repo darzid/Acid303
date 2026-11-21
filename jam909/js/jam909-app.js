@@ -1,6 +1,6 @@
 import { Jam909AudioGraph } from "./jam909-audiograph.js";
 import { Jam909Sequencer } from "./jam909-sequencer.js"
-import { JamConnectApp } from "/js/jamconnect-app.js";
+import { JamConnectApp } from "../../js/jamconnect-app.js";
 
 console.log("test2")
 export class Jam909App extends JamConnectApp {
